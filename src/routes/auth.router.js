@@ -8,4 +8,8 @@ const { asyncHandler } = require('../helpers/asyncHandler');
 // Sign-up
 router.post('/auth/signup', asyncHandler(AuthController.signUp));
 
+// Login
+router.post('/auth/login', asyncHandler(AuthController.login));
+
+
 module.exports = router;

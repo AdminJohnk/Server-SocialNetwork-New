@@ -10,6 +10,12 @@ class AuthController {
       metadata: await AuthService.signUpService(req.body)
     }).send(res);
   };
+  static login = async (req, res, next) => {
+    new OK({
+      message: 'Sign In Successfully',
+      metadata: await AuthService.LoginService(req.body)
+    }).send(res);
+  };
 }
 
 module.exports = AuthController;
