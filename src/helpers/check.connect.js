@@ -15,6 +15,7 @@ const checkOverLoad = () => {
         const numConnection = mongoose.connections.length;
         const numCores = os.cpus().length;
         const memoryUsage = process.memoryUsage().rss;
+        const memoryTotal = os.totalmem();
 
         // Giả sử 1 core chịu tối đa 5 connect. Nếu vượt quá thì thông báo
         const maxConnection = numCores * 5;
@@ -24,7 +25,7 @@ const checkOverLoad = () => {
         
         console.log('---------------------------------');
         console.log(`Number of connections: ${numConnection}`);
-        console.log(`Memory usage: ${Number(memoryUsage)/(1024**2)} MB`);
+        console.log(`Memory usage: ${Number(memoryUsage)/(1024**2)}/${Number(memoryTotal)/(1024**2)} MB`);
 
     }, 5000); // Theo dõi mỗi 5s
 }

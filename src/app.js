@@ -4,24 +4,23 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const compression = require('compression');
 const {checkOverLoad} = require('./helpers/check.connect');
-
+const router = require('./routes/root.router');
 
 // init middleware
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
-
+app.use(express.json())
+app.use(express.urlencoded({
+    extended: true
+}))
 
 // init db
 require('./database/init.mongodb');
-checkOverLoad();
+// checkOverLoad();
 
 // init routes
-app.get('/', (req, res, next) => {
-  return res.status(200).json({
-    message: 'Hello World',
-  });
-});
+app.use('/api/v1', router);
 
 // handling error
 

@@ -14,6 +14,7 @@ class Database {
         mongoose.set('debug', true);
         mongoose.set('debug', { color: true });
       }
+      
       const connectString = `mongodb://${host}:${port}/${name}`;
       mongoose
         .connect(connectString, {
