@@ -49,6 +49,7 @@ const checkPermission = permission => {
   };
 };
 
+
 module.exports = {
   checkApiKey,
   checkPermission
