@@ -20,9 +20,15 @@ var KeyTokenSchema = new Schema(
       type: String,
       required: true
     },
-    refreshToken: {
+    // Những RefreshToken đã sử dụng
+    refreshTokensUsed: {
       type: Array,
       default: []
+    },
+    // RefreshToken đang sử dụng
+    refreshToken: {
+      type: String,
+      require: true
     }
   },
   {
@@ -32,13 +38,37 @@ var KeyTokenSchema = new Schema(
 );
 
 KeyTokenSchema.statics = {
-  createKeyToken: async function ({ userId, publicKey, privateKey }) {
-    const tokens = await this.create({
-      user: userId.toString(),
-      publicKey,
-      privateKey
-    });
-    return tokens || null;
+  createKeyToken: async function ({
+    userId,
+    publicKey,
+    privateKey,
+    refreshToken
+  }) {
+    try {
+      // level 0
+      // const tokens = await this.create({
+      //   user: userId.toString(),
+      //   publicKey,
+      //   privateKey
+      // });
+      // return tokens || null;
+
+      // level xxx
+      const filter = { user: userId };
+      const update = {
+        publicKey,
+        privateKey,
+        refreshTokensUsed: [],
+        refreshToken
+      };
+      const options = { upsert: true, new: true };
+
+      const tokens = await this.findOneAndUpdate(filter, update, options);
+      return tokens || null;
+    } catch (error) {
+      console.log('error: ', error.message);
+      return error;
+    }
   }
 };
 
