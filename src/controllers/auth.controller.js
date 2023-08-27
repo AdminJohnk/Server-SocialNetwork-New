@@ -5,6 +5,7 @@ const { OK, CREATED } = require('../core/success.response');
 
 class AuthController {
   static signUp = async (req, res, next) => {
+    console.log('req.body', req.body)
     new CREATED({
       message: 'Sign Up Successfully',
       metadata: await AuthService.signUpService(req.body)
