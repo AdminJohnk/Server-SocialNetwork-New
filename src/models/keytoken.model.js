@@ -38,37 +38,29 @@ var KeyTokenSchema = new Schema(
 );
 
 KeyTokenSchema.statics = {
+  findByUserId: async function (userId) {
+    return await this.findOne({ user: userId }).lean();
+  },
+  removeKeyByID: async function (KeyId) {
+    return await this.findByIdAndDelete(KeyId);
+  },
   createKeyToken: async function ({
     userId,
     publicKey,
     privateKey,
     refreshToken
   }) {
-    try {
-      // level 0
-      // const tokens = await this.create({
-      //   user: userId.toString(),
-      //   publicKey,
-      //   privateKey
-      // });
-      // return tokens || null;
+    const filter = { user: userId };
+    const update = {
+      publicKey,
+      privateKey,
+      refreshTokensUsed: [],
+      refreshToken
+    };
+    const options = { upsert: true, new: true };
 
-      // level xxx
-      const filter = { user: userId };
-      const update = {
-        publicKey,
-        privateKey,
-        refreshTokensUsed: [],
-        refreshToken
-      };
-      const options = { upsert: true, new: true };
-
-      const tokens = await this.findOneAndUpdate(filter, update, options);
-      return tokens || null;
-    } catch (error) {
-      console.log('error: ', error.message);
-      return error;
-    }
+    const tokens = await this.findOneAndUpdate(filter, update, options);
+    return tokens || null;
   }
 };
 

@@ -12,8 +12,14 @@ class AuthController {
   };
   static login = async (req, res, next) => {
     new OK({
-      message: 'Sign In Successfully',
+      message: 'Login Successfully',
       metadata: await AuthService.LoginService(req.body)
+    }).send(res);
+  };
+  static logout = async (req, res, next) => {
+    new OK({
+      message: 'Logout Successfully',
+      metadata: await AuthService.logoutService(req.keyStore)
     }).send(res);
   };
 }
