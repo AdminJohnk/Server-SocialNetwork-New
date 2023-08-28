@@ -8,28 +8,32 @@ const { AuthFailureError, NotFoundError } = require('../core/error.response');
 const HEADER = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
-  AUTHORIZATION: 'authorization'
+  AUTHORIZATION: 'authorization',
+  REFRESHTOKEN: 'x-rtoken-id'
 };
 
 const authentication = asyncHandler(async (req, res, next) => {
-  /*
-  1 - Check userId missing
-  2 - get accessToken
-  3 - verifyToken
-  4 - check user in bds?
-  5 - check keyStore with this userId
-  6 - OK all => return next()
-  */
-
-  // 1 - Check userId missing
   const userId = req.headers[HEADER.CLIENT_ID];
   if (!userId) throw new AuthFailureError('Invalid Request');
 
-  // 2 - get accessToken
   const keyStore = await KeyTokenModel.findByUserId(userId);
   if (!keyStore) throw new NotFoundError('Not found keyStore');
 
-  // 3 - verifyToken
+  if (req.headers[HEADER.REFRESHTOKEN]) {
+    try {
+      const refreshToken = req.headers[HEADER.REFRESHTOKEN];
+      const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
+      if (userId !== decodeUser.userId)
+        throw new AuthFailureError('Invalid UserId');
+      req.keyStore = keyStore;
+      req.user = decodeUser;
+      req.refreshToken = refreshToken;
+      return next();
+    } catch (error) {
+      throw error;
+    }
+  }
+
   const accessToken = req.headers[HEADER.AUTHORIZATION];
   if (!accessToken) throw new AuthFailureError('Invalid Request');
 
@@ -43,6 +47,7 @@ const authentication = asyncHandler(async (req, res, next) => {
     throw error;
   }
 });
+
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
   try {
@@ -69,7 +74,17 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
   }
 };
 
+const verifyToken = async (token, keySecret) => {
+  try {
+    const decodeToken = await JWT.verify(token, keySecret);
+    return decodeToken;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   createTokenPair,
-  authentication
+  authentication,
+  verifyToken
 };

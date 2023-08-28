@@ -7,24 +7,62 @@ const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils');
 const {
   BadRequestError,
-  ConflicRequestError,
-  AuthFailureError
+  AuthFailureError,
+  ForbiddenError
 } = require('../core/error.response');
 
 class AuthService {
+  static handleRefreshToken = async ({ refreshToken, keyStore, user }) => {
+    const { userId, email } = user;
+
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      // Xóa tất cả token trong keyStore
+      await KeyTokenModel.deleteKeyById(userId);
+      throw new ForbiddenError('Something went wrong!! Please login again');
+    }
+
+    // keyStore.refreshToken là Token đang sử dụng so sánh với refreshToken gửi lên
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError('User not registered');
+
+    const foundUser = await UserModel.findByEmail({ email });
+    if (!foundUser) throw new AuthFailureError('User not registered');
+
+    // create accessToken và refreshToken
+    const tokens = await createTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
+
+    // update Token
+    await keyStore.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken
+      }
+    });
+    return {
+      user,
+      tokens
+    };
+  };
+
   static logoutService = async keyStore => {
     const delKey = await KeyTokenModel.removeKeyByID(keyStore._id);
     return delKey;
   };
 
-  static LoginService = async ({ email, password, refreshToken = null }) => {
+  static loginService = async ({ email, password, refreshToken = null }) => {
     // 1 - Check email exist
     const foundUser = await UserModel.findByEmail({ email });
     if (!foundUser) throw new BadRequestError('User not registered');
 
     // 2 - Match password
     const match = await bcrypt.compare(password, foundUser.password);
-    if (!match) throw new AuthFailuretError('Authentication error');
+    if (!match) throw new AuthFailureError('Authentication error');
 
     // 3 - Create privateKey vs publicKey
 

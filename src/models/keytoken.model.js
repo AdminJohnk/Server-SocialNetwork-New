@@ -38,8 +38,17 @@ var KeyTokenSchema = new Schema(
 );
 
 KeyTokenSchema.statics = {
+  findByRefreshTokenUsed: async function (refreshToken) {
+    return await this.findOne({ refreshTokensUsed: refreshToken }).lean();
+  },
+  findByRefreshToken: async function (refreshToken) {
+    return await this.findOne({ refreshToken });
+  },
+  deleteKeyById: async function (userId) {
+    return await this.findOneAndDelete({ user: userId });
+  },
   findByUserId: async function (userId) {
-    return await this.findOne({ user: userId }).lean();
+    return await this.findOne({ user: userId });
   },
   removeKeyByID: async function (KeyId) {
     return await this.findByIdAndDelete(KeyId);
