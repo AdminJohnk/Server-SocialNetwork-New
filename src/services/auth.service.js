@@ -1,6 +1,6 @@
 'use strict';
-const UserModel = require('../models/user.model');
-const KeyTokenModel = require('../models/keytoken.model');
+const { UserClass } = require('../models/user.model');
+const { KeyTokenClass } = require('../models/keytoken.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { createTokenPair } = require('../auth/authUtils');
@@ -17,7 +17,7 @@ class AuthService {
 
     if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       // Xóa tất cả token trong keyStore
-      await KeyTokenModel.deleteKeyById(userId);
+      await KeyTokenClass.deleteKeyById(userId);
       throw new ForbiddenError('Something went wrong!! Please login again');
     }
 
@@ -25,7 +25,7 @@ class AuthService {
     if (keyStore.refreshToken !== refreshToken)
       throw new AuthFailureError('User not registered');
 
-    const foundUser = await UserModel.findByEmail({ email });
+    const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new AuthFailureError('User not registered');
 
     // create accessToken và refreshToken
@@ -51,13 +51,13 @@ class AuthService {
   };
 
   static logoutService = async keyStore => {
-    const delKey = await KeyTokenModel.removeKeyByID(keyStore._id);
+    const delKey = await KeyTokenClass.removeKeyByID(keyStore._id);
     return delKey;
   };
 
   static loginService = async ({ email, password, refreshToken = null }) => {
     // 1 - Check email exist
-    const foundUser = await UserModel.findByEmail({ email });
+    const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new BadRequestError('User not registered');
 
     // 2 - Match password
@@ -88,7 +88,7 @@ class AuthService {
       privateKey
     );
 
-    const keyStore = await KeyTokenModel.createKeyToken({
+    const keyStore = await KeyTokenClass.createKeyToken({
       userId: foundUser._id,
       publicKey,
       privateKey,
@@ -109,12 +109,12 @@ class AuthService {
 
   static signUpService = async ({ name, email, password }) => {
     // check Email exist
-    const foundUser = await UserModel.findByEmail({ email });
+    const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) throw new BadRequestError('Error: Email already exists');
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const newUser = await UserModel.createUser({
+    const newUser = await UserClass.createUser({
       name,
       email,
       password: passwordHash
@@ -145,7 +145,7 @@ class AuthService {
         privateKey
       );
 
-      const keyStore = await KeyTokenModel.createKeyToken({
+      const keyStore = await KeyTokenClass.createKeyToken({
         userId: newUser._id,
         publicKey,
         privateKey,

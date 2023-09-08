@@ -2,21 +2,22 @@
 
 const JWT = require('jsonwebtoken');
 const { asyncHandler } = require('../helpers/asyncHandler');
-const KeyTokenModel = require('../models/keytoken.model');
+const { KeyTokenClass } = require('../models/keytoken.model');
 const { AuthFailureError, NotFoundError } = require('../core/error.response');
 
 const HEADER = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
   AUTHORIZATION: 'authorization',
-  REFRESHTOKEN: 'x-rtoken-id'
+  REFRESHTOKEN: 'x-rtoken-id',
+  GITHUB_TOKEN: 'x-github-token'
 };
 
 const authentication = asyncHandler(async (req, res, next) => {
   const userId = req.headers[HEADER.CLIENT_ID];
   if (!userId) throw new AuthFailureError('Invalid Request');
 
-  const keyStore = await KeyTokenModel.findByUserId(userId);
+  const keyStore = await KeyTokenClass.findByUserId(userId);
   if (!keyStore) throw new NotFoundError('Not found keyStore');
 
   if (req.headers[HEADER.REFRESHTOKEN]) {
@@ -42,12 +43,12 @@ const authentication = asyncHandler(async (req, res, next) => {
     if (userId !== decodeUser.userId)
       throw new AuthFailureError('Invalid UserId');
     req.keyStore = keyStore;
+    req.user = decodeUser;
     return next();
   } catch (error) {
     throw error;
   }
 });
-
 
 const createTokenPair = async (payload, publicKey, privateKey) => {
   try {
@@ -84,6 +85,7 @@ const verifyToken = async (token, keySecret) => {
 };
 
 module.exports = {
+  HEADER,
   createTokenPair,
   authentication,
   verifyToken

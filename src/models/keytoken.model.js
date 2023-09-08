@@ -37,28 +37,27 @@ var KeyTokenSchema = new Schema(
   }
 );
 
-KeyTokenSchema.statics = {
-  findByRefreshTokenUsed: async function (refreshToken) {
-    return await this.findOne({ refreshTokensUsed: refreshToken }).lean();
-  },
-  findByRefreshToken: async function (refreshToken) {
-    return await this.findOne({ refreshToken });
-  },
-  deleteKeyById: async function (userId) {
-    return await this.findOneAndDelete({ user: userId });
-  },
-  findByUserId: async function (userId) {
-    return await this.findOne({ user: userId });
-  },
-  removeKeyByID: async function (KeyId) {
-    return await this.findByIdAndDelete(KeyId);
-  },
-  createKeyToken: async function ({
-    userId,
-    publicKey,
-    privateKey,
-    refreshToken
-  }) {
+const KeyTokenModel = model(DOCUMENT_NAME, KeyTokenSchema);
+
+class KeyTokenClass {
+  static async findByRefreshTokenUsed(refreshToken) {
+    return await KeyTokenModel.findOne({
+      refreshTokensUsed: refreshToken
+    }).lean();
+  }
+  static async findByRefreshToken(refreshToken) {
+    return KeyTokenModel.findOne({ refreshToken });
+  }
+  static async deleteKeyById(userId) {
+    return await KeyTokenModel.findOneAndDelete({ user: userId });
+  }
+  static async findByUserId(userId) {
+    return await KeyTokenModel.findOne({ user: userId });
+  }
+  static async removeKeyByID(KeyId) {
+    return await KeyTokenModel.findByIdAndDelete(KeyId);
+  }
+  static async createKeyToken({ userId, publicKey, privateKey, refreshToken }) {
     const filter = { user: userId };
     const update = {
       publicKey,
@@ -68,9 +67,12 @@ KeyTokenSchema.statics = {
     };
     const options = { upsert: true, new: true };
 
-    const tokens = await this.findOneAndUpdate(filter, update, options);
+    const tokens = await KeyTokenModel.findOneAndUpdate(filter, update, options);
     return tokens || null;
   }
-};
+}
 
-module.exports = model(DOCUMENT_NAME, KeyTokenSchema);
+module.exports = {
+  KeyTokenModel,
+  KeyTokenClass
+};

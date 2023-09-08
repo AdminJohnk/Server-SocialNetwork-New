@@ -1,11 +1,12 @@
 'use strict';
 
-const APIKeyModel = require('../models/apiKey.model');
+const { ApiKeyClass } = require('../models/apiKey.model');
+const { HEADER } = require('./authUtils');
 
-const HEADER = {
-  API_KEY: 'x-api-key',
-  AUTHORIZATION: 'authorization'
-};
+// const HEADER = {
+//   API_KEY: 'x-api-key',
+//   AUTHORIZATION: 'authorization'
+// };
 
 const checkApiKey = async (req, res, next) => {
   try {
@@ -16,7 +17,7 @@ const checkApiKey = async (req, res, next) => {
       });
     }
     // check objKey
-    const objKey = await APIKeyModel.findByID(key);
+    const objKey = await ApiKeyClass.findByID(key);
     if (!objKey) {
       return res.status(403).json({
         message: 'Forbidden Error'
@@ -48,7 +49,6 @@ const checkPermission = permission => {
     return next();
   };
 };
-
 
 module.exports = {
   checkApiKey,

@@ -29,11 +29,15 @@ const ApiKeySchema = new Schema(
   }
 );
 
-ApiKeySchema.statics = {
-  findByID: async function (key) {
-    const objKey = await this.findOne({ key, status: true }).lean();
+const ApiKeyModel = model(DOCUMENT_NAME, ApiKeySchema);
+
+class ApiKeyClass {
+  static async findByID(key) {
+    const objKey = await ApiKeyModel.findOne({ key, status: true }).lean();
     return objKey;
   }
-};
-
-module.exports = model(DOCUMENT_NAME, ApiKeySchema);
+}
+module.exports = {
+  ApiKeyModel,
+  ApiKeyClass
+}
