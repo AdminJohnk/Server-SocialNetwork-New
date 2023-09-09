@@ -6,12 +6,6 @@ const axios = require('axios');
 const { UserClass } = require('../models/user.model');
 
 class UserService {
-  static updateTags = async ({ user_id, tags }) => {
-    return await UserClass.updateTags({
-      user_id,
-      tags
-    });
-  };
   static getRepositoryGithub = async ({ access_token_github }) => {
     const { data: result } = await axios.get(
       'https://api.github.com/user/repos',

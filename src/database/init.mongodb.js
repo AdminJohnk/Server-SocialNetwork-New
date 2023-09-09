@@ -1,32 +1,34 @@
-'use strict';
-const mongoose = require('mongoose');
-const { countConnect } = require('../helpers/check.connect');
-const {db: {host, port, name}} = require('../configs/configs.mongodb');
+"use strict";
+const mongoose = require("mongoose");
+const { countConnect } = require("../helpers/check.connect");
+const {
+  db: { host, password, suffix },
+} = require("../configs/configs.mongodb");
 
 class Database {
   constructor() {
-    this.connect('mongodb');
+    this.connect("mongodb");
   }
 
   connect(type) {
-    if (type === 'mongodb') {
+    if (type === "mongodb") {
       if (1 === 1) {
-        mongoose.set('debug', true);
-        mongoose.set('debug', { color: true });
+        mongoose.set("debug", true);
+        mongoose.set("debug", { color: true });
       }
-      
-      const connectString = `mongodb://${host}:${port}/${name}`;
+
+      const connectString = `mongodb+srv://${host}:${password}@${suffix}`;
       mongoose
         .connect(connectString, {
           maxPoolSize: 50,
         })
         .then(() => {
           countConnect();
-          console.log(`ConnectString: ${connectString}`)
-          console.log('Connected to MongoDB');
+          console.log(`ConnectString: ${connectString}`);
+          console.log("Connected to MongoDB");
         })
-        .catch(err => {
-          console.log('Error connecting to MongoDB');
+        .catch((err) => {
+          console.log("Error connecting to MongoDB");
           console.log(err);
         });
     }
@@ -40,4 +42,4 @@ class Database {
 }
 
 const instanceDB = Database.getInstance();
-module.exports = instanceDB;
+module.expasswords = instanceDB;

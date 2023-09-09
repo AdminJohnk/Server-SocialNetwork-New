@@ -28,9 +28,6 @@ router.get('/repositories', asyncHandler(UserController.getRepositoryGithub));
 // Update user
 router.put('/:user_id', asyncHandler(UserController.updateUserById));
 
-// Update Tags
-router.put('/tags/:user_id', asyncHandler(UserController.updateTags));
-
 
 // =========================================================
 

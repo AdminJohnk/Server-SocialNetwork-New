@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const { ApiKeyClass } = require('../models/apiKey.model');
-const { HEADER } = require('./authUtils');
+const { ApiKeyClass } = require("../models/apiKey.model");
+const { HEADER } = require("./authUtils");
 
 // const HEADER = {
 //   API_KEY: 'x-api-key',
-//   AUTHORIZATION: 'authorization'
+//   AUTHORIZATION: 'Authorization'
 // };
 
 const checkApiKey = async (req, res, next) => {
@@ -13,14 +13,14 @@ const checkApiKey = async (req, res, next) => {
     const key = req.headers[HEADER.API_KEY]?.toString();
     if (!key) {
       return res.status(403).json({
-        message: 'Forbidden Error'
+        message: "Forbidden Error",
       });
     }
     // check objKey
     const objKey = await ApiKeyClass.findByID(key);
     if (!objKey) {
       return res.status(403).json({
-        message: 'Forbidden Error'
+        message: "Forbidden Error",
       });
     }
 
@@ -32,18 +32,18 @@ const checkApiKey = async (req, res, next) => {
   }
 };
 
-const checkPermission = permission => {
+const checkPermission = (permission) => {
   return (req, res, next) => {
     if (!req.objKey.permissions) {
       return res.status(403).json({
-        message: 'Permission denied'
+        message: "Permission denied",
       });
     }
 
     const validPermission = req.objKey.permissions.includes(permission);
     if (!validPermission) {
       return res.status(403).json({
-        message: 'Permission denied'
+        message: "Permission denied",
       });
     }
     return next();
@@ -52,5 +52,5 @@ const checkPermission = permission => {
 
 module.exports = {
   checkApiKey,
-  checkPermission
+  checkPermission,
 };

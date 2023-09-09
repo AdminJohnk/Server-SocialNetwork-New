@@ -5,15 +5,6 @@ const { OK, CREATED } = require('../core/success.response');
 const { HEADER } = require('../auth/authUtils');
 
 class UserController {
-  static updateTags = async (req, res, next) => {
-    new OK({
-      message: 'Update Tags Successfully',
-      metadata: await UserService.updateTags({
-        user_id: req.params.user_id,
-        tags: [...req.body]
-      })
-    }).send(res);
-  };
   static getRepositoryGithub = async (req, res, next) => {
     new OK({
       message: 'Get Repository Github Successfully',
