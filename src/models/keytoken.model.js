@@ -37,39 +37,42 @@ var KeyTokenSchema = new Schema(
   }
 );
 
-KeyTokenSchema.statics = {
-  createKeyToken: async function ({
-    userId,
-    publicKey,
-    privateKey,
-    refreshToken
-  }) {
-    try {
-      // level 0
-      // const tokens = await this.create({
-      //   user: userId.toString(),
-      //   publicKey,
-      //   privateKey
-      // });
-      // return tokens || null;
+const KeyTokenModel = model(DOCUMENT_NAME, KeyTokenSchema);
 
-      // level xxx
-      const filter = { user: userId };
-      const update = {
-        publicKey,
-        privateKey,
-        refreshTokensUsed: [],
-        refreshToken
-      };
-      const options = { upsert: true, new: true };
-
-      const tokens = await this.findOneAndUpdate(filter, update, options);
-      return tokens || null;
-    } catch (error) {
-      console.log('error: ', error.message);
-      return error;
-    }
+class KeyTokenClass {
+  static async findByRefreshTokenUsed(refreshToken) {
+    return await KeyTokenModel.findOne({
+      refreshTokensUsed: refreshToken
+    }).lean();
   }
-};
+  static async findByRefreshToken(refreshToken) {
+    return KeyTokenModel.findOne({ refreshToken });
+  }
+  static async deleteKeyById(userId) {
+    return await KeyTokenModel.findOneAndDelete({ user: userId });
+  }
+  static async findByUserId(userId) {
+    return await KeyTokenModel.findOne({ user: userId });
+  }
+  static async removeKeyByID(KeyId) {
+    return await KeyTokenModel.findByIdAndDelete(KeyId);
+  }
+  static async createKeyToken({ userId, publicKey, privateKey, refreshToken }) {
+    const filter = { user: userId };
+    const update = {
+      publicKey,
+      privateKey,
+      refreshTokensUsed: [],
+      refreshToken
+    };
+    const options = { upsert: true, new: true };
 
-module.exports = model(DOCUMENT_NAME, KeyTokenSchema);
+    const tokens = await KeyTokenModel.findOneAndUpdate(filter, update, options);
+    return tokens || null;
+  }
+}
+
+module.exports = {
+  KeyTokenModel,
+  KeyTokenClass
+};

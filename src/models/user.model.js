@@ -1,6 +1,8 @@
 'use strict';
 
-const { model, Schema, default: mongoose } = require('mongoose');
+const { model, Schema, Types } = require('mongoose');
+const { unGetSelectData } = require('../utils');
+const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'User';
 const COLLECTION_NAME = 'users';
@@ -25,117 +27,68 @@ var UserSchema = new Schema(
       trim: true,
       required: true
     },
-    password: {
-      type: String,
-      required: true
-    },
-    status: {
-      type: String,
-      enum: ['active', 'inactive'],
-      default: 'inactive'
-    },
-    verify: {
-      type: Boolean,
-      default: false
-    },
-    role: {
-      type: Array,
-      default: []
-    },
+    password: { type: String, required: true, select: false },
+    role: Array,
 
     // ==================================================
 
-    phoneNumber: {
-      type: Number
-    },
-    userImage: {
-      type: String,
-      default: null
-    },
-    coverImage: {
-      type: String,
-      default: null
-    },
-    verified: {
-      type: String,
-      default: false
-    },
-    tags: {
-      type: [{ type: String }],
-      default: null
-    },
-    alias: {
-      type: String,
-      default: null
-    },
-    about: {
-      type: String,
-      default: null
-    },
-    experiences: {
-      type: [
-        {
-          positionName: String,
-          companyName: String,
-          startDate: String,
-          endDate: String
-        }
-      ],
-      default: null
-    },
-    repositories: {
-      type: [
-        {
-          id: Number,
-          name: String,
-          private: Boolean,
-          url: String,
-          watchersCount: Number,
-          forksCount: Number,
-          stargazersCount: Number,
-          languages: String
-        }
-      ],
-      default: null
-    },
-    contacts: {
-      type: [{}],
-      default: null
-    },
-    accessToken: {
-      type: String,
-      default: null
-    },
-    location: {
-      type: String,
-      default: null
-    },
+    phone_number: Number,
+    user_image: String,
+    cover_image: String,
+    verified: { type: Boolean, default: false },
+    tags: [{ type: String }],
+    alias: String,
+    about: String,
+    experiences: { type: Array, default: [] },
+    /* 
+      {
+        positionName: String,
+        companyName: String,
+        startDate: String,
+        endDate: String
+      }
+    */
+    repositories: { type: Array, default: [] },
+    /* 
+    {
+        id: Number,
+        name: String,
+        private: Boolean,
+        url: String,
+        watchersCount: Number,
+        forksCount: Number,
+        stargazersCount: Number,
+        languages: String
+      }
+    */
+    contacts: { type: Array, default: [] },
+    location: String,
     followers: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      type: [{ type: ObjectId, ref: 'User' }],
       default: []
     },
     following: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      type: [{ type: ObjectId, ref: 'User' }],
       default: []
     },
     posts: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+      type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
     shares: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Share' }],
+      type: [{ type: ObjectId, ref: 'Share' }],
       default: []
     },
     favorites: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+      type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
     communities: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Community' }],
+      type: [{ type: ObjectId, ref: 'Community' }],
       default: []
     },
     notifications: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Notification' }],
+      type: [{ type: ObjectId, ref: 'Notification' }],
       default: []
     }
   },
@@ -145,12 +98,38 @@ var UserSchema = new Schema(
   }
 );
 
-UserSchema.statics = {
-  findByEmail: async function ({ email }) {
-    return await this.findOne({ email });
-  },
-  createUser: async function ({ name, email, password }) {
-    const user = this.create({
+const UserModel = model(DOCUMENT_NAME, UserSchema);
+
+class UserClass {
+  static async updateTags({ user_id, tags }) {
+    return await UserModel.findByIdAndUpdate(
+      user_id,
+      {
+        $set: {
+          tags: tags
+        }
+      },
+      {
+        new: true
+      }
+    ).lean();
+  }
+  static async getShouldFollow({ user_id }) {}
+  static async updateByID({ user_id, payload }) {
+    return await UserModel.findByIdAndUpdate(user_id, payload, {
+      new: true
+    }).lean();
+  }
+  static async findByID({ user_id, unSelect = ['__v'] }) {
+    return await UserModel.findOne({ _id: user_id })
+      .select(unGetSelectData(unSelect))
+      .lean();
+  }
+  static async findByEmail({ email }) {
+    return await UserModel.findOne({ email }).lean();
+  }
+  static async createUser({ name, email, password }) {
+    const user = UserModel.create({
       name,
       email,
       password,
@@ -158,7 +137,10 @@ UserSchema.statics = {
     });
     return user;
   }
-};
+}
 
 //Export the model
-module.exports = model(DOCUMENT_NAME, UserSchema);
+module.exports = {
+  UserClass,
+  UserModel
+};
