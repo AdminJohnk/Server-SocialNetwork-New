@@ -60,6 +60,8 @@ class AuthService {
     const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new BadRequestError('User not registered');
 
+    console.log('foundUser', foundUser);
+    console.log('password', password);
     // 2 - Match password
     const match = await bcrypt.compare(password, foundUser.password);
     if (!match) throw new AuthFailureError('Authentication error');

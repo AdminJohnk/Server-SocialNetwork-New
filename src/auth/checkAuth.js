@@ -3,10 +3,6 @@
 const { ApiKeyClass } = require('../models/apiKey.model');
 const { HEADER } = require('./authUtils');
 
-// const HEADER = {
-//   API_KEY: 'x-api-key',
-//   AUTHORIZATION: 'authorization'
-// };
 
 const checkApiKey = async (req, res, next) => {
   try {

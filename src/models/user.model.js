@@ -9,8 +9,7 @@ const COLLECTION_NAME = 'users';
 
 const RoleUser = {
   USER: '0000',
-  WRITER: '0001',
-  EDITOR: '0002'
+  ADMIN: '0101'
 };
 
 var UserSchema = new Schema(
@@ -27,7 +26,7 @@ var UserSchema = new Schema(
       trim: true,
       required: true
     },
-    password: { type: String, required: true, select: false },
+    password: { type: String, required: true },
     role: Array,
 
     // ==================================================
@@ -63,26 +62,11 @@ var UserSchema = new Schema(
     */
     contacts: { type: Array, default: [] },
     location: String,
-    followers: {
-      type: [{ type: ObjectId, ref: 'User' }],
-      default: []
-    },
-    following: {
-      type: [{ type: ObjectId, ref: 'User' }],
-      default: []
-    },
-    posts: {
-      type: [{ type: ObjectId, ref: 'Post' }],
-      default: []
-    },
-    shares: {
-      type: [{ type: ObjectId, ref: 'Share' }],
-      default: []
-    },
     favorites: {
       type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
+    favorite_number: { type: Number, default: 0 },
     communities: {
       type: [{ type: ObjectId, ref: 'Community' }],
       default: []
@@ -101,17 +85,22 @@ var UserSchema = new Schema(
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
 class UserClass {
+  static async savePost({ user, post }) {
+    // Kiểm tra xem đã lưu bài viết này chưa
+    const isSaved = await this.checkExist({
+      _id: user,
+      favorites: { $elemMatch: { $eq: post } }
+    });
+
+    
+
+    return null;
+  }
   static async updateTags({ user_id, tags }) {
     return await UserModel.findByIdAndUpdate(
       user_id,
-      {
-        $set: {
-          tags: tags
-        }
-      },
-      {
-        new: true
-      }
+      { $set: { tags: tags } },
+      { new: true }
     ).lean();
   }
   static async getShouldFollow({ user_id }) {}
@@ -120,10 +109,18 @@ class UserClass {
       new: true
     }).lean();
   }
-  static async findByID({ user_id, unSelect = ['__v'] }) {
-    return await UserModel.findOne({ _id: user_id })
-      .select(unGetSelectData(unSelect))
-      .lean();
+  static async checkExist(select) {
+    try {
+      return await UserModel.findOne(select);
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+  static async findById({ user_id, unselect = ['password'] }) {
+    return await UserModel.findOne({ _id: user_id }).select(
+      unGetSelectData(unselect)
+    );
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).lean();
@@ -141,6 +138,7 @@ class UserClass {
 
 //Export the model
 module.exports = {
+  RoleUser,
   UserClass,
   UserModel
 };

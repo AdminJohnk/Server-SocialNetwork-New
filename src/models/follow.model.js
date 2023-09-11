@@ -7,13 +7,15 @@ const ObjectId = Types.ObjectId;
 const DOCUMENT_NAME = 'Follow';
 const COLLECTION_NAME = 'follows';
 
+// user_id follower_ids following_ids
+
 var FollowSchema = new Schema(
   {
-    user_id: { type: ObjectId, ref: 'User' },
-    follower_ids: {
+    user: { type: ObjectId, ref: 'User' },
+    followers: {
       type: [{ type: ObjectId, ref: 'User', default: [] }]
     },
-    following_ids: {
+    followings: {
       type: [{ type: ObjectId, ref: 'User', default: [] }]
     }
   },
@@ -26,70 +28,70 @@ var FollowSchema = new Schema(
 const FollowModel = model(DOCUMENT_NAME, FollowSchema);
 
 class FollowClass {
-  static async followUser({ meId, user_id }) {
+  static async followUser({ meId, user }) {
     const isFollowed = await FollowModel.findOne({
-      user_id: meId,
-      following_ids: { $in: [user_id] }
+      user: meId,
+      followings: { $in: [user] }
     });
     if (isFollowed) {
-      await FollowClass.removeFollow({ meId, user_id });
+      await FollowClass.removeFollow({ meId, user });
     } else {
-      await FollowClass.addFollow({ meId, user_id });
+      await FollowClass.addFollow({ meId, user });
     }
   }
-  static async addFollow({ meId, user_id }) {
+  static async addFollow({ meId, user }) {
     // Following
-    const updateSet1 = { $addToSet: { following_ids: user_id } };
+    const updateSet1 = { $addToSet: { followings: user } };
     const options1 = { upsert: true };
-    await FollowModel.findOneAndUpdate({ user_id: meId }, updateSet1, options1);
+    await FollowModel.findOneAndUpdate({ user: meId }, updateSet1, options1);
 
     // Follower
-    const updateSet2 = { $addToSet: { follower_ids: meId } };
+    const updateSet2 = { $addToSet: { followers: meId } };
     const options2 = { upsert: true };
     await FollowModel.findOneAndUpdate(
-      { user_id: user_id },
+      { user },
       updateSet2,
       options2
     );
   }
-  static async removeFollow({ meId, user_id }) {
+  static async removeFollow({ meId, user }) {
     // Following
-    const updateSet1 = { $pull: { following_ids: user_id } };
-    await FollowModel.findOneAndUpdate({ user_id: meId }, updateSet1);
+    const updateSet1 = { $pull: { followings: user } };
+    await FollowModel.findOneAndUpdate({ user: meId }, updateSet1);
 
     // Follower
-    const updateSet2 = { $pull: { follower_ids: meId } };
-    await FollowModel.findOneAndUpdate({ user_id: user_id }, updateSet2);
+    const updateSet2 = { $pull: { followers: meId } };
+    await FollowModel.findOneAndUpdate({ user }, updateSet2);
   }
-  static async getListFollowersByUserId({ user_id, limit, skip, sort }) {
+  static async getListFollowersByUserId({ user, limit, skip, sort }) {
     return await this.getListFollowByUserId({
-      user_id,
+      user,
       limit,
       skip,
       sort,
-      select: ['follower_ids'],
-      populate: 'follower_ids'
+      select: ['followers'],
+      populate: 'followers'
     });
   }
-  static async getListFollowingByUserId({ user_id, limit, skip, sort }) {
+  static async getListFollowingByUserId({ user, limit, skip, sort }) {
     return await this.getListFollowByUserId({
-      user_id,
+      user,
       limit,
       skip,
       sort,
-      select: ['following_ids'],
-      populate: 'following_ids'
+      select: ['followings'],
+      populate: 'followings'
     });
   }
   static getListFollowByUserId = async ({
-    user_id,
+    user,
     limit,
     skip,
     sort,
     select,
     populate
   }) => {
-    return await FollowModel.findOne({ user_id })
+    return await FollowModel.findOne({ user })
       .select(getSelectData(select))
       .populate(populate, '_id name email user_image')
       .skip(skip)

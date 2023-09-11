@@ -18,6 +18,7 @@ const convertToObjectIDMongoDB = id => new Types.ObjectId(id);
     })
  */
 const updateNestedObjectParser = obj => {
+  // console.log("Nested1::", obj);
   const final = {};
   Object.keys(obj).forEach(key => {
     if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
@@ -29,16 +30,17 @@ const updateNestedObjectParser = obj => {
       final[key] = obj[key];
     }
   });
+  // console.log("Nested2::", final);
   return final;
 };
 
 const removeUndefinedFields = obj => {
   //   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v != null));
-  console.log('obj1::', obj);
+  // console.log('obj1::', obj);
   Object.keys(obj).forEach(k => {
     if (obj[k] === null || obj[k] === undefined) delete obj[k];
   });
-  console.log('obj2::', obj);
+  // console.log('obj2::', obj);
   return obj;
 };
 

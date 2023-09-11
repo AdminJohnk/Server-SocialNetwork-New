@@ -1,7 +1,9 @@
 'use strict';
 const mongoose = require('mongoose');
 const { countConnect } = require('../helpers/check.connect');
-const {db: {host, port, name}} = require('../configs/configs.mongodb');
+const {
+  db: { host, port, name }
+} = require('../configs/configs.mongodb');
 
 class Database {
   constructor() {
@@ -14,15 +16,20 @@ class Database {
         mongoose.set('debug', true);
         mongoose.set('debug', { color: true });
       }
-      
-      const connectString = `mongodb://${host}:${port}/${name}`;
+
+      // const connectString = `mongodb://${host}:${port}/${name}`;
+      // mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/
+
+      const connectString =
+        'mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/SocialProDEV';
+
       mongoose
         .connect(connectString, {
-          maxPoolSize: 50,
+          maxPoolSize: 50
         })
         .then(() => {
           countConnect();
-          console.log(`ConnectString: ${connectString}`)
+          console.log(`ConnectString: ${connectString}`);
           console.log('Connected to MongoDB');
         })
         .catch(err => {
