@@ -7,14 +7,14 @@ const {
 
 class Database {
   constructor() {
-    this.connect('mongodb');
+    this.connect("mongodb");
   }
 
   connect(type) {
-    if (type === 'mongodb') {
+    if (type === "mongodb") {
       if (1 === 1) {
-        mongoose.set('debug', true);
-        mongoose.set('debug', { color: true });
+        mongoose.set("debug", true);
+        mongoose.set("debug", { color: true });
       }
 
       // const connectString = `mongodb://${host}:${port}/${name}`;
@@ -32,8 +32,8 @@ class Database {
           console.log(`ConnectString: ${connectString}`);
           console.log('Connected to MongoDB');
         })
-        .catch(err => {
-          console.log('Error connecting to MongoDB');
+        .catch((err) => {
+          console.log("Error connecting to MongoDB");
           console.log(err);
         });
     }

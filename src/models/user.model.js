@@ -1,11 +1,11 @@
-'use strict';
+"use strict";
 
-const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData } = require('../utils');
+const { model, Schema, Types } = require("mongoose");
+const { unGetSelectData } = require("../utils");
 const ObjectId = Types.ObjectId;
 
-const DOCUMENT_NAME = 'User';
-const COLLECTION_NAME = 'users';
+const DOCUMENT_NAME = "User";
+const COLLECTION_NAME = "users";
 
 const RoleUser = {
   USER: '0000',
@@ -18,13 +18,13 @@ var UserSchema = new Schema(
       type: String,
       trim: true,
       maxLength: 150,
-      required: true
+      required: true,
     },
     email: {
       type: String,
       unique: true,
       trim: true,
-      required: true
+      required: true,
     },
     password: { type: String, required: true },
     role: Array,
@@ -63,22 +63,22 @@ var UserSchema = new Schema(
     contacts: { type: Array, default: [] },
     location: String,
     favorites: {
-      type: [{ type: ObjectId, ref: 'Post' }],
-      default: []
+      type: [{ type: ObjectId, ref: "Post" }],
+      default: [],
     },
     favorite_number: { type: Number, default: 0 },
     communities: {
-      type: [{ type: ObjectId, ref: 'Community' }],
-      default: []
+      type: [{ type: ObjectId, ref: "Community" }],
+      default: [],
     },
     notifications: {
-      type: [{ type: ObjectId, ref: 'Notification' }],
-      default: []
-    }
+      type: [{ type: ObjectId, ref: "Notification" }],
+      default: [],
+    },
   },
   {
     timestamps: true,
-    collection: COLLECTION_NAME
+    collection: COLLECTION_NAME,
   }
 );
 
@@ -106,7 +106,7 @@ class UserClass {
   static async getShouldFollow({ user_id }) {}
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
-      new: true
+      new: true,
     }).lean();
   }
   static async checkExist(select) {
@@ -123,14 +123,14 @@ class UserClass {
     );
   }
   static async findByEmail({ email }) {
-    return await UserModel.findOne({ email }).lean();
+    return await UserModel.findOne({ email }).select({ password: 1 }).lean();
   }
   static async createUser({ name, email, password }) {
     const user = UserModel.create({
       name,
       email,
       password,
-      role: [RoleUser.USER]
+      role: [RoleUser.USER],
     });
     return user;
   }
@@ -140,5 +140,5 @@ class UserClass {
 module.exports = {
   RoleUser,
   UserClass,
-  UserModel
+  UserModel,
 };
