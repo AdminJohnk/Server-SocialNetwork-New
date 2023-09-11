@@ -38,7 +38,7 @@ class LikeClass {
       payload.post,
       {
         $inc: {
-          'post_attibutes.like_number': numLike
+          'post_attributes.like_number': numLike
         }
       },
       { new: true }

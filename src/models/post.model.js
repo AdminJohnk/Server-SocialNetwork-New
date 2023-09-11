@@ -10,7 +10,7 @@ const COLLECTION_NAME = 'posts';
 var PostSchema = new Schema(
   {
     type: { type: String, enum: ['Post', 'Share'], required: true },
-    post_attibutes: {
+    post_attributes: {
       // type = Post
       user: { type: ObjectId, ref: 'User' }, // meId
       title: String,
@@ -49,8 +49,8 @@ class PostClass {
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
-  static async updatePost({ post_id, post_attibutes }) {
-    return await PostModel.findByIdAndUpdate(post_id, post_attibutes, {
+  static async updatePost({ post_id, post_attributes }) {
+    return await PostModel.findByIdAndUpdate(post_id, post_attributes, {
       new: true
     }).lean();
   }
@@ -59,17 +59,17 @@ class PostClass {
     return await this.populatePostShare(posts);
   }
   static async getAllPostByUserId({ user_id, limit, skip, sort }) {
-    let posts = PostModel.find({ 'post_attibutes.user': user_id })
+    let posts = PostModel.find({ 'post_attributes.user': user_id })
       .skip(skip)
       .limit(limit)
       .sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async sharePost({ type, post_attibutes }) {
+  static async sharePost({ type, post_attributes }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
-      'post_attibutes.user': post_attibutes.user,
-      'post_attibutes.post': post_attibutes.post,
+      'post_attributes.user': post_attributes.user,
+      'post_attributes.post': post_attributes.post,
       type
     });
 
@@ -78,20 +78,20 @@ class PostClass {
     if (sharedPost) {
       await PostModel.deleteOne(sharedPost);
       numShare = -1;
-    } else await PostModel.create({ type, post_attibutes });
+    } else await PostModel.create({ type, post_attributes });
 
     return await PostModel.findByIdAndUpdate(
-      post_attibutes.post,
+      post_attributes.post,
       {
         $inc: {
-          'post_attibutes.share_number': numShare
+          'post_attributes.share_number': numShare
         }
       },
       { new: true }
     ).lean();
   }
-  static async createPost({ type, post_attibutes }) {
-    return await PostModel.create({ type, post_attibutes });
+  static async createPost({ type, post_attributes }) {
+    return await PostModel.create({ type, post_attributes });
   }
   static async findByID({ post_id }) {
     let foundPost = await PostModel.findOne({ _id: post_id });
@@ -105,7 +105,7 @@ class PostClass {
   }
   static async populatePostShare(postShare) {
     return await postShare.populate({
-      path: 'post_attibutes',
+      path: 'post_attributes',
       populate: [
         { path: 'user', select: '_id name email user_image' },
         { path: 'owner_post', select: '_id name email user_image' },

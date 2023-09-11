@@ -24,10 +24,10 @@ class UserService {
       post
     });
   };
-  static likePost = async payload => {
+  static likePost = async (payload) => {
     const foundPost = await PostClass.checkExist({
       _id: payload.post,
-      'post_attibutes.user': payload.owner_post
+      'post_attributes.user': payload.owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -52,7 +52,7 @@ class UserService {
     if (!result) throw new BadRequestError('Cannot get repository github');
 
     const repos = await Promise.all(
-      result.map(async repository => {
+      result.map(async (repository) => {
         const { data } = await axios.get(repository.languages_url, {
           headers: {
             Authorization: `Bearer ${access_token_github}`,
