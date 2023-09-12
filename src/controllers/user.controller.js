@@ -5,6 +5,10 @@ const { OK, CREATED } = require('../core/success.response');
 const { HEADER } = require('../auth/authUtils');
 
 class UserController {
+  /* 
+    Save Post
+    Link: http://localhost:4052/api/v1/users/savepost/:post_id
+  */
   static savePost = async (req, res, next) => {
     new OK({
       message: 'Save Post Successfully',

@@ -80,15 +80,11 @@ class PostClass {
       numShare = -1;
     } else await PostModel.create({ type, post_attibutes });
 
-    return await PostModel.findByIdAndUpdate(
-      post_attibutes.post,
-      {
-        $inc: {
-          'post_attibutes.share_number': numShare
-        }
-      },
-      { new: true }
-    ).lean();
+    return await this.changeNumberPost({
+      post_id: post_attibutes.post,
+      type: 'share',
+      number: numShare
+    });
   }
   static async createPost({ type, post_attibutes }) {
     return await PostModel.create({ type, post_attibutes });
@@ -112,6 +108,19 @@ class PostClass {
         { path: 'post' }
       ]
     });
+  }
+  // type = ['view', 'like', 'share', 'comment']
+  static async changeNumberPost({ post_id, type, number }) {
+    let stringUpdate = 'post_attibutes.' + type + '_number';
+    return await PostModel.findByIdAndUpdate(
+      post_id,
+      {
+        $inc: {
+          [stringUpdate]: number
+        }
+      },
+      { new: true }
+    ).lean();
   }
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();

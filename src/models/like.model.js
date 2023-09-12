@@ -2,7 +2,7 @@
 
 const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData } = require('../utils');
-const { PostModel } = require('./post.model');
+const { PostModel, PostClass } = require('./post.model');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Like';
@@ -34,15 +34,11 @@ class LikeClass {
       numLike = -1;
     } else await LikeModel.create(payload);
 
-    return await PostModel.findByIdAndUpdate(
-      payload.post,
-      {
-        $inc: {
-          'post_attibutes.like_number': numLike
-        }
-      },
-      { new: true }
-    ).lean();
+    return await PostClass.changeNumberPost({
+      post_id: payload.post,
+      type: 'like',
+      number: numLike
+    });
   }
 }
 

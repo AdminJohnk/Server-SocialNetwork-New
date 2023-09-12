@@ -32,7 +32,7 @@ var UserSchema = new Schema(
     // ==================================================
 
     phone_number: Number,
-    user_image: String,
+    user_image: { type: String, default: '' },
     cover_image: String,
     verified: { type: Boolean, default: false },
     tags: [{ type: String }],

@@ -5,6 +5,7 @@ const router = express.Router();
 const authRouter = require('./auth.router');
 const userRouter = require('./user.router');
 const postRouter = require('./post.router');
+const CommentRouter = require('./comment.router');
 const { checkApiKey, checkPermission } = require('../auth/checkAuth');
 
 // check apiKey
@@ -13,6 +14,7 @@ router.use(checkApiKey);
 // check permission
 router.use(checkPermission('0000'));
 
+router.use('/comments', CommentRouter);
 router.use('/posts', postRouter);
 router.use('/users', userRouter);
 router.use('/auth', authRouter);
