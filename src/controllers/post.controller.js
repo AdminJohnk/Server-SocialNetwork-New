@@ -31,7 +31,7 @@ class PostController {
       metadata: await PostService.updatePost({
         post_id: req.params.post_id,
         user_id: req.user.userId,
-        post_attibutes: { ...req.body }
+        post_attributes: { ...req.body }
       })
     }).send(res);
   };
@@ -86,7 +86,7 @@ class PostController {
     new CREATED({
       message: 'Share Post Successfully',
       metadata: await PostService.sharePost({
-        post_attibutes: {
+        post_attributes: {
           ...req.body,
           user: req.user.userId
         }
@@ -106,7 +106,7 @@ class PostController {
     new CREATED({
       message: 'Create Post Successfully',
       metadata: await PostService.createPost({
-        post_attibutes: { ...req.body, user: req.user.userId }
+        post_attributes: { ...req.body, user: req.user.userId }
       })
     }).send(res);
   };

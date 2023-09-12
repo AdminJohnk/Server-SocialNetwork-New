@@ -21,24 +21,24 @@ class PostService {
   static async deletePost({ post_id, user_id }) {
     const foundPost = await PostClass.checkExist({
       _id: post_id,
-      'post_attibutes.user': user_id
+      'post_attributes.user': user_id
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
     return await PostClass.deletePost({ post_id });
   }
-  static async updatePost({ post_id, user_id, post_attibutes }) {
+  static async updatePost({ post_id, user_id, post_attributes }) {
     const foundPost = await PostClass.checkExist({
       _id: post_id,
-      'post_attibutes.user': user_id
+      'post_attributes.user': user_id
     });
     if (!foundPost) throw new NotFoundError('Post not found');
-    post_attibutes = removeUndefinedFields(post_attibutes);
+    post_attributes = removeUndefinedFields(post_attributes);
 
     return await PostClass.updatePost({
       post_id,
-      post_attibutes: updateNestedObjectParser({
-        post_attibutes: post_attibutes
+      post_attributes: updateNestedObjectParser({
+        post_attributes: post_attributes
       })
     });
   }
@@ -69,19 +69,19 @@ class PostService {
 
     return PostClass.findByID({ post_id });
   }
-  static async sharePost({ type = 'Share', post_attibutes = {} }) {
+  static async sharePost({ type = 'Share', post_attributes = {} }) {
     const foundPost = await PostClass.checkExist({
-      _id: post_attibutes.post,
-      'post_attibutes.user': post_attibutes.owner_post
+      _id: post_attributes.post,
+      'post_attributes.user': post_attributes.owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return PostClass.sharePost({ type, post_attibutes });
+    return PostClass.sharePost({ type, post_attributes });
   }
-  static createPost({ type = 'Post', post_attibutes = {} }) {
-    if (!post_attibutes.title || !post_attibutes.content)
+  static createPost({ type = 'Post', post_attributes = {} }) {
+    if (!post_attributes.title || !post_attributes.content)
       throw new BadRequestError('Post must have title or content');
-    return PostClass.createPost({ type, post_attibutes });
+    return PostClass.createPost({ type, post_attributes });
   }
 }
 
