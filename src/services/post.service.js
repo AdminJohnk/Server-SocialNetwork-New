@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  ConflicRequestError,
+  ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
@@ -16,8 +16,55 @@ const {
 const axios = require('axios');
 const { PostClass } = require('../models/post.model');
 const { UserClass, RoleUser } = require('../models/user.model');
+const { LikeClass } = require('../models/like.model');
 
 class PostService {
+  static async getAllUserSharePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = 'ctime'
+  }) {
+    const skip = (page - 1) * limit;
+
+    const foundPost = await PostClass.checkExist({
+      _id: post,
+      'post_attributes.user': owner_post
+    });
+    if (!foundPost) throw new NotFoundError('Post not found');
+
+    return await PostClass.getAllUserSharePost({
+      post,
+      owner_post,
+      limit,
+      skip,
+      sort
+    });
+  }
+  static async getAllUserLikePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = 'ctime'
+  }) {
+    const skip = (page - 1) * limit;
+
+    const foundPost = await PostClass.checkExist({
+      _id: post,
+      'post_attributes.user': owner_post
+    });
+    if (!foundPost) throw new NotFoundError('Post not found');
+
+    return await LikeClass.getAllUserLikePost({
+      post,
+      owner_post,
+      limit,
+      skip,
+      sort
+    });
+  }
   static async deletePost({ post_id, user_id }) {
     const foundPost = await PostClass.checkExist({
       _id: post_id,

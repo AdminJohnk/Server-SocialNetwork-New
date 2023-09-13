@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  ConflicRequestError,
+  ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,

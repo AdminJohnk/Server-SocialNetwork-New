@@ -4,7 +4,25 @@ const CommentService = require('../services/comment.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class CommentController {
-    /* 
+  /* 
+    Like Comment
+    Link: http://localhost:4052/api/v1/comments/like/:comment_id
+    {
+      "type" : "child",
+      "post": "64ff0ed21c99a31a0e80d44e"
+    }
+  */
+  static likeComment = async (req, res, next) => {
+    new OK({
+      message: 'Like Comment Successfully',
+      metadata: await CommentService.likeComment({
+        ...req.body,
+        user: req.user.userId,
+        comment_id: req.params.comment_id
+      })
+    }).send(res);
+  };
+  /* 
         Update Comment
         Link: http://localhost:4052/api/v1/comments/update/:comment_id
         {
@@ -13,17 +31,17 @@ class CommentController {
             "content": "Comment 1 Update"
         }
     */
-    static updateComment = async (req, res, next) => {
-        new OK({
-            message: 'Update Comment Successfully',
-            metadata: await CommentService.updateComment({
-                ...req.body,
-                user: req.user.userId,
-                comment_id: req.params.comment_id
-            })
-        }).send(res);
-    }
-    /* 
+  static updateComment = async (req, res, next) => {
+    new OK({
+      message: 'Update Comment Successfully',
+      metadata: await CommentService.updateComment({
+        ...req.body,
+        user: req.user.userId,
+        comment_id: req.params.comment_id
+      })
+    }).send(res);
+  };
+  /* 
         Delete Comments
         Link: http://localhost:4052/api/v1/comments/:comment_id
         {
@@ -54,7 +72,7 @@ class CommentController {
       message: 'Get All Child Comments Successfully',
       metadata: await CommentService.getAllChildByParentID(req.body)
     }).send(res);
-  }
+  };
   /* 
     Get All Parent Comments
     Link: http://localhost:4052/api/v1/comments//parents/:post_id

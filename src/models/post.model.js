@@ -36,16 +36,22 @@ var PostSchema = new Schema(
   }
 );
 
-// UserModel:{
-//   favorites: {
-//     type: [{ type: ObjectId, ref: 'Post' }],
-//     default: []
-//   },
-// }
-
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 class PostClass {
+  static async getAllUserSharePost({ post, owner_post, limit, skip, sort }) {
+    return await PostModel.find({
+      'post_attributes.post': post,
+      'post_attributes.owner_post': owner_post,
+      type: 'Share'
+    })
+      .populate('post_attributes.user', '_id name email user_image')
+      .select('post_attributes.user')
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .lean();
+  }
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
@@ -81,7 +87,7 @@ class PostClass {
     } else await PostModel.create({ type, post_attributes });
 
     return await this.changeNumberPost({
-      post_id: post_attibutes.post,
+      post_id: post_attributes.post,
       type: 'share',
       number: numShare
     });
@@ -111,7 +117,7 @@ class PostClass {
   }
   // type = ['view', 'like', 'share', 'comment']
   static async changeNumberPost({ post_id, type, number }) {
-    let stringUpdate = 'post_attibutes.' + type + '_number';
+    let stringUpdate = 'post_attributes.' + type + '_number';
     return await PostModel.findByIdAndUpdate(
       post_id,
       {

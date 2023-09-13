@@ -5,6 +5,38 @@ const { OK, CREATED } = require('../core/success.response');
 
 class PostController {
   /* 
+    Get All User Share Post
+    Link: http://localhost:4052/api/v1/posts/share/:post_id
+    {
+      "owner_post": "64feb8ca5d0b62edec58183b"
+    }
+  */
+  static getAllUserSharePost = async (req, res, next) => {
+    new OK({
+      message: 'Get All User Share Post Successfully',
+      metadata: await PostService.getAllUserSharePost({
+        ...req.body,
+        post: req.params.post_id
+      })
+    }).send(res);
+  };
+  /* 
+    Get All User Like Post
+    Link: http://localhost:4052/api/v1/posts/like/:post_id
+    {
+      "owner_post": "64feb8ca5d0b62edec58183b"
+    }
+  */
+  static getAllUserLikePost = async (req, res, next) => {
+    new OK({
+      message: 'Get All User Like Post Successfully',
+      metadata: await PostService.getAllUserLikePost({
+        ...req.body,
+        post: req.params.post_id
+      })
+    }).send(res);
+  };
+  /* 
     Delete Post
     Link: http://localhost:4052/api/v1/posts/delete/:post_id
   */

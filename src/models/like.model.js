@@ -23,6 +23,15 @@ var LikeSchema = new Schema(
 const LikeModel = model(DOCUMENT_NAME, LikeSchema);
 
 class LikeClass {
+  static async getAllUserLikePost({ post, owner_post, limit, skip, sort }) {
+    return await LikeModel.find({ post, owner_post })
+      .populate('user', '_id name email user_image')
+      .select('user')
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .lean();
+  }
   static async likePost(payload) {
     const foundLike = await LikeModel.findOne({
       user: payload.user,

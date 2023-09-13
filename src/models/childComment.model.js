@@ -13,7 +13,11 @@ const ChildCommentSchema = new Schema(
     user: { type: ObjectId, ref: 'User', required: true },
     content: { type: String, default: 'text', required: true },
     parent: { type: ObjectId, ref: 'ParentComment', required: true },
-    type: { type: String, default: 'child' }
+    type: { type: String, default: 'child' },
+
+    // Like
+    likes: { type: [{ type: ObjectId, ref: 'User' }], default: [] },
+    numlike: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -24,6 +28,29 @@ const ChildCommentSchema = new Schema(
 const ChildCommentModel = model(DOCUMENT_NAME, ChildCommentSchema);
 
 class ChildCommentClass {
+  static async likeComment({ comment_id, post, user }) {
+    // Check xem đã like hay chưa
+    const isLiked = await ChildCommentModel.findOne({
+      _id: comment_id,
+      post,
+      likes: { $elemMatch: { $eq: user } }
+    });
+
+    // Nếu đã like rồi thì bỏ like
+    if (isLiked) {
+      return await ChildCommentModel.findOneAndUpdate(
+        { _id: comment_id, post },
+        { $pull: { likes: user }, $inc: { numlike: -1 } },
+        { new: true }
+      );
+    }
+    // Nếu chưa like thì like
+    return await ChildCommentModel.findOneAndUpdate(
+      { _id: comment_id, post },
+      { $addToSet: { likes: user }, $inc: { numlike: 1 } },
+      { new: true }
+    );
+  }
   static async updateComment({ comment_id, post, user, content }) {
     return await ChildCommentModel.findOneAndUpdate(
       { _id: comment_id, post, user },

@@ -18,6 +18,12 @@ router.get('/find/:post_id', asyncHandler(PostController.getPostById));
 // Get All Post By User ID
 router.get('/user/:user_id', asyncHandler(PostController.getAllPostByUserId));
 
+// Get All User Like Post
+router.get('/like/:post_id', asyncHandler(PostController.getAllUserLikePost));
+
+// Get All User Share Post
+router.get('/share/:post_id', asyncHandler(PostController.getAllUserSharePost));
+
 // =========================================================
 
 /// POST //
