@@ -2,6 +2,7 @@
 
 const { model, Schema, Types, get } = require('mongoose');
 const { getSelectData } = require('../utils');
+const { pp_UserDefault } = require('../utils/variable');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Follow';
@@ -93,7 +94,7 @@ class FollowClass {
   }) => {
     return await FollowModel.findOne({ user })
       .select(getSelectData(select))
-      .populate(populate, '_id name email user_image')
+      .populate(populate, pp_UserDefault)
       .skip(skip)
       .limit(limit)
       .sort(sort)

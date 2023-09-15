@@ -30,6 +30,9 @@ router.get(
 // Get Repository Github
 router.get('/repositories', asyncHandler(UserController.getRepositoryGithub));
 
+// Get My Info
+router.get('/me', asyncHandler(UserController.getMyInfo));
+
 // =========================================================
 
 /// POST //

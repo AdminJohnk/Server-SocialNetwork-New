@@ -18,11 +18,19 @@ router.get('/find/:post_id', asyncHandler(PostController.getPostById));
 // Get All Post By User ID
 router.get('/user/:user_id', asyncHandler(PostController.getAllPostByUserId));
 
+// Get All Post For NewsFeed
+router.get('/newsfeed', asyncHandler(PostController.getAllPostForNewsFeed));
+
+// Get All Popular Post
+router.get('/popular', asyncHandler(PostController.getAllPopularPost));
+
 // Get All User Like Post
 router.get('/like/:post_id', asyncHandler(PostController.getAllUserLikePost));
 
 // Get All User Share Post
 router.get('/share/:post_id', asyncHandler(PostController.getAllUserSharePost));
+
+
 
 // =========================================================
 
@@ -38,6 +46,9 @@ router.post('/share', asyncHandler(PostController.sharePost));
 /// PUT //
 // Update Post
 router.put('/update/:post_id', asyncHandler(PostController.updatePost));
+
+// View Post
+router.put('/view/:post_id', asyncHandler(PostController.viewPost));
 
 // =========================================================
 

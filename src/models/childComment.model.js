@@ -2,6 +2,7 @@
 const { model, Schema, Types } = require('mongoose');
 const { PostClass } = require('./post.model');
 const { getSelectData } = require('../utils');
+const { pp_UserDefault } = require('../utils/variable');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'ChildComment';
@@ -91,7 +92,7 @@ class ChildCommentClass {
   }) {
     const skip = (page - 1) * limit;
     return await ChildCommentModel.find({ post, parent })
-      .populate('user', '_id name email user_image')
+      .populate('user', pp_UserDefault)
       .select(getSelectData(select))
       .skip(skip)
       .limit(limit)

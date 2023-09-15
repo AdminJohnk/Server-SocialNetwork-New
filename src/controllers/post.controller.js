@@ -4,6 +4,41 @@ const PostService = require('../services/post.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class PostController {
+  static viewPost = async (req, res, next) => {
+    new OK({
+      message: 'View Post Successfully',
+      metadata: await PostService.viewPost({
+        ...req,
+        res,
+        post_id: req.params.post_id,
+        user_id: req.user.userId
+      })
+    }).send(res);
+  }
+  /* 
+    Get All Popular Post
+    Link: http://localhost:4052/api/v1/posts/popular
+  */
+  static getAllPopularPost = async (req, res, next) => {
+    new OK({
+      message: 'Get All Popular Post Successfully',
+      metadata: await PostService.getAllPopularPost({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+  /* 
+    Get All Post For NewsFeed
+    Link: http://localhost:4052/api/v1/posts/newsfeed
+  */
+  static getAllPostForNewsFeed = async (req, res, next) => {
+    new OK({
+      message: 'Get All Post For NewsFeed Successfully',
+      metadata: await PostService.getAllPostForNewsFeed({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
   /* 
     Get All User Share Post
     Link: http://localhost:4052/api/v1/posts/share/:post_id

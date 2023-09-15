@@ -6,6 +6,18 @@ const { HEADER } = require('../auth/authUtils');
 
 class UserController {
   /* 
+    Get My Info
+    Link: http://localhost:4052/api/v1/users/me
+  */
+  static getMyInfo = async (req, res, next) => {
+    new OK({
+      message: 'Get My Info Successfully',
+      metadata: await UserService.getMyInfo({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+  /* 
     Save Post
     Link: http://localhost:4052/api/v1/users/savepost/:post_id
   */
@@ -17,7 +29,7 @@ class UserController {
         post: req.params.post_id
       })
     }).send(res);
-  }
+  };
   /* 
     Like Post
     Link: http://localhost:4052/api/v1/users/likepost

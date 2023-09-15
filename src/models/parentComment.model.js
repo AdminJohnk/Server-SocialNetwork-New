@@ -4,6 +4,7 @@ const { PostClass } = require('./post.model');
 const { getSelectData } = require('../utils');
 const ObjectId = Types.ObjectId;
 const { ChildCommentClass } = require('../models/childComment.model');
+const { pp_UserDefault } = require('../utils/variable');
 
 const DOCUMENT_NAME = 'ParentComment';
 const COLLECTION_NAME = 'parentComments';
@@ -81,7 +82,7 @@ class ParentCommentClass {
   }) {
     const skip = (page - 1) * limit;
     return await ParentCommentModel.find({ post })
-      .populate('user', '_id name email user_image')
+      .populate('user', pp_UserDefault)
       .select(getSelectData(select))
       .skip(skip)
       .limit(limit)

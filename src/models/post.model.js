@@ -2,6 +2,7 @@
 
 const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData } = require('../utils');
+const { pp_UserDefault } = require('../utils/variable');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Post';
@@ -38,14 +39,66 @@ var PostSchema = new Schema(
 
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
+
 class PostClass {
+  static async viewPost({ post_id, user_id, cookies, res }) {
+    // Check if the post has already been viewed
+    let viewedPosts = cookies?.viewedPosts || [];
+    if (viewedPosts.includes(post_id)) {
+      return await PostModel.findByID({ post_id });
+    }
+    // Increase view count
+    await this.changeNumberPost({
+      post_id,
+      type: 'view',
+      number: 1
+    });
+
+    // Add post to viewedPosts
+    viewedPosts.push(post_id);
+    res.cookie('viewedPosts', viewedPosts, {
+      maxAge: 12 * 60 * 60 * 1000 // 12 hours
+    });
+
+    return await PostModel.findByID({ post_id });
+  }
+  static async getAllPopularPost({ user_id, limit, skip, sort }) {
+    const result = await PostModel.find().skip(skip).limit(limit).sort(sort);
+
+    await Promise.all(
+      result.map(async post => {
+        if (post.type === 'Share') {
+          return await this.populatePostShare(post);
+        } else if (post.type === 'Post') {
+          return await this.populatePost(post);
+        }
+      })
+    );
+
+    return result;
+  }
+  static async getAllPostForNewsFeed({ user_id, limit, skip, sort }) {
+    const result = await PostModel.find().skip(skip).limit(limit).sort(sort);
+
+    await Promise.all(
+      result.map(async post => {
+        if (post.type === 'Share') {
+          return await this.populatePostShare(post);
+        } else if (post.type === 'Post') {
+          return await this.populatePost(post);
+        }
+      })
+    );
+
+    return result;
+  }
   static async getAllUserSharePost({ post, owner_post, limit, skip, sort }) {
     return await PostModel.find({
       'post_attributes.post': post,
       'post_attributes.owner_post': owner_post,
       type: 'Share'
     })
-      .populate('post_attributes.user', '_id name email user_image')
+      .populate('post_attributes.user', pp_UserDefault)
       .select('post_attributes.user')
       .skip(skip)
       .limit(limit)
@@ -109,10 +162,16 @@ class PostClass {
     return await postShare.populate({
       path: 'post_attributes',
       populate: [
-        { path: 'user', select: '_id name email user_image' },
-        { path: 'owner_post', select: '_id name email user_image' },
+        { path: 'user', select: pp_UserDefault },
+        { path: 'owner_post', select: pp_UserDefault },
         { path: 'post' }
       ]
+    });
+  }
+  static async populatePost(post) {
+    return await post.populate({
+      path: 'post_attributes',
+      populate: { path: 'user', select: pp_UserDefault }
     });
   }
   // type = ['view', 'like', 'share', 'comment']

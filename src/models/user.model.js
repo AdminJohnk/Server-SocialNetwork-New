@@ -1,7 +1,8 @@
 'use strict';
 
 const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData } = require('../utils');
+const { unGetSelectData, getSelectData } = require('../utils');
+const { avt_default, se_UserDefault } = require('../utils/variable');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'User';
@@ -32,7 +33,7 @@ var UserSchema = new Schema(
     // ==================================================
 
     phone_number: Number,
-    user_image: { type: String, default: '' },
+    user_image: { type: String, default: avt_default },
     cover_image: String,
     verified: { type: Boolean, default: false },
     tags: [{ type: String }],
@@ -85,6 +86,14 @@ var UserSchema = new Schema(
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
 class UserClass {
+  static async getMyInfo({
+    user_id,
+    select = se_UserDefault
+  }) {
+    return await UserModel.findOne({ _id: user_id }).select(
+      getSelectData(select)
+    );
+  }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
     const isSaved = await this.checkExist({

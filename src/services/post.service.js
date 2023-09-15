@@ -19,6 +19,37 @@ const { UserClass, RoleUser } = require('../models/user.model');
 const { LikeClass } = require('../models/like.model');
 
 class PostService {
+  static async viewPost({ post_id, user_id, cookies, res }) {
+    const foundPost = await PostClass.checkExist({ _id: post_id });
+    if (!foundPost) throw new NotFoundError('Post not found');
+
+    return await PostClass.viewPost({ post_id, user_id, cookies, res });
+  }
+  static async getAllPopularPost({
+    user_id,
+    limit = 3,
+    page = 1,
+    sort = 'ctime'
+  }) {
+    const skip = (page - 1) * limit;
+
+    return await PostClass.getAllPopularPost({ user_id, limit, skip, sort });
+  }
+  static async getAllPostForNewsFeed({
+    user_id,
+    limit = 4,
+    page = 1,
+    sort = 'ctime'
+  }) {
+    const skip = (page - 1) * limit;
+
+    return await PostClass.getAllPostForNewsFeed({
+      user_id,
+      limit,
+      skip,
+      sort
+    });
+  }
   static async getAllUserSharePost({
     post,
     owner_post,

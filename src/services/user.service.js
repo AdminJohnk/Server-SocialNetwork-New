@@ -15,6 +15,11 @@ const { PostClass } = require('../models/post.model');
 const { LikeClass } = require('../models/like.model');
 
 class UserService {
+  static getMyInfo = async ({ user_id }) => {
+    return await UserClass.getMyInfo({
+      user_id
+    });
+  }
   static savePost = async ({ user, post }) => {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');

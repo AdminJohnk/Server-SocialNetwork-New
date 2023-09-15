@@ -3,6 +3,7 @@
 const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData } = require('../utils');
 const { PostModel, PostClass } = require('./post.model');
+const { pp_UserDefault } = require('../utils/variable');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Like';
@@ -25,7 +26,7 @@ const LikeModel = model(DOCUMENT_NAME, LikeSchema);
 class LikeClass {
   static async getAllUserLikePost({ post, owner_post, limit, skip, sort }) {
     return await LikeModel.find({ post, owner_post })
-      .populate('user', '_id name email user_image')
+      .populate('user', pp_UserDefault)
       .select('user')
       .skip(skip)
       .limit(limit)
