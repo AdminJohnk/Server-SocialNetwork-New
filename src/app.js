@@ -1,40 +1,55 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const morgan = require("morgan");
-const helmet = require("helmet");
-const cors = require("cors");
-const compression = require("compression");
-const { checkOverLoad } = require("./helpers/check.connect");
-const router = require("./routes/root.router");
+const morgan = require('morgan');
+const helmet = require('helmet');
+const cors = require('cors');
+const compression = require('compression');
+const { checkOverLoad } = require('./helpers/check.connect');
+const router = require('./routes/root.router');
 
 // init middleware
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    credentials: true,
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    credentials: true
   })
 );
 app.use(
   express.urlencoded({
-    extended: true,
+    extended: true
   })
 );
 
+// test pub/sub redis
+// require('./test/inventory.test')
+// const productTest = require('./test/product.test')
+// productTest.purchaseProduct('product:001', 10)
+
+
+const test = async () => {
+  await require('./test/tranchikien.test');
+};
+test();
+
 // init db
-require("./database/init.mongodb");
+require('./database/init.mongodb');
+
+// init redis
+// require("./redis/init.redis")
+
 // checkOverLoad();
 
 // init routes
-app.use("/api/v1", router);
+app.use('/api/v1', router);
 
 // handling error
 app.use((req, res, next) => {
-  const error = new Error("Not found");
+  const error = new Error('Not found');
   error.status = 404;
   next(error);
 });
@@ -43,7 +58,7 @@ app.use((error, req, res, next) => {
   console.log(`error::`, error);
   const statusCode = error.status || 500;
   return res.status(statusCode).json({
-    status: "error",
+    status: 'error',
     code: statusCode,
     stack: error.stack,
     message: error.message || 'Internal Server Error'

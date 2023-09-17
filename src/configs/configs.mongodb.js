@@ -6,8 +6,8 @@ const dev = {
   },
   db: {
     host: process.env.DEV_DB_HOST,
-    password: process.env.DEV_DB_PASSWORD,
-    suffix: process.env.DEV_DB_SUFFIX,
+    port: process.env.DEV_DB_PORT,
+    name: process.env.DEV_DB_NAME,
   },
 };
 
@@ -17,11 +17,12 @@ const pro = {
   },
   db: {
     host: process.env.PRO_DB_HOST || "localhost",
-    password: process.env.PRO_DB_PORT || 27017,
+    port: process.env.PRO_DB_PORT || 27017,
     name: process.env.PRO_DB_NAME || "socialPRO",
   },
 };
 
 const config = { dev, pro };
 const env = process.env.NODE_ENV || "dev";
+
 module.exports = config[env];

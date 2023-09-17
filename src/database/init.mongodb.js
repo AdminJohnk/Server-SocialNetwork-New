@@ -5,6 +5,7 @@ const {
   db: { host, port, name }
 } = require('../configs/configs.mongodb');
 
+
 class Database {
   constructor() {
     this.connect("mongodb");
@@ -18,7 +19,6 @@ class Database {
       }
 
       // const connectString = `mongodb://${host}:${port}/${name}`;
-      // mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/
 
       const connectString =
         'mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/SocialProDEV';
