@@ -12,10 +12,11 @@ const {
   limitData,
   removeUndefinedFields,
   updateNestedObjectParser
-} = require('../utils');
+} = require('../utils/functions');
 const axios = require('axios');
+const { RoleUser } = require('../utils/constants');
 const { PostClass } = require('../models/post.model');
-const { UserClass, RoleUser } = require('../models/user.model');
+const { UserClass } = require('../models/user.model');
 const { LikeClass } = require('../models/like.model');
 
 class PostService {

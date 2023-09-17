@@ -2,7 +2,7 @@
 
 const UserService = require('../services/user.service');
 const { OK, CREATED } = require('../core/success.response');
-const { HEADER } = require('../auth/authUtils');
+const { HEADER } = require("../utils/constants");
 
 class UserController {
   /* 

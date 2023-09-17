@@ -25,8 +25,13 @@ app.use(
   })
 );
 
+
 // init db
 require('./database/init.mongodb');
+
+// init redis
+require("./services/redisPubSub.service")
+require("./services/redis.service")
 
 // checkOverLoad();
 

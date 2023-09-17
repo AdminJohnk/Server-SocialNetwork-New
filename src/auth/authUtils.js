@@ -4,14 +4,7 @@ const JWT = require("jsonwebtoken");
 const { asyncHandler } = require("../helpers/asyncHandler");
 const { KeyTokenClass } = require("../models/keytoken.model");
 const { AuthFailureError, NotFoundError } = require("../core/error.response");
-
-const HEADER = {
-  API_KEY: "x-api-key",
-  CLIENT_ID: "x-client-id",
-  AUTHORIZATION: "authorization",
-  REFRESHTOKEN: "x-rtoken-id",
-  GITHUB_TOKEN: "x-github-token",
-};
+const { HEADER } = require("../utils/constants");
 
 const authentication = asyncHandler(async (req, res, next) => {
   const userId = req.headers[HEADER.CLIENT_ID];

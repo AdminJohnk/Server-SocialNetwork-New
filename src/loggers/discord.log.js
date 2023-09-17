@@ -23,7 +23,7 @@ class LoggerService {
     this.client.login(TOKEN_DISCORD);
   }
 
-  async senToFormatCode(logData) {
+  async sendToFormatCode(logData) {
     const {
         code,
         message = 'This is some addtional information about the code',

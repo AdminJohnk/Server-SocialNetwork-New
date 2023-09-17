@@ -4,7 +4,7 @@ const { KeyTokenClass } = require('../models/keytoken.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { createTokenPair } = require('../auth/authUtils');
-const { getInfoData } = require('../utils');
+const { getInfoData } = require('../utils/functions');
 const {
   BadRequestError,
   AuthFailureError,

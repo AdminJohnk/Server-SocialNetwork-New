@@ -1,9 +1,9 @@
 'use strict';
 
 const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData } = require('../utils');
+const { unGetSelectData } = require('../utils/functions');
 const { PostModel, PostClass } = require('./post.model');
-const { pp_UserDefault } = require('../utils/variable');
+const { pp_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Like';

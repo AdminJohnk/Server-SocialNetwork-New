@@ -1,10 +1,10 @@
 'use strict';
 const { model, Schema, Types } = require('mongoose');
 const { PostClass } = require('./post.model');
-const { getSelectData } = require('../utils');
+const { getSelectData } = require('../utils/functions');
 const ObjectId = Types.ObjectId;
 const { ChildCommentClass } = require('../models/childComment.model');
-const { pp_UserDefault } = require('../utils/variable');
+const { pp_UserDefault } = require('../utils/constants');
 
 const DOCUMENT_NAME = 'ParentComment';
 const COLLECTION_NAME = 'parentComments';

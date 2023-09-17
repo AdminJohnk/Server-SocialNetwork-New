@@ -7,7 +7,7 @@ const {
   NotFoundError,
   ForbiddenError
 } = require('../core/error.response');
-const { getInfoData, limitData } = require('../utils');
+const { getInfoData, limitData } = require('../utils/functions');
 const axios = require('axios');
 const { UserClass } = require('../models/user.model');
 const { FollowClass } = require('../models/follow.model');
@@ -19,7 +19,7 @@ class UserService {
     return await UserClass.getMyInfo({
       user_id
     });
-  }
+  };
   static savePost = async ({ user, post }) => {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
@@ -29,7 +29,7 @@ class UserService {
       post
     });
   };
-  static likePost = async (payload) => {
+  static likePost = async payload => {
     const foundPost = await PostClass.checkExist({
       _id: payload.post,
       'post_attributes.user': payload.owner_post
@@ -57,7 +57,7 @@ class UserService {
     if (!result) throw new BadRequestError('Cannot get repository github');
 
     const repos = await Promise.all(
-      result.map(async (repository) => {
+      result.map(async repository => {
         const { data } = await axios.get(repository.languages_url, {
           headers: {
             Authorization: `Bearer ${access_token_github}`,

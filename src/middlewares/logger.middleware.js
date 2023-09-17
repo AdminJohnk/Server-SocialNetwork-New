@@ -4,9 +4,9 @@ const Logger = require('../loggers/discord.log');
 
 const pushToLogDiscord = async (req, res, next) => {
   try {
-    Logger.senToFormatCode({
+    Logger.sendToFormatCode({
       title: `Method: ${req.method}`,
-      code: req.methpd === 'GET' ? req.query : req.body,
+      code: req.method === 'GET' ? req.query : req.body,
       message: `${req.get('host')}${req.originalUrl}`
     });
 

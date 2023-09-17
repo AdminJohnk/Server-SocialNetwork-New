@@ -1,7 +1,7 @@
 "use strict";
 
 const { ApiKeyClass } = require("../models/apiKey.model");
-const { HEADER } = require("./authUtils");
+const { HEADER } = require("../utils/constants");
 
 
 const checkApiKey = async (req, res, next) => {

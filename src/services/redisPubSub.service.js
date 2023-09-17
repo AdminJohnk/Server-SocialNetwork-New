@@ -1,11 +1,11 @@
 const redis = require('redis');
-const { objectConnectRedis } = require('../utils/variable');
-
+const { objectConnectRedis } = require('../utils/constants');
 
 class RedisPubSubService {
   constructor() {
-    this.subscriber = redis.createClient(objectConnectRedis);
-    this.publisher = redis.createClient(objectConnectRedis);
+    const client = redis.createClient(objectConnectRedis);
+    this.subscriber = client.duplicate();
+    this.publisher = client.duplicate();
     this.connect();
   }
   async connect() {
@@ -33,7 +33,7 @@ class RedisPubSubService {
   }
   async subscribe({ channel, callback }) {
     await this.subscriber.subscribe(channel, (message, subscribeChannel) => {
-        callback(subscribeChannel, message)
+      callback(subscribeChannel, message);
     });
   }
 }

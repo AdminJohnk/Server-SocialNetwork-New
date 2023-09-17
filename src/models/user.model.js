@@ -1,17 +1,12 @@
 'use strict';
 
 const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData, getSelectData } = require('../utils');
-const { avt_default, se_UserDefault } = require('../utils/variable');
+const { unGetSelectData, getSelectData } = require('../utils/functions');
+const { avt_default, se_UserDefault, RoleUser } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'User';
 const COLLECTION_NAME = 'users';
-
-const RoleUser = {
-  USER: '0000',
-  ADMIN: '0101'
-};
 
 var UserSchema = new Schema(
   {
@@ -86,10 +81,7 @@ var UserSchema = new Schema(
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
 class UserClass {
-  static async getMyInfo({
-    user_id,
-    select = se_UserDefault
-  }) {
+  static async getMyInfo({ user_id, select = se_UserDefault }) {
     return await UserModel.findOne({ _id: user_id }).select(
       getSelectData(select)
     );

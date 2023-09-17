@@ -1,8 +1,8 @@
 'use strict';
 
 const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData } = require('../utils');
-const { pp_UserDefault } = require('../utils/variable');
+const { unGetSelectData } = require('../utils/functions');
+const { pp_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Post';
@@ -38,7 +38,6 @@ var PostSchema = new Schema(
 );
 
 const PostModel = model(DOCUMENT_NAME, PostSchema);
-
 
 class PostClass {
   static async viewPost({ post_id, user_id, cookies, res }) {

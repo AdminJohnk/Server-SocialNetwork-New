@@ -1,8 +1,8 @@
 'use strict';
 
 const { model, Schema, Types, get } = require('mongoose');
-const { getSelectData } = require('../utils');
-const { pp_UserDefault } = require('../utils/variable');
+const { getSelectData } = require('../utils/functions');
+const { pp_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Follow';
@@ -49,11 +49,7 @@ class FollowClass {
     // Follower
     const updateSet2 = { $addToSet: { followers: meId } };
     const options2 = { upsert: true };
-    await FollowModel.findOneAndUpdate(
-      { user },
-      updateSet2,
-      options2
-    );
+    await FollowModel.findOneAndUpdate({ user }, updateSet2, options2);
   }
   static async removeFollow({ meId, user }) {
     // Following

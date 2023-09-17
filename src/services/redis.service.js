@@ -1,5 +1,5 @@
 const redis = require('redis');
-const { objectConnectRedis } = require('../utils/variable');
+const { objectConnectRedis } = require('../utils/constants');
 
 class RedisService {
   constructor() {
