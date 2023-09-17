@@ -1,15 +1,5 @@
 const redis = require('redis');
-
-const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
-
-const objectConnectRedis = {
-  username: REDIS_USERNAME,
-  password: REDIS_PASSWORD,
-  socket: {
-    host: REDIS_HOST,
-    port: REDIS_PORT
-  }
-};
+const { objectConnectRedis } = require('../utils/variable');
 
 const redisClient = redis.createClient(objectConnectRedis);
 

@@ -25,22 +25,8 @@ app.use(
   })
 );
 
-// test pub/sub redis
-// require('./test/inventory.test')
-// const productTest = require('./test/product.test')
-// productTest.purchaseProduct('product:001', 10)
-
-
-const test = async () => {
-  await require('./test/tranchikien.test');
-};
-test();
-
 // init db
 require('./database/init.mongodb');
-
-// init redis
-// require("./redis/init.redis")
 
 // checkOverLoad();
 

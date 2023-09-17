@@ -18,8 +18,8 @@ router.use(checkApiKey);
 // check permission
 router.use(checkPermission('0000'));
 
-const tranchikienRouter = require('../test/tranchikien.router');
-router.use('/tranchikien', tranchikienRouter);
+// const tranchikienRouter = require('../test/tranchikien.router');
+// router.use('/tranchikien', tranchikienRouter);
 router.use('/comments', CommentRouter);
 router.use('/posts', postRouter);
 router.use('/users', userRouter);
