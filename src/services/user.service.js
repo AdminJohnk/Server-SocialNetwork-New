@@ -13,6 +13,7 @@ const { UserClass } = require('../models/user.model');
 const { FollowClass } = require('../models/follow.model');
 const { PostClass } = require('../models/post.model');
 const { LikeClass } = require('../models/like.model');
+const NotiService = require('./notification.service');
 
 class UserService {
   static getMyInfo = async ({ user_id }) => {
@@ -24,10 +25,25 @@ class UserService {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await UserClass.savePost({
+    const { share_number } = await UserClass.savePost({
       user,
       post
     });
+
+    PostClass.changeNumberPost({
+      post_id: post,
+      type: 'save',
+      number: share_number
+    }).catch(err => console.log(err));
+
+    PostClass.changeBehaviorPost({
+      post_id: post,
+      type: 'save',
+      user_id: user,
+      number: share_number
+    }).catch(err => console.log(err));
+
+    return true;
   };
   static likePost = async payload => {
     const foundPost = await PostClass.checkExist({
@@ -36,7 +52,34 @@ class UserService {
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await LikeClass.likePost(payload);
+    const { like_number, result } = await LikeClass.likePost(payload);
+
+    await PostClass.changeNumberPost({
+      post_id: payload.post,
+      type: 'like',
+      number: like_number
+    });
+
+    await PostClass.changeBehaviorPost({
+      post_id: payload.post,
+      type: 'like',
+      user_id: payload.user,
+      number: like_number
+    });
+
+    // NotiService.pushNotiToSystem({
+    //   type: 'LIKE-001',
+    //   receiver: 1,
+    //   sender: payload.user,
+    //   options: {
+    //     post: 'post_name',
+    //     user: payload.user
+    //   }
+    // })
+    //   .then(res => console.log(res))
+    //   .catch(err => console.log(err));
+
+    return result;
   };
   static updateTags = async ({ user_id, tags }) => {
     return await UserClass.updateTags({
@@ -86,7 +129,7 @@ class UserService {
     return limitData({ data: repos, limit: 1000, page: 1 });
   };
   static async followUser({ meId, user }) {
-    const foundUser = UserClass.checkExist({ _id: user });
+    const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
     return await FollowClass.followUser({ meId, user });
   }
@@ -96,7 +139,7 @@ class UserService {
     page = 1,
     sort = 'ctime'
   }) {
-    const foundUser = UserClass.checkExist({ _id: user });
+    const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
     const skip = (page - 1) * limit;
     return await FollowClass.getListFollowersByUserId({
@@ -112,7 +155,7 @@ class UserService {
     page = 1,
     sort = 'ctime'
   }) {
-    const foundUser = UserClass.checkExist({ _id: user });
+    const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
     const skip = (page - 1) * limit;
     return await FollowClass.getListFollowingByUserId({

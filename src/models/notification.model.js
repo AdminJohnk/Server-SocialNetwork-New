@@ -1,6 +1,7 @@
 'use strict';
 
-const { model, Schema } = require('mongoose');
+const { model, Schema, Types } = require('mongoose');
+const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Notification';
 const COLLECTION_NAME = 'notifications';
@@ -13,7 +14,7 @@ const COLLECTION_NAME = 'notifications';
 const NotificationSchema = new Schema(
     {
         type: { type: String, enum: ['LIKE-001', 'SHARE-001', 'COMMENT-001', 'FOLLOW-001'], required: true },
-        sender: { type: Number, required: true },
+        sender: { type: ObjectId, ref: 'User', required: true },
         receiver: { type: Number, required: true },
         content: { type: String, required: true },
         options: { type: Object, default: {} }

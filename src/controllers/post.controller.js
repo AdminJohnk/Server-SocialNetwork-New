@@ -14,7 +14,7 @@ class PostController {
         user_id: req.user.userId
       })
     }).send(res);
-  }
+  };
   /* 
     Get All Popular Post
     Link: http://localhost:4052/api/v1/posts/popular
@@ -137,7 +137,8 @@ class PostController {
     new OK({
       message: 'Get Post Successfully',
       metadata: await PostService.getPostById({
-        post_id: req.params.post_id
+        post_id: req.params.post_id,
+        user: req.user.userId
       })
     }).send(res);
   };

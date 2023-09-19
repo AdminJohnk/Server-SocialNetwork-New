@@ -93,22 +93,19 @@ class UserClass {
       favorites: { $elemMatch: { $eq: post } }
     });
 
-    if (!isSaved) {
-      return await UserModel.findByIdAndUpdate(
-        user,
-        {
-          $addToSet: { favorites: post }
-        },
-        { new: true }
-      );
-    } else {
-      return await UserModel.findByIdAndUpdate(
-        user,
-        {
-          $pull: { favorites: post }
-        },
-        { new: true }
-      );
+    const operant = isSaved ? '$pull' : '$addToSet';
+    const share_number = isSaved ? -1 : 1;
+
+    await UserModel.findByIdAndUpdate(
+      user,
+      {
+        [operant]: { favorites: post }
+      },
+      { new: true }
+    );
+
+    return {
+      share_number
     }
   }
   static async updateTags({ user_id, tags }) {

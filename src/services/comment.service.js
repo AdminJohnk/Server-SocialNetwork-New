@@ -88,7 +88,27 @@ class CommentService {
       if (!foundParentComment)
         throw new NotFoundError('Parent comment not found');
 
-      return await ParentCommentClass.deleteByID({ comment_id, post, user });
+      // Xóa comment cha
+      const result = await ParentCommentClass.deleteByID({
+        comment_id,
+        post,
+        user
+      });
+
+      // Xóa tất cả comment con
+      let { deletedCount } = await ChildCommentClass.deleteByParentID({
+        parent: comment_id,
+        post
+      });
+      deletedCount++;
+
+      // Cập nhật số comment của post
+      await PostClass.changeNumberPost({
+        post_id: post,
+        type: 'comment',
+        number: -deletedCount
+      });
+      return result;
     } else if (type === 'child') {
       const foundChildComment = await ChildCommentClass.checkExist({
         _id: comment_id
@@ -96,7 +116,20 @@ class CommentService {
       if (!foundChildComment)
         throw new NotFoundError('Child comment not found');
 
-      return await ChildCommentClass.deleteByID({ comment_id, post, user });
+      const result = await ChildCommentClass.deleteByID({
+        comment_id,
+        post,
+        user
+      });
+
+      // Cập nhật số comment của post
+      await PostClass.changeNumberPost({
+        post_id: post,
+        type: 'comment',
+        number: -1
+      });
+
+      return result;
     } else throw new BadRequestError('Type is not valid');
   }
   static async getAllChildByParentID({
@@ -145,21 +178,41 @@ class CommentService {
 
     if (content === '') throw new BadRequestError('Content is empty');
 
-    if (type === 'parent')
-      return await ParentCommentClass.createComment({ post, user, content });
-    else if (type === 'child') {
+    if (type === 'parent') {
+      const result = await ParentCommentClass.createComment({
+        post,
+        user,
+        content
+      });
+
+      // Cập nhật số comment của post
+      await PostClass.changeNumberPost({
+        post_id: post,
+        type: 'comment',
+        number: 1
+      });
+      return result;
+    } else if (type === 'child') {
       const foundParentComment = await ParentCommentClass.checkExist({
         _id: parent
       });
       if (!foundParentComment)
         throw new NotFoundError('Parent comment not found');
 
-      return await ChildCommentClass.createComment({
+      const result = await ChildCommentClass.createComment({
         post,
         user,
         content,
         parent
       });
+
+      await PostClass.changeNumberPost({
+        post_id: post,
+        type: 'comment',
+        number: 1
+      });
+
+      return result;
     } else throw new BadRequestError('Type is not valid');
   }
 }

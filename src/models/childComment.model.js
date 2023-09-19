@@ -1,6 +1,5 @@
 'use strict';
 const { model, Schema, Types } = require('mongoose');
-const { PostClass } = require('./post.model');
 const { getSelectData } = require('../utils/functions');
 const { pp_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
@@ -18,7 +17,8 @@ const ChildCommentSchema = new Schema(
 
     // Like
     likes: { type: [{ type: ObjectId, ref: 'User' }], default: [] },
-    numlike: { type: Number, default: 0 }
+    like_number: { type: Number, default: 0 },
+    dislike_number: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -41,14 +41,14 @@ class ChildCommentClass {
     if (isLiked) {
       return await ChildCommentModel.findOneAndUpdate(
         { _id: comment_id, post },
-        { $pull: { likes: user }, $inc: { numlike: -1 } },
+        { $pull: { likes: user }, $inc: { like_number: -1 } },
         { new: true }
       );
     }
     // Nếu chưa like thì like
     return await ChildCommentModel.findOneAndUpdate(
       { _id: comment_id, post },
-      { $addToSet: { likes: user }, $inc: { numlike: 1 } },
+      { $addToSet: { likes: user }, $inc: { like_number: 1 } },
       { new: true }
     );
   }
@@ -61,26 +61,16 @@ class ChildCommentClass {
   }
   static async deleteByParentID({ parent, post }) {
     const result = await ChildCommentModel.deleteMany({ parent, post });
-    await PostClass.changeNumberPost({
-      post_id: post,
-      type: 'comment',
-      number: -result.deletedCount
-    });
-    return result;
+    return {
+      deletedCount: result.deletedCount
+    };
   }
   static async deleteByID({ comment_id, post, user }) {
-    const result = await ChildCommentModel.findOneAndDelete({
+    return ChildCommentModel.findOneAndDelete({
       _id: comment_id,
       post,
       user
     });
-
-    await PostClass.changeNumberPost({
-      post_id: post,
-      type: 'comment',
-      number: -1
-    });
-    return result;
   }
   static async getAllChildByParentID({
     post,
@@ -100,13 +90,7 @@ class ChildCommentClass {
       .lean();
   }
   static async createComment(payload) {
-    const result = await ChildCommentModel.create(payload);
-    await PostClass.changeNumberPost({
-      post_id: payload.post,
-      type: 'comment',
-      number: 1
-    });
-    return result;
+    return await ChildCommentModel.create(payload);
   }
   static async checkExist(select) {
     return await ChildCommentModel.findOne(select).lean();

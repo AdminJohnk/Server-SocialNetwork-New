@@ -142,22 +142,31 @@ class PostService {
 
     return PostClass.getAllPostByUserId({ user_id, limit, skip, sort });
   }
-  static async getPostById({ post_id }) {
+  static async getPostById({ post_id, user }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return PostClass.findByID({ post_id });
+    return await PostClass.findByID({ post_id, user });
   }
-  static async sharePost({ type = 'Share', post_attributes = {} }) {
+  static async sharePost({ post_attributes }) {
     const foundPost = await PostClass.checkExist({
       _id: post_attributes.post,
       'post_attributes.user': post_attributes.owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return PostClass.sharePost({ type, post_attributes });
+    const { numShare } = await PostClass.sharePost({ post_attributes });
+
+    PostClass.changeBehaviorPost({
+      post_id: post_attributes.post,
+      type: 'share',
+      user_id: post_attributes.user,
+      number: numShare
+    }).catch(err => console.log(err));
+
+    return true;
   }
-  static createPost({ type = 'Post', post_attributes = {} }) {
+  static createPost({ type = 'Post', post_attributes }) {
     if (!post_attributes.title || !post_attributes.content)
       throw new BadRequestError('Post must have title or content');
     return PostClass.createPost({ type, post_attributes });

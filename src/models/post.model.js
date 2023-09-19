@@ -1,7 +1,7 @@
 'use strict';
 
 const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData } = require('../utils/functions');
+const { getSelectData, unGetSelectData } = require('../utils/functions');
 const { pp_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
@@ -27,8 +27,22 @@ var PostSchema = new Schema(
       // common field
       view_number: { type: Number, default: 0 },
       like_number: { type: Number, default: 0 },
+      save_number: { type: Number, default: 0 },
       share_number: { type: Number, default: 0 },
-      comment_number: { type: Number, default: 0 }
+      comment_number: { type: Number, default: 0 },
+
+      likes: {
+        type: [{ type: ObjectId, ref: 'User' }],
+        select: false
+      },
+      saves: {
+        type: [{ type: ObjectId, ref: 'User' }],
+        select: false
+      },
+      shares: {
+        type: [{ type: ObjectId, ref: 'User' }],
+        select: false
+      }
     }
   },
   {
@@ -123,7 +137,7 @@ class PostClass {
       .sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async sharePost({ type, post_attributes }) {
+  static async sharePost({ type = 'Share', post_attributes }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
       'post_attributes.user': post_attributes.user,
@@ -134,28 +148,57 @@ class PostClass {
     let numShare = 1;
 
     if (sharedPost) {
-      await PostModel.deleteOne(sharedPost);
+      console.log('sharedPost::', sharedPost);
+      await PostModel.deleteOne(sharedPost._id);
       numShare = -1;
     } else await PostModel.create({ type, post_attributes });
 
-    return await this.changeNumberPost({
+    this.changeNumberPost({
       post_id: post_attributes.post,
       type: 'share',
       number: numShare
-    });
+    }).catch(err => console.log(err));
+
+    return {
+      numShare
+    };
   }
   static async createPost({ type, post_attributes }) {
     return await PostModel.create({ type, post_attributes });
   }
-  static async findByID({ post_id }) {
-    let foundPost = await PostModel.findOne({ _id: post_id });
+  static async findByID({
+    post_id,
+    user,
+    unselect = [
+      'post_attributes.likes',
+      'post_attributes.saves',
+      'post_attributes.shares',
+      '__v',
+      'updatedAt'
+    ]
+  }) {
+    let foundPost = await PostModel.aggregate([
+      {
+        $match: { _id: new ObjectId(post_id) }
+      },
+      {
+        $addFields: {
+          is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
+          is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
+          is_shared: { $in: [new ObjectId(user), '$post_attributes.shares'] }
+        }
+      },
+      {
+        $project: unGetSelectData(unselect)
+      }
+    ]);
+
     if (foundPost) {
       if (foundPost.type === 'Share') {
         foundPost = await this.populatePostShare(foundPost);
       }
     }
-
-    return foundPost;
+    return foundPost[0];
   }
   static async populatePostShare(postShare) {
     return await postShare.populate({
@@ -173,7 +216,7 @@ class PostClass {
       populate: { path: 'user', select: pp_UserDefault }
     });
   }
-  // type = ['view', 'like', 'share', 'comment']
+  // type = ['view', 'like', 'share', 'comment', 'save']
   static async changeNumberPost({ post_id, type, number }) {
     let stringUpdate = 'post_attributes.' + type + '_number';
     return await PostModel.findByIdAndUpdate(
@@ -185,6 +228,21 @@ class PostClass {
       },
       { new: true }
     ).lean();
+  }
+  // type ['like', 'save', 'share']
+  // number = 1 or -1
+  static async changeBehaviorPost({ post_id, type, user_id, number }) {
+    let stringUpdate = 'post_attributes.' + type + 's';
+    let operator = number === 1 ? '$addToSet' : '$pull';
+    return await PostModel.findByIdAndUpdate(
+      post_id,
+      {
+        [operator]: {
+          [stringUpdate]: user_id
+        }
+      },
+      { new: true }
+    );
   }
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();

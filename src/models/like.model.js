@@ -1,8 +1,6 @@
 'use strict';
 
 const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData } = require('../utils/functions');
-const { PostModel, PostClass } = require('./post.model');
 const { pp_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
@@ -33,22 +31,24 @@ class LikeClass {
       .sort(sort)
       .lean();
   }
+  static async checkExist(select) {
+    return await LikeModel.findOne(select).lean();
+  }
   static async likePost(payload) {
     const foundLike = await LikeModel.findOne({
       user: payload.user,
       post: payload.post
     });
-    let numLike = 1;
+    let like_number = 1;
+    let result;
     if (foundLike) {
-      await LikeModel.deleteOne(foundLike);
-      numLike = -1;
-    } else await LikeModel.create(payload);
-
-    return await PostClass.changeNumberPost({
-      post_id: payload.post,
-      type: 'like',
-      number: numLike
-    });
+      result = await LikeModel.deleteOne(foundLike);
+      like_number = -1;
+    } else result = await LikeModel.create(payload);
+    return {
+      like_number,
+      result
+    };
   }
 }
 
