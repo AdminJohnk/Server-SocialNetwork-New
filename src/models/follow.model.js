@@ -29,35 +29,35 @@ var FollowSchema = new Schema(
 const FollowModel = model(DOCUMENT_NAME, FollowSchema);
 
 class FollowClass {
-  static async followUser({ meId, user }) {
+  static async followUser({ me_id, user }) {
     const isFollowed = await FollowModel.findOne({
-      user: meId,
+      user: me_id,
       followings: { $in: [user] }
     });
     if (isFollowed) {
-      await FollowClass.removeFollow({ meId, user });
+      await FollowClass.removeFollow({ me_id, user });
     } else {
-      await FollowClass.addFollow({ meId, user });
+      await FollowClass.addFollow({ me_id, user });
     }
   }
-  static async addFollow({ meId, user }) {
+  static async addFollow({ me_id, user }) {
     // Following
     const updateSet1 = { $addToSet: { followings: user } };
     const options1 = { upsert: true };
-    await FollowModel.findOneAndUpdate({ user: meId }, updateSet1, options1);
+    await FollowModel.findOneAndUpdate({ user: me_id }, updateSet1, options1);
 
     // Follower
-    const updateSet2 = { $addToSet: { followers: meId } };
+    const updateSet2 = { $addToSet: { followers: me_id } };
     const options2 = { upsert: true };
     await FollowModel.findOneAndUpdate({ user }, updateSet2, options2);
   }
-  static async removeFollow({ meId, user }) {
+  static async removeFollow({ me_id, user }) {
     // Following
     const updateSet1 = { $pull: { followings: user } };
-    await FollowModel.findOneAndUpdate({ user: meId }, updateSet1);
+    await FollowModel.findOneAndUpdate({ user: me_id }, updateSet1);
 
     // Follower
-    const updateSet2 = { $pull: { followers: meId } };
+    const updateSet2 = { $pull: { followers: me_id } };
     await FollowModel.findOneAndUpdate({ user }, updateSet2);
   }
   static async getListFollowersByUserId({ user, limit, skip, sort }) {

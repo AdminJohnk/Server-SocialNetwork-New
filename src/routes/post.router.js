@@ -30,6 +30,9 @@ router.get('/like/:post_id', asyncHandler(PostController.getAllUserLikePost));
 // Get All User Share Post
 router.get('/share/:post_id', asyncHandler(PostController.getAllUserSharePost));
 
+// Get All User Save Post
+router.get('/save/:post_id', asyncHandler(PostController.getAllUserSavePost));
+
 
 
 // =========================================================

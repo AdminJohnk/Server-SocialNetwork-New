@@ -2,7 +2,7 @@
 
 const UserService = require('../services/user.service');
 const { OK, CREATED } = require('../core/success.response');
-const { HEADER } = require("../utils/constants");
+const { HEADER } = require('../utils/constants');
 
 class UserController {
   /* 
@@ -71,7 +71,7 @@ class UserController {
     new OK({
       message: 'Follow User Successfully',
       metadata: await UserService.followUser({
-        meId: req.user.userId,
+        me_id: req.user.userId,
         user: req.params.user_id
       })
     }).send(res);

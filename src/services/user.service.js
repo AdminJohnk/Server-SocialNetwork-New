@@ -128,10 +128,10 @@ class UserService {
     );
     return limitData({ data: repos, limit: 1000, page: 1 });
   };
-  static async followUser({ meId, user }) {
+  static async followUser({ me_id, user }) {
     const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
-    return await FollowClass.followUser({ meId, user });
+    return await FollowClass.followUser({ me_id, user });
   }
   static async getListFollowersByUserId({
     user,

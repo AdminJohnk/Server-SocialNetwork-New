@@ -2,7 +2,11 @@
 
 const { model, Schema, Types } = require('mongoose');
 const { getSelectData, unGetSelectData } = require('../utils/functions');
-const { pp_UserDefault } = require('../utils/constants');
+const {
+  pp_UserDefault,
+  se_UserDefault,
+  unSe_PostDefault
+} = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Post';
@@ -13,14 +17,14 @@ var PostSchema = new Schema(
     type: { type: String, enum: ['Post', 'Share'], required: true },
     post_attributes: {
       // type = Post
-      user: { type: ObjectId, ref: 'User' }, // meId
+      user: { type: ObjectId, ref: 'User' }, // me_id
       title: String,
       content: String,
       url: String,
       img: String,
 
       // type = Share
-      user: { type: ObjectId, ref: 'User' }, // meId
+      user: { type: ObjectId, ref: 'User' }, // me_id
       post: { type: ObjectId, ref: 'Post' },
       owner_post: { type: ObjectId, ref: 'User' },
 
@@ -35,11 +39,11 @@ var PostSchema = new Schema(
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
       },
-      saves: {
+      shares: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
       },
-      shares: {
+      saves: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
       }
@@ -52,6 +56,37 @@ var PostSchema = new Schema(
 );
 
 const PostModel = model(DOCUMENT_NAME, PostSchema);
+
+// Add fields is_liked, is_saved, is_shared
+const addFieldsObject = user => {
+  return {
+    is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
+    is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
+    is_shared: { $in: [new ObjectId(user), '$post_attributes.shares'] }
+  };
+};
+const choosePopulateAttr = ({ from, attribute, select }) => {
+  return {
+    $lookup: {
+      from: from,
+      let: { temp: '$post_attributes.' + attribute },
+      pipeline: [
+        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
+        { $project: select }
+      ],
+      as: 'post_attributes.' + attribute
+    }
+  };
+};
+const getFirstElement = attribute => {
+  return {
+    $addFields: {
+      [`post_attributes.${attribute}`]: {
+        $arrayElemAt: [`$post_attributes.${attribute}`, 0]
+      }
+    }
+  };
+};
 
 class PostClass {
   static async viewPost({ post_id, user_id, cookies, res }) {
@@ -76,47 +111,71 @@ class PostClass {
     return await PostModel.findByID({ post_id });
   }
   static async getAllPopularPost({ user_id, limit, skip, sort }) {
-    const result = await PostModel.find().skip(skip).limit(limit).sort(sort);
-
-    await Promise.all(
-      result.map(async post => {
-        if (post.type === 'Share') {
-          return await this.populatePostShare(post);
-        } else if (post.type === 'Post') {
-          return await this.populatePost(post);
-        }
-      })
-    );
-
-    return result;
+    let condidion = {};
+    let foundPost = await this.findPostByAggregate({
+      condidion,
+      me_id: user_id,
+      limit,
+      skip,
+      sort
+    });
+    return foundPost;
   }
   static async getAllPostForNewsFeed({ user_id, limit, skip, sort }) {
-    const result = await PostModel.find().skip(skip).limit(limit).sort(sort);
-
-    await Promise.all(
-      result.map(async post => {
-        if (post.type === 'Share') {
-          return await this.populatePostShare(post);
-        } else if (post.type === 'Post') {
-          return await this.populatePost(post);
-        }
-      })
-    );
-
-    return result;
+    let condidion = {};
+    let foundPost = await this.findPostByAggregate({
+      condidion,
+      me_id: user_id,
+      limit,
+      skip,
+      sort
+    });
+    return foundPost;
+  }
+  static async getAllUserLikePost({ post, owner_post, limit, skip, sort }) {
+    return await this.getAllUserByPost({
+      type: 'like',
+      post,
+      owner_post,
+      limit,
+      skip,
+      sort
+    });
   }
   static async getAllUserSharePost({ post, owner_post, limit, skip, sort }) {
-    return await PostModel.find({
-      'post_attributes.post': post,
-      'post_attributes.owner_post': owner_post,
-      type: 'Share'
+    return await this.getAllUserByPost({
+      type: 'share',
+      post,
+      owner_post,
+      limit,
+      skip,
+      sort
+    });
+  }
+  static async getAllUserSavePost({ post, owner_post, limit, skip, sort }) {
+    return await this.getAllUserByPost({
+      type: 'save',
+      post,
+      owner_post,
+      limit,
+      skip,
+      sort
+    });
+  }
+  // type = ['like', 'share', ', 'save']
+  static async getAllUserByPost({ type, post, owner_post, limit, skip, sort }) {
+    const result = await PostModel.findOne({
+      _id: post,
+      'post_attributes.user': owner_post
     })
-      .populate('post_attributes.user', pp_UserDefault)
-      .select('post_attributes.user')
+      .populate(`post_attributes.${type}s`, pp_UserDefault)
+      .select(`post_attributes.${type}s`)
       .skip(skip)
       .limit(limit)
       .sort(sort)
       .lean();
+
+    return result.post_attributes[`${type}s`];
   }
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
@@ -125,17 +184,6 @@ class PostClass {
     return await PostModel.findByIdAndUpdate(post_id, post_attributes, {
       new: true
     }).lean();
-  }
-  static async getAllPost({ limit, skip, sort }) {
-    let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
-    return await this.populatePostShare(posts);
-  }
-  static async getAllPostByUserId({ user_id, limit, skip, sort }) {
-    let posts = PostModel.find({ 'post_attributes.user': user_id })
-      .skip(skip)
-      .limit(limit)
-      .sort(sort);
-    return await this.populatePostShare(posts);
   }
   static async sharePost({ type = 'Share', post_attributes }) {
     // Kiểm tra xem đã share bài viết này chưa
@@ -148,7 +196,6 @@ class PostClass {
     let numShare = 1;
 
     if (sharedPost) {
-      console.log('sharedPost::', sharedPost);
       await PostModel.deleteOne(sharedPost._id);
       numShare = -1;
     } else await PostModel.create({ type, post_attributes });
@@ -163,42 +210,71 @@ class PostClass {
       numShare
     };
   }
-  static async createPost({ type, post_attributes }) {
-    return await PostModel.create({ type, post_attributes });
+  static async getAllPost({ limit, skip, sort }) {
+    let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
+    return await this.populatePostShare(posts);
   }
-  static async findByID({
-    post_id,
-    user,
-    unselect = [
-      'post_attributes.likes',
-      'post_attributes.saves',
-      'post_attributes.shares',
-      '__v',
-      'updatedAt'
-    ]
+  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort }) {
+    let condidion = { 'post_attributes.user': new ObjectId(user_id) };
+    let foundPost = await this.findPostByAggregate({
+      condidion,
+      me_id,
+      limit,
+      skip,
+      sort
+    });
+    return foundPost;
+  }
+  static async findByID({ post_id, user }) {
+    let condidion = { _id: new ObjectId(post_id) };
+    let foundPost = await this.findPostByAggregate({ condidion, me_id: user });
+    return foundPost[0];
+  }
+  static async findPostByAggregate({
+    condidion,
+    me_id,
+    limit = 1,
+    skip = 0,
+    sort = { ctime: -1 }
   }) {
     let foundPost = await PostModel.aggregate([
-      {
-        $match: { _id: new ObjectId(post_id) }
-      },
-      {
-        $addFields: {
-          is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
-          is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
-          is_shared: { $in: [new ObjectId(user), '$post_attributes.shares'] }
-        }
-      },
-      {
-        $project: unGetSelectData(unselect)
-      }
+      { $match: condidion },
+      { $addFields: { ...addFieldsObject(me_id) } },
+      // ================== user ==================
+      choosePopulateAttr({
+        from: 'users',
+        attribute: 'user',
+        select: getSelectData(se_UserDefault)
+      }),
+      getFirstElement('user'),
+      // ================== owner_post ==================
+      choosePopulateAttr({
+        from: 'users',
+        attribute: 'owner_post',
+        select: getSelectData(se_UserDefault)
+      }),
+      getFirstElement('owner_post'),
+      // ================== post ==================
+      choosePopulateAttr({
+        from: 'posts',
+        attribute: 'post',
+        select: unGetSelectData(unSe_PostDefault)
+      }),
+      getFirstElement('post'),
+      { $project: { ...unGetSelectData(unSe_PostDefault) } },
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: limit }
     ]);
 
-    if (foundPost) {
-      if (foundPost.type === 'Share') {
-        foundPost = await this.populatePostShare(foundPost);
+    foundPost.map(post => {
+      if (post.type === 'Post') {
+        delete foundPost[0].post_attributes.post;
+        delete foundPost[0].post_attributes.owner_post;
       }
-    }
-    return foundPost[0];
+    });
+
+    return foundPost;
   }
   static async populatePostShare(postShare) {
     return await postShare.populate({

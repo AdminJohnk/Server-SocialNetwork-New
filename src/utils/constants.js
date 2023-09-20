@@ -17,6 +17,14 @@ const avt_default =
 const pp_UserDefault = '_id name email user_image';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image'];
 
+const unSe_PostDefault = [
+  'post_attributes.likes',
+  'post_attributes.shares',
+  'post_attributes.saves',
+  'updatedAt',
+  '__v'
+];
+
 const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
 const objectConnectRedis = {
   username: REDIS_USERNAME,
@@ -33,5 +41,6 @@ module.exports = {
   avt_default,
   se_UserDefault,
   pp_UserDefault,
-  objectConnectRedis
+  objectConnectRedis,
+  unSe_PostDefault
 };

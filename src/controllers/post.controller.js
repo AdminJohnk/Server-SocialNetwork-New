@@ -72,6 +72,19 @@ class PostController {
     }).send(res);
   };
   /* 
+    Get All User Save Post
+    Link: http://localhost:4052/api/v1/posts/save/:post_id
+  */
+  static getAllUserSavePost = async (req, res, next) => {
+    new OK({
+      message: 'Get All User Like Post Successfully',
+      metadata: await PostService.getAllUserSavePost({
+        ...req.body,
+        post: req.params.post_id
+      })
+    }).send(res);
+  };
+  /* 
     Delete Post
     Link: http://localhost:4052/api/v1/posts/delete/:post_id
   */
@@ -124,7 +137,8 @@ class PostController {
     new OK({
       message: 'Get Post Successfully',
       metadata: await PostService.getAllPostByUserId({
-        user_id: req.params.user_id
+        user_id: req.params.user_id,
+        me_id: req.user.userId
       })
     }).send(res);
   };

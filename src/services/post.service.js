@@ -30,7 +30,7 @@ class PostService {
     user_id,
     limit = 3,
     page = 1,
-    sort = 'ctime'
+    sort = { ctime: -1 }
   }) {
     const skip = (page - 1) * limit;
 
@@ -40,12 +40,35 @@ class PostService {
     user_id,
     limit = 4,
     page = 1,
-    sort = 'ctime'
+    sort = { ctime: -1 }
   }) {
     const skip = (page - 1) * limit;
 
     return await PostClass.getAllPostForNewsFeed({
       user_id,
+      limit,
+      skip,
+      sort
+    });
+  }
+  static async getAllUserSavePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = 'ctime'
+  }) {
+    const skip = (page - 1) * limit;
+
+    const foundPost = await PostClass.checkExist({
+      _id: post,
+      'post_attributes.user': owner_post
+    });
+    if (!foundPost) throw new NotFoundError('Post not found');
+
+    return await PostClass.getAllUserSavePost({
+      post,
+      owner_post,
       limit,
       skip,
       sort
@@ -89,7 +112,7 @@ class PostService {
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await LikeClass.getAllUserLikePost({
+    return await PostClass.getAllUserLikePost({
       post,
       owner_post,
       limit,
@@ -131,16 +154,17 @@ class PostService {
   }
   static async getAllPostByUserId({
     user_id,
-    limit = 8,
+    me_id,
+    limit = 4,
     page = 1,
-    sort = 'ctime'
+    sort = { ctime: -1 }
   }) {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
     const skip = (page - 1) * limit;
 
-    return PostClass.getAllPostByUserId({ user_id, limit, skip, sort });
+    return PostClass.getAllPostByUserId({ user_id, me_id, limit, skip, sort });
   }
   static async getPostById({ post_id, user }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });

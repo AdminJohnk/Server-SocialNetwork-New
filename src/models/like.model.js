@@ -31,9 +31,6 @@ class LikeClass {
       .sort(sort)
       .lean();
   }
-  static async checkExist(select) {
-    return await LikeModel.findOne(select).lean();
-  }
   static async likePost(payload) {
     const foundLike = await LikeModel.findOne({
       user: payload.user,
@@ -49,6 +46,9 @@ class LikeClass {
       like_number,
       result
     };
+  }
+  static async checkExist(select) {
+    return await LikeModel.findOne(select).lean();
   }
 }
 

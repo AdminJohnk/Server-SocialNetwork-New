@@ -30,8 +30,8 @@ app.use(
 require('./database/init.mongodb');
 
 // init redis
-require("./services/redisPubSub.service")
-require("./services/redis.service")
+// require("./services/redisPubSub.service")
+// require("./services/redis.service")
 
 // checkOverLoad();
 
