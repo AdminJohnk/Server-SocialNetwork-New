@@ -30,7 +30,7 @@ const FollowModel = model(DOCUMENT_NAME, FollowSchema);
 
 class FollowClass {
   static async followUser({ me_id, user }) {
-    const isFollowed = await FollowModel.findOne({
+    const isFollowed = await FollowClass.checkExist({
       user: me_id,
       followings: { $in: [user] }
     });
@@ -96,6 +96,9 @@ class FollowClass {
       .sort(sort)
       .lean();
   };
+  static async checkExist(select) {
+    return await FollowModel.findOne(select).lean();
+  }
 }
 
 //Export the model

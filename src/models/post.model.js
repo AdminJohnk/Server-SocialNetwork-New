@@ -55,6 +55,7 @@ var PostSchema = new Schema(
   }
 );
 
+
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
@@ -267,14 +268,17 @@ class PostClass {
       { $limit: limit }
     ]);
 
-    foundPost.map(post => {
-      if (post.type === 'Post') {
-        delete foundPost[0].post_attributes.post;
-        delete foundPost[0].post_attributes.owner_post;
-      }
-    });
+    // foundPost.map(post => {
+    //   if (post.type === 'Post') {
+    //     delete post.post_attributes.post;
+    //     delete post.post_attributes.owner_post;
+    //   }
+    // });
 
     return foundPost;
+  }
+  static async createPost({ type, post_attributes }) {
+    return await PostModel.create({ type, post_attributes });
   }
   static async populatePostShare(postShare) {
     return await postShare.populate({

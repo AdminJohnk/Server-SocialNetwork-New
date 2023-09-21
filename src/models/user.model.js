@@ -74,17 +74,26 @@ var UserSchema = new Schema(
   },
   {
     timestamps: true,
-    collection: COLLECTION_NAME
+    collection: COLLECTION_NAME,
   }
 );
+
+// Xóa trường _id và thay thế bằng id khi dùng find, findOne, ... trả về
+// UserSchema.set('toJSON', {
+//   virtuals: true,
+//   transform: function (doc, ret) {
+//     delete ret._id;
+//     delete ret.__v;
+//   }
+// });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
 class UserClass {
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id }).select(
-      getSelectData(select)
-    );
+    return await UserModel.findOne({ _id: user_id })
+      .select(getSelectData(select))
+      .lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -106,7 +115,7 @@ class UserClass {
 
     return {
       share_number
-    }
+    };
   }
   static async updateTags({ user_id, tags }) {
     return await UserModel.findByIdAndUpdate(
@@ -122,12 +131,7 @@ class UserClass {
     }).lean();
   }
   static async checkExist(select) {
-    try {
-      return await UserModel.findOne(select);
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
+    return await UserModel.findOne(select).lean();
   }
   static async findById({ user_id, unselect = ['password'] }) {
     return await UserModel.findOne({ _id: user_id }).select(

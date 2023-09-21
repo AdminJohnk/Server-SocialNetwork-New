@@ -46,7 +46,7 @@ class KeyTokenClass {
     }).lean();
   }
   static async findByRefreshToken(refreshToken) {
-    return KeyTokenModel.findOne({ refreshToken });
+    return KeyTokenModel.findOne({ refreshToken }).lean();
   }
   static async deleteKeyById(userId) {
     return await KeyTokenModel.findOneAndDelete({ user: userId });

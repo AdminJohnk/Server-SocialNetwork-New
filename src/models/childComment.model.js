@@ -30,8 +30,7 @@ const ChildCommentModel = model(DOCUMENT_NAME, ChildCommentSchema);
 
 class ChildCommentClass {
   static async likeComment({ comment_id, post, user }) {
-    // Check xem đã like hay chưa
-    const isLiked = await ChildCommentModel.findOne({
+    const isLiked = this.checkExist({
       _id: comment_id,
       post,
       likes: { $elemMatch: { $eq: user } }
