@@ -94,7 +94,7 @@ class PostClass {
     // Check if the post has already been viewed
     let viewedPosts = cookies?.viewedPosts || [];
     if (viewedPosts.includes(post_id)) {
-      return await PostModel.findByID({ post_id });
+      return await this.findByID({ post_id });
     }
     // Increase view count
     await this.changeNumberPost({
@@ -109,7 +109,7 @@ class PostClass {
       maxAge: 12 * 60 * 60 * 1000 // 12 hours
     });
 
-    return await PostModel.findByID({ post_id });
+    return await this.findByID({ post_id });
   }
   static async getAllPopularPost({ user_id, limit, skip, sort }) {
     let condidion = {};

@@ -88,13 +88,22 @@ class FollowClass {
     select,
     populate
   }) => {
-    return await FollowModel.findOne({ user })
+    console.log({
+      user,
+      limit,
+      skip,
+      sort,
+      select,
+      populate
+    });
+    const result = await FollowModel.findOne({ user })
       .select(getSelectData(select))
       .populate(populate, pp_UserDefault)
       .skip(skip)
       .limit(limit)
       .sort(sort)
       .lean();
+    return !result ? [] : result[select[0]]
   };
   static async checkExist(select) {
     return await FollowModel.findOne(select).lean();
