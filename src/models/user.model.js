@@ -62,7 +62,6 @@ var UserSchema = new Schema(
       type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
-    favorite_number: { type: Number, default: 0 },
     communities: {
       type: [{ type: ObjectId, ref: 'Community' }],
       default: []
@@ -75,13 +74,7 @@ var UserSchema = new Schema(
     // Number behavior
     follower_number: { type: Number, default: 0 },
     following_number: { type: Number, default: 0 },
-    post_number: { type: Number, default: 0 },
-
-    // Array behavior
-    follows: {
-      type: [{ type: ObjectId, ref: 'User' }],
-      select: false
-    }
+    post_number: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -99,6 +92,81 @@ var UserSchema = new Schema(
 // });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
+
+// const checkIsFollowed = (me_id, attribute) => {
+//   return {
+//     $lookup: {
+//       from: 'follows',
+//       let: { temp: `$post_attributes.${attribute}._id` },
+//       pipeline: [
+//         {
+//           $match: {
+//             $expr: {
+//               $and: [
+//                 { $eq: ['$user', new ObjectId(me_id)] },
+//                 { $in: ['$$temp', '$followings'] }
+//               ]
+//             }
+//           }
+//         }
+//       ],
+//       as: `post_attributes.${attribute}.is_followed`
+//     }
+//   };
+// };
+
+// attribute = ['_id'] --> check me_id is followed user_id
+const checkIsFollowed = (me_id, attribute) => {
+  return {
+    $lookup: {
+      from: 'follows',
+      let: { temp: `$${attribute}` },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$user', new ObjectId(me_id)] },
+                { $in: ['$$temp', '$followings'] }
+              ]
+            }
+          }
+        }
+      ],
+      as: 'is_followed'
+    }
+  };
+};
+// const trueFalseFollowed = attribute => {
+//   return {
+//     $addFields: {
+//       [`post_attributes.${attribute}.is_followed`]: {
+//         $cond: {
+//           if: {
+//             $eq: [{ $size: `$post_attributes.${attribute}.is_followed` }, 0]
+//           },
+//           then: false, // Nếu mảng rỗng, tức là không theo dõi, set thành false
+//           else: true // Ngược lại, tức là đang theo dõi, set thành true
+//         }
+//       }
+//     }
+//   };
+// };
+const trueFalseFollowed = () => {
+  return {
+    $addFields: {
+      is_followed: {
+        $cond: {
+          if: {
+            $eq: [{ $size: `$is_followed` }, 0]
+          },
+          then: false, // Nếu mảng rỗng, tức là không theo dõi, set thành false
+          else: true // Ngược lại, tức là đang theo dõi, set thành true
+        }
+      }
+    }
+  };
+};
 
 class UserClass {
   static async getMyInfo({ user_id, select = se_UserDefault }) {
@@ -142,19 +210,17 @@ class UserClass {
     }).lean();
   }
   static async findById({ user_id, me_id, unselect = ['password'] }) {
-    // return await UserModel.findOne({ _id: user_id }).select(
-    //   unGetSelectData(unselect)
-    // );
-
+    // check if me_id followed user_id
     const result = await UserModel.aggregate([
       {
         $match: {
           _id: new ObjectId(user_id)
         }
-      }
+      },
+      checkIsFollowed(me_id, '_id'),
+      trueFalseFollowed()
     ]);
-
-    return result;
+    return result[0];
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).select({ password: 1 }).lean();

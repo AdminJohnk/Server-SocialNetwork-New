@@ -147,6 +147,7 @@ class PostService {
 
     return await PostClass.updatePost({
       post_id,
+      user_id,
       post_attributes: updateNestedObjectParser({
         post_attributes: post_attributes
       })

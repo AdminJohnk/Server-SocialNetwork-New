@@ -109,7 +109,7 @@ const checkIsFollowed = (me_id, attribute) => {
           }
         }
       ],
-      as: `post_attributes.${attribute}.is_followed` // true or false
+      as: `post_attributes.${attribute}.is_followed`
     }
   };
 };
@@ -222,10 +222,21 @@ class PostClass {
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
-  static async updatePost({ post_id, post_attributes }) {
-    return await PostModel.findByIdAndUpdate(post_id, post_attributes, {
-      new: true
-    }).lean();
+  static async updatePost({ post_id, user_id, post_attributes }) {
+    const postUpdate = await PostModel.findByIdAndUpdate(
+      post_id,
+      post_attributes,
+      {
+        new: true
+      }
+    ).lean();
+
+    const result = await this.findPostByAggregate({
+      condidion: { _id: postUpdate._id },
+      me_id: user_id
+    });
+
+    return result[0];
   }
   static async sharePost({ type = 'Share', post_attributes }) {
     // Kiểm tra xem đã share bài viết này chưa
@@ -332,10 +343,12 @@ class PostClass {
   static async createPost({ type, post_attributes }) {
     const newPost = await PostModel.create({ type, post_attributes });
 
-    return await this.findPostByAggregate({
+    const result = await this.findPostByAggregate({
       condidion: { _id: newPost._id },
       me_id: post_attributes.user
     });
+
+    return result[0];
   }
   static async populatePostShare(postShare) {
     return await postShare.populate({
