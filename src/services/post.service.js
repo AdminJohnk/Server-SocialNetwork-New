@@ -204,7 +204,7 @@ class PostService {
     const result = await PostClass.createPost({ type, post_attributes });
 
     UserClass.changeNumberUser({
-      user_id: me_id,
+      user_id: post_attributes.user,
       type: 'post',
       number: 1
     }).catch(err => console.log(err));
