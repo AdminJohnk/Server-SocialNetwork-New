@@ -141,10 +141,20 @@ class UserClass {
       new: true
     }).lean();
   }
-  static async findById({ user_id, unselect = ['password'] }) {
-    return await UserModel.findOne({ _id: user_id }).select(
-      unGetSelectData(unselect)
-    );
+  static async findById({ user_id, me_id, unselect = ['password'] }) {
+    // return await UserModel.findOne({ _id: user_id }).select(
+    //   unGetSelectData(unselect)
+    // );
+
+    const result = await UserModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(user_id)
+        }
+      }
+    ]);
+
+    return result;
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).select({ password: 1 }).lean();

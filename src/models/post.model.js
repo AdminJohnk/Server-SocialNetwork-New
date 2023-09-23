@@ -330,7 +330,12 @@ class PostClass {
     return foundPost;
   }
   static async createPost({ type, post_attributes }) {
-    return await PostModel.create({ type, post_attributes });
+    const newPost = await PostModel.create({ type, post_attributes });
+
+    return await this.findPostByAggregate({
+      condidion: { _id: newPost._id },
+      me_id: post_attributes.user
+    });
   }
   static async populatePostShare(postShare) {
     return await postShare.populate({

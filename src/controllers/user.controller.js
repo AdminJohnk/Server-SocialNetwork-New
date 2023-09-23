@@ -128,7 +128,8 @@ class UserController {
     new OK({
       message: 'Get User Successfully',
       metadata: await UserService.findUserById({
-        user_id: req.params.user_id
+        user_id: req.params.user_id,
+        me_id: req.user.userId
       })
     }).send(res);
   };

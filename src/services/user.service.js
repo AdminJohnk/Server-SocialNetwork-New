@@ -185,9 +185,10 @@ class UserService {
       user_id
     });
   };
-  static findUserById = async ({ user_id }) => {
+  static findUserById = async ({ user_id, me_id }) => {
     return await UserClass.findById({
-      user_id
+      user_id,
+      me_id
     });
   };
   static updateUserById = async ({ user_id, payload }) => {
