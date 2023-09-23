@@ -22,7 +22,10 @@ const se_UserDefaultForPost = [
   'name',
   'email',
   'user_image',
-  'experiences'
+  'experiences',
+  'follower_number',
+  'following_number',
+  'post_number'
 ];
 
 const unSe_PostDefault = [
