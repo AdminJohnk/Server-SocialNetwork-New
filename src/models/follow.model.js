@@ -34,22 +34,31 @@ class FollowClass {
       user: me_id,
       followings: { $in: [user] }
     });
+    let follow_number = 1;
     if (isFollowed) {
-      await FollowClass.removeFollow({ me_id, user });
+      FollowClass.removeFollow({ me_id, user });
+      follow_number = -1; 
     } else {
-      await FollowClass.addFollow({ me_id, user });
+      FollowClass.addFollow({ me_id, user });
     }
+    return {
+      follow_number
+    };
   }
   static async addFollow({ me_id, user }) {
     // Following
     const updateSet1 = { $addToSet: { followings: user } };
     const options1 = { upsert: true };
-    await FollowModel.findOneAndUpdate({ user: me_id }, updateSet1, options1);
+    await FollowModel.findOneAndUpdate(
+      { user: me_id },
+      updateSet1,
+      options1
+    ).lean();
 
     // Follower
     const updateSet2 = { $addToSet: { followers: me_id } };
     const options2 = { upsert: true };
-    await FollowModel.findOneAndUpdate({ user }, updateSet2, options2);
+    await FollowModel.findOneAndUpdate({ user }, updateSet2, options2).lean();
   }
   static async removeFollow({ me_id, user }) {
     // Following
@@ -103,7 +112,7 @@ class FollowClass {
       .limit(limit)
       .sort(sort)
       .lean();
-    return !result ? [] : result[select[0]]
+    return !result ? [] : result[select[0]];
   };
   static async checkExist(select) {
     return await FollowModel.findOne(select).lean();

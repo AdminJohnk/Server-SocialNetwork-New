@@ -5,7 +5,8 @@ const { getSelectData, unGetSelectData } = require('../utils/functions');
 const {
   pp_UserDefault,
   se_UserDefault,
-  unSe_PostDefault
+  unSe_PostDefault,
+  se_UserDefaultForPost
 } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
@@ -55,7 +56,6 @@ var PostSchema = new Schema(
   }
 );
 
-
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
@@ -66,6 +66,8 @@ const addFieldsObject = user => {
     is_shared: { $in: [new ObjectId(user), '$post_attributes.shares'] }
   };
 };
+
+// attribute = ['user', 'owner_post', 'post']
 const choosePopulateAttr = ({ from, attribute, select }) => {
   return {
     $lookup: {
@@ -84,6 +86,45 @@ const getFirstElement = attribute => {
     $addFields: {
       [`post_attributes.${attribute}`]: {
         $arrayElemAt: [`$post_attributes.${attribute}`, 0]
+      }
+    }
+  };
+};
+
+// attribute = ['user', 'owner_post']
+const checkIsFollowed = (me_id, attribute) => {
+  return {
+    $lookup: {
+      from: 'follows',
+      let: { temp: `$post_attributes.${attribute}._id` },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$user', new ObjectId(me_id)] },
+                { $in: ['$$temp', '$followings'] }
+              ]
+            }
+          }
+        }
+      ],
+      as: `post_attributes.${attribute}.is_followed` // true or false
+    }
+  };
+};
+
+const trueFalseFollowed = attribute => {
+  return {
+    $addFields: {
+      [`post_attributes.${attribute}.is_followed`]: {
+        $cond: {
+          if: {
+            $eq: [{ $size: `$post_attributes.${attribute}.is_followed` }, 0]
+          },
+          then: false, // Nếu mảng rỗng, tức là không theo dõi, set thành false
+          else: true // Ngược lại, tức là đang theo dõi, set thành true
+        }
       }
     }
   };
@@ -245,14 +286,14 @@ class PostClass {
       choosePopulateAttr({
         from: 'users',
         attribute: 'user',
-        select: getSelectData(se_UserDefault)
+        select: getSelectData(se_UserDefaultForPost)
       }),
       getFirstElement('user'),
       // ================== owner_post ==================
       choosePopulateAttr({
         from: 'users',
         attribute: 'owner_post',
-        select: getSelectData(se_UserDefault)
+        select: getSelectData(se_UserDefaultForPost)
       }),
       getFirstElement('owner_post'),
       // ================== post ==================
@@ -262,18 +303,29 @@ class PostClass {
         select: unGetSelectData(unSe_PostDefault)
       }),
       getFirstElement('post'),
+
+      // ===========================================
+
+      // check me_id followed user
+      checkIsFollowed(me_id, 'user'),
+      trueFalseFollowed('user'),
+
+      // check me_id followed owner_post
+      checkIsFollowed(me_id, 'owner_post'),
+      trueFalseFollowed('owner_post'),
+
       { $project: { ...unGetSelectData(unSe_PostDefault) } },
       { $sort: sort },
       { $skip: skip },
       { $limit: limit }
     ]);
 
-    // foundPost.map(post => {
-    //   if (post.type === 'Post') {
-    //     delete post.post_attributes.post;
-    //     delete post.post_attributes.owner_post;
-    //   }
-    // });
+    foundPost.map(post => {
+      if (post.type === 'Post') {
+        delete post.post_attributes.post;
+        delete post.post_attributes.owner_post;
+      }
+    });
 
     return foundPost;
   }

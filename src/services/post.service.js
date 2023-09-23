@@ -127,7 +127,15 @@ class PostService {
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await PostClass.deletePost({ post_id });
+    const result = await PostClass.deletePost({ post_id });
+
+    UserClass.changeNumberUser({
+      user_id: me_id,
+      type: 'post',
+      number: -1
+    }).catch(err => console.log(err));
+
+    return result;
   }
   static async updatePost({ post_id, user_id, post_attributes }) {
     const foundPost = await PostClass.checkExist({
@@ -190,10 +198,18 @@ class PostService {
 
     return true;
   }
-  static createPost({ type = 'Post', post_attributes }) {
+  static async createPost({ type = 'Post', post_attributes }) {
     if (!post_attributes.title || !post_attributes.content)
       throw new BadRequestError('Post must have title or content');
-    return PostClass.createPost({ type, post_attributes });
+    const result = await PostClass.createPost({ type, post_attributes });
+
+    UserClass.changeNumberUser({
+      user_id: me_id,
+      type: 'post',
+      number: 1
+    }).catch(err => console.log(err));
+
+    return result;
   }
 }
 

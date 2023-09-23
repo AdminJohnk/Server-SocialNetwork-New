@@ -70,11 +70,22 @@ var UserSchema = new Schema(
     notifications: {
       type: [{ type: ObjectId, ref: 'Notification' }],
       default: []
+    },
+
+    // Number behavior
+    follower_number: { type: Number, default: 0 },
+    following_number: { type: Number, default: 0 },
+    post_number: { type: Number, default: 0 },
+
+    // Array behavior
+    follows: {
+      type: [{ type: ObjectId, ref: 'User' }],
+      select: false
     }
   },
   {
     timestamps: true,
-    collection: COLLECTION_NAME,
+    collection: COLLECTION_NAME
   }
 );
 
@@ -130,9 +141,6 @@ class UserClass {
       new: true
     }).lean();
   }
-  static async checkExist(select) {
-    return await UserModel.findOne(select).lean();
-  }
   static async findById({ user_id, unselect = ['password'] }) {
     return await UserModel.findOne({ _id: user_id }).select(
       unGetSelectData(unselect)
@@ -149,6 +157,22 @@ class UserClass {
       role: [RoleUser.USER]
     });
     return user;
+  }
+  // type = ['follower', 'following', 'post']
+  static async changeNumberUser({ user_id, type, number }) {
+    let stringUpdate = type + '_number';
+    return await UserModel.findByIdAndUpdate(
+      user_id,
+      {
+        $inc: {
+          [stringUpdate]: number
+        }
+      },
+      { new: true }
+    ).lean();
+  }
+  static async checkExist(select) {
+    return await UserModel.findOne(select).lean();
   }
 }
 

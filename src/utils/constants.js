@@ -17,6 +17,14 @@ const avt_default =
 const pp_UserDefault = '_id name email user_image';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image'];
 
+const se_UserDefaultForPost = [
+  '_id',
+  'name',
+  'email',
+  'user_image',
+  'experiences'
+];
+
 const unSe_PostDefault = [
   'post_attributes.likes',
   'post_attributes.shares',
@@ -41,6 +49,7 @@ module.exports = {
   avt_default,
   se_UserDefault,
   pp_UserDefault,
+  se_UserDefaultForPost,
   objectConnectRedis,
   unSe_PostDefault
 };

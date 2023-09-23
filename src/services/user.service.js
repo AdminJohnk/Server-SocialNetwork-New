@@ -131,7 +131,22 @@ class UserService {
   static async followUser({ me_id, user }) {
     const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
-    return await FollowClass.followUser({ me_id, user });
+
+    const { follow_number } = await FollowClass.followUser({ me_id, user });
+
+    UserClass.changeNumberUser({
+      user_id: me_id,
+      type: 'following',
+      number: follow_number
+    }).catch(err => console.log(err));
+
+    UserClass.changeNumberUser({
+      user_id: user,
+      type: 'follower',
+      number: follow_number
+    }).catch(err => console.log(err));
+
+    return true;
   }
   static async getListFollowersByUserId({
     user,
