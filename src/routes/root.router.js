@@ -6,9 +6,26 @@ const authRouter = require('./auth.router');
 const userRouter = require('./user.router');
 const postRouter = require('./post.router');
 const CommentRouter = require('./comment.router');
-const NotiRouter = require('./notification.router')
+const NotiRouter = require('./notification.router');
 const { checkApiKey, checkPermission } = require('../auth/checkAuth');
 const { pushToLogDiscord } = require('../middlewares/logger.middleware');
+const { authentication } = require('../auth/authUtils');
+const { pusherServer } = require('../configs/pusher');
+
+// online user
+router.post('/pusher/auth', authentication, async (req, res) => {
+  const socketId = req.body.socket_id;
+  const channel = req.body.channel_name;
+  const presenceData = {
+    user_id: req.user.userId
+  };
+  const auth = await pusherServer.authorizeChannel(
+    socketId,
+    channel,
+    presenceData
+  );
+  res.send(auth);
+});
 
 // add log to discord
 router.use(pushToLogDiscord);
