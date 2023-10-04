@@ -35,6 +35,12 @@ router.put('/update/:comment_id', asyncHandler(CommentController.updateComment))
 // Like Comment
 router.put('/like/:comment_id', asyncHandler(CommentController.likeComment));
 
+// Dislike Comment
+router.put(
+  '/dislike/:comment_id',
+  asyncHandler(CommentController.dislikeComment)
+);
+
 // =========================================================
 
 /// DELETE //

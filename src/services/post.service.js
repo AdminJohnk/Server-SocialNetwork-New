@@ -18,6 +18,10 @@ const { RoleUser } = require('../utils/constants');
 const { PostClass } = require('../models/post.model');
 const { UserClass } = require('../models/user.model');
 const { LikeClass } = require('../models/like.model');
+const NotificationService = require('./notification.service');
+const PublisherService = require('./publisher.service');
+const { Notification } = require('../utils/notificationType');
+const { CREATEPOST_001 } = Notification;
 
 class PostService {
   static async viewPost({ post_id, user_id, cookies, res }) {
@@ -30,7 +34,7 @@ class PostService {
     user_id,
     limit = 3,
     page = 1,
-    sort = { ctime: -1 }
+    sort = { createdAt: -1 }
   }) {
     const skip = (page - 1) * limit;
 
@@ -40,7 +44,7 @@ class PostService {
     user_id,
     limit = 4,
     page = 1,
-    sort = { ctime: -1 }
+    sort = { createdAt: -1 }
   }) {
     const skip = (page - 1) * limit;
 
@@ -56,7 +60,7 @@ class PostService {
     owner_post,
     limit = 10,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const skip = (page - 1) * limit;
 
@@ -79,7 +83,7 @@ class PostService {
     owner_post,
     limit = 10,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const skip = (page - 1) * limit;
 
@@ -102,7 +106,7 @@ class PostService {
     owner_post,
     limit = 10,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const skip = (page - 1) * limit;
 
@@ -166,7 +170,7 @@ class PostService {
     me_id,
     limit = 4,
     page = 1,
-    sort = { ctime: -1 }
+    sort = { createdAt: -1 }
   }) {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
@@ -181,35 +185,55 @@ class PostService {
 
     return await PostClass.findByID({ post_id, user });
   }
-  static async sharePost({ post_attributes }) {
+
+  static async sharePost({ user, post, owner_post }) {
     const foundPost = await PostClass.checkExist({
-      _id: post_attributes.post,
-      'post_attributes.user': post_attributes.owner_post
+      _id: post,
+      'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { numShare } = await PostClass.sharePost({ post_attributes });
+    const { numShare } = await PostClass.sharePost({ user, post, owner_post });
 
     PostClass.changeBehaviorPost({
-      post_id: post_attributes.post,
+      post_id: post,
       type: 'share',
-      user_id: post_attributes.user,
+      user_id: user,
       number: numShare
-    }).catch(err => console.log(err));
+    });
+
+    if (user !== owner_post && numShare === 1) {
+      const msg = NotificationService.createMsgToPublish({
+        type: SHAREPOST_001,
+        sender: user,
+        receiver: owner_post,
+        post: post
+      });
+
+      PublisherService.publishNotify(msg);
+    }
 
     return true;
   }
-  static async createPost({ type = 'Post', post_attributes }) {
-    if (!post_attributes.title || !post_attributes.content)
+  static async createPost({ type = 'Post', user, title, content }) {
+    if (!title || !content)
       throw new BadRequestError('Post must have title or content');
-    const result = await PostClass.createPost({ type, post_attributes });
+    const result = await PostClass.createPost({ type, user, title, content });
 
     UserClass.changeNumberUser({
-      user_id: post_attributes.user,
+      user_id: user,
       type: 'post',
       number: 1
-    }).catch(err => console.log(err));
+    });
 
+    const msg = NotificationService.createMsgToPublish({
+      type: CREATEPOST_001,
+      sender: user,
+      post: result._id
+    });
+
+    PublisherService.publishNotify(msg);
+    // return true;
     return result;
   }
 }

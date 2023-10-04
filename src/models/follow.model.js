@@ -34,15 +34,15 @@ class FollowClass {
       user: me_id,
       followings: { $in: [user] }
     });
-    let follow_number = 1;
+    let numFollow = 1;
     if (isFollowed) {
       FollowClass.removeFollow({ me_id, user });
-      follow_number = -1; 
+      numFollow = -1; 
     } else {
       FollowClass.addFollow({ me_id, user });
     }
     return {
-      follow_number
+      numFollow
     };
   }
   static async addFollow({ me_id, user }) {

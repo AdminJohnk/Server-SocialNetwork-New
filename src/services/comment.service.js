@@ -7,15 +7,25 @@ const {
   NotFoundError,
   ForbiddenError
 } = require('../core/error.response');
-
 const { ParentCommentClass } = require('../models/parentComment.model');
 const { ChildCommentClass } = require('../models/childComment.model');
 const { PostClass } = require('../models/post.model');
+const NotificationService = require('../services/notification.service');
+const { Notification } = require('../utils/notificationType');
+const {
+  COMMENTPOST_001,
+  REPLYCOMMENT_001,
+  LIKECOMMENT_001,
+  DISLIKECOMMENT_001
+} = Notification;
+const PublisherService = require('../services/publisher.service');
 
 class CommentService {
-  static async likeComment({ comment_id, post, user, type }) {
+  static async dislikeComment({ comment_id, post, user, owner_comment, type }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
+
+    let number;
 
     if (type === 'parent') {
       const foundParentComment = await ParentCommentClass.checkExist({
@@ -24,11 +34,12 @@ class CommentService {
       if (!foundParentComment)
         throw new NotFoundError('Parent comment not found');
 
-      return await ParentCommentClass.likeComment({
+      const { dislike_number } = await ParentCommentClass.dislikeComment({
         comment_id,
         post,
         user
       });
+      number = dislike_number;
     } else if (type === 'child') {
       const foundChildComment = await ChildCommentClass.checkExist({
         _id: comment_id
@@ -36,12 +47,80 @@ class CommentService {
       if (!foundChildComment)
         throw new NotFoundError('Child comment not found');
 
-      return await ChildCommentClass.likeComment({
+      const { dislike_number } = await ChildCommentClass.dislikeComment({
         comment_id,
         post,
         user
       });
+
+      number = dislike_number;
     } else throw new BadRequestError('Type is not valid');
+
+    if (user !== owner_comment && number === 1) {
+      const msg = NotificationService.createMsgToPublish({
+        type: DISLIKECOMMENT_001,
+        sender: user,
+        receiver: owner_comment,
+        post: post,
+        comment: comment_id,
+        type_comment: type
+      });
+
+      PublisherService.publishNotify(msg);
+    }
+
+    return true;
+  }
+  static async likeComment({ comment_id, post, user, owner_comment, type }) {
+    const foundPost = await PostClass.checkExist({ _id: post });
+    if (!foundPost) throw new NotFoundError('Post not found');
+
+    let number;
+
+    if (type === 'parent') {
+      const foundParentComment = await ParentCommentClass.checkExist({
+        _id: comment_id,
+        user: owner_comment
+      });
+      if (!foundParentComment)
+        throw new NotFoundError('Parent comment not found');
+
+      const { like_number } = await ParentCommentClass.likeComment({
+        comment_id,
+        post,
+        user
+      });
+
+      number = like_number;
+    } else if (type === 'child') {
+      const foundChildComment = await ChildCommentClass.checkExist({
+        _id: comment_id,
+        user: owner_comment
+      });
+      if (!foundChildComment)
+        throw new NotFoundError('Child comment not found');
+
+      const { like_number } = await ChildCommentClass.likeComment({
+        comment_id,
+        post,
+        user
+      });
+      number = like_number;
+    } else throw new BadRequestError('Type is not valid');
+
+    if (user !== owner_comment && number === 1) {
+      const msg = NotificationService.createMsgToPublish({
+        type: LIKECOMMENT_001,
+        sender: user,
+        receiver: owner_comment,
+        post: post,
+        comment: comment_id,
+        type_comment: type
+      });
+
+      PublisherService.publishNotify(msg);
+    }
+    return true;
   }
   static async updateComment({ comment_id, post, user, content, type }) {
     const foundPost = await PostClass.checkExist({ _id: post });
@@ -137,7 +216,7 @@ class CommentService {
     parent,
     limit = 4,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
@@ -160,7 +239,7 @@ class CommentService {
     post,
     limit = 4,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
@@ -172,26 +251,28 @@ class CommentService {
       sort
     });
   }
-  static async commentPost({ type, post, user, content, parent }) {
+  static async commentPost({
+    type,
+    user,
+    parentUser,
+    post,
+    owner_post,
+    content,
+    parent
+  }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
     if (content === '') throw new BadRequestError('Content is empty');
 
+    let result;
+
     if (type === 'parent') {
-      const result = await ParentCommentClass.createComment({
+      result = await ParentCommentClass.createComment({
         post,
         user,
         content
       });
-
-      // Cập nhật số comment của post
-      await PostClass.changeNumberPost({
-        post_id: post,
-        type: 'comment',
-        number: 1
-      });
-      return result;
     } else if (type === 'child') {
       const foundParentComment = await ParentCommentClass.checkExist({
         _id: parent
@@ -199,21 +280,44 @@ class CommentService {
       if (!foundParentComment)
         throw new NotFoundError('Parent comment not found');
 
-      const result = await ChildCommentClass.createComment({
+      result = await ChildCommentClass.createComment({
         post,
         user,
         content,
         parent
       });
 
-      await PostClass.changeNumberPost({
-        post_id: post,
-        type: 'comment',
-        number: 1
-      });
-
-      return result;
+      // Nếu rep comment của người khác thì thông báo cho người đó. Nếu rep comment của chính mình thì không thông báo
+      if (user !== parentUser) {
+        // Thông báo cho người được rep comment
+        const msg = NotificationService.createMsgToPublish({
+          type: REPLYCOMMENT_001,
+          sender: user,
+          receiver: parentUser,
+          post: post
+        });
+        PublisherService.publishNotify(msg);
+      }
     } else throw new BadRequestError('Type is not valid');
+
+    // Cập nhật số comment của post
+    PostClass.changeNumberPost({
+      post_id: post,
+      type: 'comment',
+      number: 1
+    });
+
+    if (user !== parentUser) {
+      // Thông báo cho người đăng post
+      const msg = NotificationService.createMsgToPublish({
+        type: COMMENTPOST_001,
+        sender: user,
+        receiver: owner_post,
+        post: post
+      });
+      PublisherService.publishNotify(msg);
+    }
+    return result;
   }
 }
 

@@ -153,9 +153,9 @@ class PostClass {
     return await this.findByID({ post_id });
   }
   static async getAllPopularPost({ user_id, limit, skip, sort }) {
-    let condidion = {};
+    let condition = {};
     let foundPost = await this.findPostByAggregate({
-      condidion,
+      condition,
       me_id: user_id,
       limit,
       skip,
@@ -164,9 +164,9 @@ class PostClass {
     return foundPost;
   }
   static async getAllPostForNewsFeed({ user_id, limit, skip, sort }) {
-    let condidion = {};
+    let condition = {};
     let foundPost = await this.findPostByAggregate({
-      condidion,
+      condition,
       me_id: user_id,
       limit,
       skip,
@@ -232,29 +232,30 @@ class PostClass {
     ).lean();
 
     const result = await this.findPostByAggregate({
-      condidion: { _id: postUpdate._id },
+      condition: { _id: postUpdate._id },
       me_id: user_id
     });
 
     return result[0];
   }
-  static async sharePost({ type = 'Share', post_attributes }) {
+  static async sharePost({ type = 'Share', user, post, owner_post }) {
+    const post_attributes = { user, post, owner_post };
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
-      'post_attributes.user': post_attributes.user,
-      'post_attributes.post': post_attributes.post,
+      'post_attributes.user': user,
+      'post_attributes.post': post,
       type
     });
 
     let numShare = 1;
 
     if (sharedPost) {
-      await PostModel.deleteOne(sharedPost._id);
+      Promise.resolve(PostModel.deleteOne(sharedPost._id));
       numShare = -1;
-    } else await PostModel.create({ type, post_attributes });
+    } else PostModel.create({ type, post_attributes });
 
     this.changeNumberPost({
-      post_id: post_attributes.post,
+      post_id: post,
       type: 'share',
       number: numShare
     }).catch(err => console.log(err));
@@ -268,9 +269,9 @@ class PostClass {
     return await this.populatePostShare(posts);
   }
   static async getAllPostByUserId({ user_id, me_id, limit, skip, sort }) {
-    let condidion = { 'post_attributes.user': new ObjectId(user_id) };
+    let condition = { 'post_attributes.user': new ObjectId(user_id) };
     let foundPost = await this.findPostByAggregate({
-      condidion,
+      condition,
       me_id,
       limit,
       skip,
@@ -279,19 +280,19 @@ class PostClass {
     return foundPost;
   }
   static async findByID({ post_id, user }) {
-    let condidion = { _id: new ObjectId(post_id) };
-    let foundPost = await this.findPostByAggregate({ condidion, me_id: user });
+    let condition = { _id: new ObjectId(post_id) };
+    let foundPost = await this.findPostByAggregate({ condition, me_id: user });
     return foundPost[0];
   }
   static async findPostByAggregate({
-    condidion,
+    condition,
     me_id,
     limit = 1,
     skip = 0,
-    sort = { ctime: -1 }
+    sort = { createdAt: -1 }
   }) {
     let foundPost = await PostModel.aggregate([
-      { $match: condidion },
+      { $match: condition },
       { $addFields: { ...addFieldsObject(me_id) } },
       // ================== user ==================
       choosePopulateAttr({
@@ -340,12 +341,13 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, post_attributes }) {
+  static async createPost({ type, user, title, content }) {
+    const post_attributes = { user, title, content };
     const newPost = await PostModel.create({ type, post_attributes });
 
     const result = await this.findPostByAggregate({
-      condidion: { _id: newPost._id },
-      me_id: post_attributes.user
+      condition: { _id: newPost._id },
+      me_id: user
     });
 
     return result[0];

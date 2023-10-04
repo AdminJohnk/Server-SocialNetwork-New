@@ -17,6 +17,8 @@ const ChildCommentSchema = new Schema(
 
     // Like
     likes: { type: [{ type: ObjectId, ref: 'User' }], default: [] },
+    dislikes: { type: [{ type: ObjectId, ref: 'User' }], default: [] },
+
     like_number: { type: Number, default: 0 },
     dislike_number: { type: Number, default: 0 }
   },
@@ -29,27 +31,71 @@ const ChildCommentSchema = new Schema(
 const ChildCommentModel = model(DOCUMENT_NAME, ChildCommentSchema);
 
 class ChildCommentClass {
+  static async dislikeComment({ comment_id, post, user }) {
+    const isDisliked = await this.checkExist({
+      _id: comment_id,
+      post,
+      dislikes: { $elemMatch: { $eq: user } }
+    });
+
+    let dislike_number = 1;
+
+    // Nếu đã dislike rồi thì bỏ dislike
+    if (isDisliked) {
+      dislike_number = -1;
+      Promise.resolve(
+        ChildCommentModel.findOneAndUpdate(
+          { _id: comment_id, post },
+          { $pull: { dislikes: user }, $inc: { dislike_number: -1 } },
+          { new: true }
+        )
+      );
+    } else {
+      // Nếu chưa dislike thì dislike
+      Promise.resolve(
+        ChildCommentModel.findOneAndUpdate(
+          { _id: comment_id, post },
+          { $addToSet: { dislikes: user }, $inc: { dislike_number: 1 } },
+          { new: true }
+        )
+      );
+    }
+    return {
+      dislike_number
+    };
+  }
   static async likeComment({ comment_id, post, user }) {
-    const isLiked = this.checkExist({
+    const isLiked = await this.checkExist({
       _id: comment_id,
       post,
       likes: { $elemMatch: { $eq: user } }
     });
 
+    let like_number = 1;
+
     // Nếu đã like rồi thì bỏ like
     if (isLiked) {
-      return await ChildCommentModel.findOneAndUpdate(
-        { _id: comment_id, post },
-        { $pull: { likes: user }, $inc: { like_number: -1 } },
-        { new: true }
+      like_number = -1;
+      Promise.resolve(
+        ChildCommentModel.findOneAndUpdate(
+          { _id: comment_id, post },
+          { $pull: { likes: user }, $inc: { like_number: -1 } },
+          { new: true }
+        )
+      );
+    } else {
+      // Nếu chưa like thì like
+      Promise.resolve(
+        ChildCommentModel.findOneAndUpdate(
+          { _id: comment_id, post },
+          { $addToSet: { likes: user }, $inc: { like_number: 1 } },
+          { new: true }
+        )
       );
     }
-    // Nếu chưa like thì like
-    return await ChildCommentModel.findOneAndUpdate(
-      { _id: comment_id, post },
-      { $addToSet: { likes: user }, $inc: { like_number: 1 } },
-      { new: true }
-    );
+    return {
+      like_number
+    };
   }
   static async updateComment({ comment_id, post, user, content }) {
     return await ChildCommentModel.findOneAndUpdate(

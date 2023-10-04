@@ -4,12 +4,14 @@ const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData, getSelectData } = require('../utils/functions');
 const { avt_default, se_UserDefault, RoleUser } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
+const { UserIncrClass } = require('./user_incr.model');
 
 const DOCUMENT_NAME = 'User';
 const COLLECTION_NAME = 'users';
 
 var UserSchema = new Schema(
   {
+    id_incr: { type: Number, default: 0 },
     name: {
       type: String,
       trim: true,
@@ -91,29 +93,20 @@ var UserSchema = new Schema(
 //   }
 // });
 
-const UserModel = model(DOCUMENT_NAME, UserSchema);
+UserSchema.pre('save', async function (next) {
+  const userIncr = await UserIncrClass.getIdCurrent();
+  if (userIncr.id_delete.length) {
+    this.id_incr = userIncr.id_delete.at(-1);
+    await UserIncrClass.pullIdDelete();
+  } else {
+    this.id_incr = userIncr.id_current + 1;
+    await UserIncrClass.setIncrId(this.id_incr);
+  }
 
-// const checkIsFollowed = (me_id, attribute) => {
-//   return {
-//     $lookup: {
-//       from: 'follows',
-//       let: { temp: `$post_attributes.${attribute}._id` },
-//       pipeline: [
-//         {
-//           $match: {
-//             $expr: {
-//               $and: [
-//                 { $eq: ['$user', new ObjectId(me_id)] },
-//                 { $in: ['$$temp', '$followings'] }
-//               ]
-//             }
-//           }
-//         }
-//       ],
-//       as: `post_attributes.${attribute}.is_followed`
-//     }
-//   };
-// };
+  next();
+});
+
+const UserModel = model(DOCUMENT_NAME, UserSchema);
 
 // attribute = ['_id'] --> check me_id is followed user_id
 const checkIsFollowed = (me_id, attribute) => {
@@ -137,21 +130,6 @@ const checkIsFollowed = (me_id, attribute) => {
     }
   };
 };
-// const trueFalseFollowed = attribute => {
-//   return {
-//     $addFields: {
-//       [`post_attributes.${attribute}.is_followed`]: {
-//         $cond: {
-//           if: {
-//             $eq: [{ $size: `$post_attributes.${attribute}.is_followed` }, 0]
-//           },
-//           then: false, // Nếu mảng rỗng, tức là không theo dõi, set thành false
-//           else: true // Ngược lại, tức là đang theo dõi, set thành true
-//         }
-//       }
-//     }
-//   };
-// };
 const trueFalseFollowed = () => {
   return {
     $addFields: {
@@ -182,7 +160,7 @@ class UserClass {
     });
 
     const operant = isSaved ? '$pull' : '$addToSet';
-    const share_number = isSaved ? -1 : 1;
+    const numSave = isSaved ? -1 : 1;
 
     await UserModel.findByIdAndUpdate(
       user,
@@ -193,7 +171,7 @@ class UserClass {
     );
 
     return {
-      share_number
+      numSave
     };
   }
   static async updateTags({ user_id, tags }) {
@@ -224,6 +202,11 @@ class UserClass {
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).select({ password: 1 }).lean();
+  }
+  static async deleteUser({ user_id }) {
+    const user = await UserModel.findByIdAndDelete(user_id).lean();
+    await UserIncrClass.pushIdDelete(user.id_incr);
+    return true;
   }
   static async createUser({ name, email, password }) {
     const user = UserModel.create({

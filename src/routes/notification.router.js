@@ -9,23 +9,20 @@ const { authentication } = require('../auth/authUtils');
 router.use(authentication);
 
 /// GET //
-// List Notification By User
-router.get('/listnoti', asyncHandler(NotiController.listNotiByUser));
+// Get New Notification
+router.get('/newnoti', asyncHandler(NotiController.getNewNotification));
 
 // =========================================================
 
 /// POST //
 
-
 // =========================================================
 
 /// PUT //
 
-
 // =========================================================
 
 /// DELETE //
-
 
 // =========================================================
 

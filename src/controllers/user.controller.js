@@ -6,6 +6,17 @@ const { HEADER } = require('../utils/constants');
 
 class UserController {
   /* 
+    Delete User
+  */
+  static deleteUser = async (req, res, next) => {
+    new OK({
+      message: 'Delete User Successfully',
+      metadata: await UserService.deleteUser({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+  /* 
     Get My Info
     Link: http://localhost:4052/api/v1/users/me
   */

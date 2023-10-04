@@ -2,36 +2,49 @@
 
 const { model, Schema, Types } = require('mongoose');
 const ObjectId = Types.ObjectId;
+const { pp_UserDefault } = require('../utils/constants');
 
 const DOCUMENT_NAME = 'Notification';
 const COLLECTION_NAME = 'notifications';
 
-// LIKE-001: like post success
-// SHARE-001: share post success
-// COMMENT-001: comment post success
-// FOLLOW-001: follow user success
+const { EnumType } = require('../utils/notificationType');
 
 const NotificationSchema = new Schema(
-    {
-        type: { type: String, enum: ['LIKE-001', 'SHARE-001', 'COMMENT-001', 'FOLLOW-001'], required: true },
-        sender: { type: ObjectId, ref: 'User', required: true },
-        receiver: { type: Number, required: true },
-        content: { type: String, required: true },
-        options: { type: Object, default: {} }
-    },
-    {
-        timestamps: true,
-        collection: COLLECTION_NAME
-    }
+  {
+    type: { type: String, enum: EnumType, required: true },
+    sender: { type: ObjectId, ref: 'User', required: true },
+    receiver: { type: ObjectId, ref: 'User', required: true },
+    content: { type: String, required: true },
+    is_viewed: { type: Boolean, default: false },
+    options: { type: Object, default: {} },
+    createAt: { type: Date, default: Date.now }
+  },
+  {
+    collection: COLLECTION_NAME
+  }
 );
+
+NotificationSchema.index({ createAt: 1 }, { expireAfterSeconds: 86400 * 10 });
 
 const NotiModel = model(DOCUMENT_NAME, NotificationSchema);
 
 class NotiClass {
-
+  static async getNewNotification({ user_id, page, limit, sort }) {
+    const skip = (page - 1) * limit;
+    return await NotiModel.find({ receiver: user_id, is_viewed: false })
+      .sort(sort)
+      .populate('sender', pp_UserDefault)
+      .populate('receiver', pp_UserDefault)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+  static async createNotify(payload) {
+    await NotiModel.create(payload);
+  }
 }
 
 module.exports = {
-    NotiModel,
-    NotiClass
-}
+  NotiModel,
+  NotiClass
+};
