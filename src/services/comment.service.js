@@ -212,6 +212,7 @@ class CommentService {
     } else throw new BadRequestError('Type is not valid');
   }
   static async getAllChildByParentID({
+    user,
     post,
     parent,
     limit = 4,
@@ -228,6 +229,7 @@ class CommentService {
       throw new NotFoundError('Parent comment not found');
 
     return await ChildCommentClass.getAllChildByParentID({
+      user,
       post,
       parent,
       limit,
@@ -236,6 +238,7 @@ class CommentService {
     });
   }
   static async getAllParentComments({
+    user,
     post,
     limit = 4,
     page = 1,
@@ -245,6 +248,7 @@ class CommentService {
     if (!foundPost) throw new NotFoundError('Post not found');
 
     return await ParentCommentClass.getAllParentComments({
+      user,
       post,
       limit,
       page,
