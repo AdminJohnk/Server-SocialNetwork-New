@@ -5,14 +5,15 @@ const { OK, CREATED } = require('../core/success.response');
 const { HEADER } = require('../utils/constants');
 
 class NotiController {
-  static listNotiByUser = async (req, res, next) => {
+  static getNewNotification = async (req, res, next) => {
     new OK({
-      message: 'List Notification Successfully',
-      metadata: await NotiService.listNotiByUser({
-        userId: 1
+      message: 'Get New Notification Successfully',
+      metadata: await NotiService.getNewNotification({
+        ...req.body,
+        user_id: req.user.userId
       })
     }).send(res);
-  };
+  }
 }
 
 module.exports = NotiController;

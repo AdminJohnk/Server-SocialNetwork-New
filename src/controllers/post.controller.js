@@ -168,10 +168,8 @@ class PostController {
     new CREATED({
       message: 'Share Post Successfully',
       metadata: await PostService.sharePost({
-        post_attributes: {
-          ...req.body,
-          user: req.user.userId
-        }
+        ...req.body,
+        user: req.user.userId
       })
     }).send(res);
   };
@@ -188,7 +186,8 @@ class PostController {
     new CREATED({
       message: 'Create Post Successfully',
       metadata: await PostService.createPost({
-        post_attributes: { ...req.body, user: req.user.userId }
+        ...req.body,
+        user: req.user.userId
       })
     }).send(res);
   };

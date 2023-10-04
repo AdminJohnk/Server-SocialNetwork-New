@@ -58,6 +58,8 @@ router.put('/savepost/:post_id', asyncHandler(UserController.savePost));
 // =========================================================
 
 /// DELETE //
+// Delete user
+router.delete('/delete', asyncHandler(UserController.deleteUser));
 
 // =========================================================
 

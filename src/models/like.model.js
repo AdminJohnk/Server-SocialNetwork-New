@@ -19,6 +19,8 @@ var LikeSchema = new Schema(
   }
 );
 
+LikeSchema.index({ user: 1, post: 1 }, { unique: true });
+
 const LikeModel = model(DOCUMENT_NAME, LikeSchema);
 
 class LikeClass {
@@ -31,20 +33,19 @@ class LikeClass {
       .sort(sort)
       .lean();
   }
-  static async likePost(payload) {
+  static async likePost({ user, post, owner_post }) {
     const foundLike = await LikeModel.findOne({
-      user: payload.user,
-      post: payload.post
+      user: user,
+      post: post
     });
-    let like_number = 1;
-    let result;
+    let numLike = 1;
     if (foundLike) {
-      result = await LikeModel.deleteOne(foundLike);
-      like_number = -1;
-    } else result = await LikeModel.create(payload);
+      Promise.resolve(LikeModel.deleteOne(foundLike));
+      numLike = -1;
+    } else LikeModel.create({ user, post, owner_post });
+
     return {
-      like_number,
-      result
+      numLike
     };
   }
   static async checkExist(select) {

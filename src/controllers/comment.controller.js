@@ -5,11 +5,31 @@ const { OK, CREATED } = require('../core/success.response');
 
 class CommentController {
   /* 
+    Dislike Comment
+    Link: http://localhost:4052/api/v1/comments/dislike/:comment_id
+    {
+      "type" : "child",
+      "post": "64ff0ed21c99a31a0e80d44e",
+      "owner_comment": "650ac1e3f3563200db3b434b"
+    }
+  */
+  static dislikeComment = async (req, res, next) => {
+    new OK({
+      message: 'Dislike Comment Successfully',
+      metadata: await CommentService.dislikeComment({
+        ...req.body,
+        user: req.user.userId,
+        comment_id: req.params.comment_id
+      })
+    }).send(res);
+  };
+  /* 
     Like Comment
     Link: http://localhost:4052/api/v1/comments/like/:comment_id
     {
       "type" : "child",
-      "post": "64ff0ed21c99a31a0e80d44e"
+      "post": "64ff0ed21c99a31a0e80d44e",
+      "owner_comment": "650ac1e3f3563200db3b434b"
     }
   */
   static likeComment = async (req, res, next) => {
@@ -90,15 +110,18 @@ class CommentController {
     Link: http://localhost:4052/api/v1/comments/create
     {
         "type": "parent",
-        "post": "64ff0ed21c99a31a0e80d44e",
+        "post": "6513e9f518f3a421273c889f",
+        "owner_post": "64fc1215bb5536f522ca979d",
         "content" : "Comment 1"
     }
     {
         "type": "child",
-        "post": "64ff0ed21c99a31a0e80d44e",
-        "content" : "Reply Comment 1",
-        "parent": "65002b546ab43bb5c453d86c"
-    }
+        "post": "650e959fd2a597e8c31ccee2",
+        "owner_post": "64fc1215bb5536f522ca979d",
+        "content" : "Comment 1",
+        "parentUser":"650ac1e3f3563200db3b434b",
+        "parent": "651408d2f2a12cdf3637f982"
+     }
   */
   static commentPost = async (req, res, next) => {
     new CREATED({

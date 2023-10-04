@@ -25,7 +25,6 @@ app.use(
   })
 );
 
-
 // init db
 require('./database/init.mongodb');
 

@@ -13,9 +13,17 @@ const { UserClass } = require('../models/user.model');
 const { FollowClass } = require('../models/follow.model');
 const { PostClass } = require('../models/post.model');
 const { LikeClass } = require('../models/like.model');
-const NotiService = require('./notification.service');
+const PublisherService = require('./publisher.service');
+const NotificationService = require('./notification.service');
+const { Notification } = require('../utils/notificationType');
+const { LIKEPOST_001, FOLLOWUSER_001 } = Notification;
 
 class UserService {
+  static deleteUser = async ({ user_id }) => {
+    return await UserClass.deleteUser({
+      user_id
+    });
+  };
   static getMyInfo = async ({ user_id }) => {
     return await UserClass.getMyInfo({
       user_id
@@ -25,7 +33,7 @@ class UserService {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { share_number } = await UserClass.savePost({
+    const { numSave } = await UserClass.savePost({
       user,
       post
     });
@@ -33,53 +41,56 @@ class UserService {
     PostClass.changeNumberPost({
       post_id: post,
       type: 'save',
-      number: share_number
-    }).catch(err => console.log(err));
+      number: numSave
+    });
 
     PostClass.changeBehaviorPost({
       post_id: post,
       type: 'save',
       user_id: user,
-      number: share_number
-    }).catch(err => console.log(err));
+      number: numSave
+    });
 
     return true;
   };
-  static likePost = async payload => {
+  static likePost = async ({ user, post, owner_post }) => {
     const foundPost = await PostClass.checkExist({
-      _id: payload.post,
-      'post_attributes.user': payload.owner_post
+      _id: post,
+      'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { like_number, result } = await LikeClass.likePost(payload);
-
-    await PostClass.changeNumberPost({
-      post_id: payload.post,
-      type: 'like',
-      number: like_number
+    const { numLike } = await LikeClass.likePost({
+      user,
+      post,
+      owner_post
     });
 
-    await PostClass.changeBehaviorPost({
-      post_id: payload.post,
+    PostClass.changeNumberPost({
+      post_id: post,
       type: 'like',
-      user_id: payload.user,
-      number: like_number
+      number: numLike
     });
 
-    // NotiService.pushNotiToSystem({
-    //   type: 'LIKE-001',
-    //   receiver: 1,
-    //   sender: payload.user,
-    //   options: {
-    //     post: 'post_name',
-    //     user: payload.user
-    //   }
-    // })
-    //   .then(res => console.log(res))
-    //   .catch(err => console.log(err));
+    PostClass.changeBehaviorPost({
+      post_id: post,
+      type: 'like',
+      user_id: user,
+      number: numLike
+    });
 
-    return result;
+    if (user !== owner_post && numLike === 1) {
+      const msg = NotificationService.createMsgToPublish({
+        type: LIKEPOST_001,
+        sender: user,
+        receiver: owner_post,
+        post: post
+      });
+
+      PublisherService.publishNotify(msg);
+    }
+
+    return true;
   };
   static updateTags = async ({ user_id, tags }) => {
     return await UserClass.updateTags({
@@ -132,27 +143,36 @@ class UserService {
     const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
 
-    const { follow_number } = await FollowClass.followUser({ me_id, user });
+    const { numFollow } = await FollowClass.followUser({ me_id, user });
 
     UserClass.changeNumberUser({
       user_id: me_id,
       type: 'following',
-      number: follow_number
+      number: numFollow
     }).catch(err => console.log(err));
 
     UserClass.changeNumberUser({
       user_id: user,
       type: 'follower',
-      number: follow_number
+      number: numFollow
     }).catch(err => console.log(err));
 
+    if (me_id !== user && numFollow === 1) {
+      const msg = NotificationService.createMsgToPublish({
+        type: FOLLOWUSER_001,
+        sender: me_id,
+        receiver: user
+      });
+
+      PublisherService.publishNotify(msg);
+    }
     return true;
   }
   static async getListFollowersByUserId({
     user,
     limit = 30,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
@@ -168,7 +188,7 @@ class UserService {
     user,
     limit = 30,
     page = 1,
-    sort = 'ctime'
+    sort = { createdAt: -1 }
   }) {
     const foundUser = await UserClass.checkExist({ _id: user });
     if (!foundUser) throw new NotFoundError('User not found');
