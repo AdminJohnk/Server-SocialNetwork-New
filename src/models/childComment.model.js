@@ -159,6 +159,11 @@ class ChildCommentClass {
           as: 'user'
         }
       },
+      {
+        $addFields: {
+          user: { $arrayElemAt: ['$user', 0] }
+        }
+      },
       { $project: { ...unGetSelectData(unselect) } },
       { $sort: sort },
       { $skip: skip },
