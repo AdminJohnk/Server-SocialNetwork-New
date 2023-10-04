@@ -90,7 +90,10 @@ class CommentController {
   static getAllChildByParentID = async (req, res, next) => {
     new OK({
       message: 'Get All Child Comments Successfully',
-      metadata: await CommentService.getAllChildByParentID(req.body)
+      metadata: await CommentService.getAllChildByParentID({
+        ...req.body,
+        user: req.user.userId
+      })
     }).send(res);
   };
   /* 
@@ -101,7 +104,8 @@ class CommentController {
     new OK({
       message: 'Get All Parent Comments Successfully',
       metadata: await CommentService.getAllParentComments({
-        post: req.params.post_id
+        post: req.params.post_id,
+        user: req.user.userId
       })
     }).send(res);
   };

@@ -1,7 +1,7 @@
 'use strict';
 const { model, Schema, Types } = require('mongoose');
 const { getSelectData, unGetSelectData } = require('../utils/functions');
-const { pp_UserDefault } = require('../utils/constants');
+const { pp_UserDefault, se_UserDefault } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'ChildComment';
@@ -118,6 +118,7 @@ class ChildCommentClass {
     });
   }
   static async getAllChildByParentID({
+    user,
     post,
     parent,
     limit,
@@ -126,13 +127,43 @@ class ChildCommentClass {
     unselect = ['likes', 'dislikes']
   }) {
     const skip = (page - 1) * limit;
-    return await ChildCommentModel.find({ post, parent })
-      .populate('user', pp_UserDefault)
-      .select(unGetSelectData(unselect))
-      .skip(skip)
-      .limit(limit)
-      .sort(sort)
-      .lean();
+    // return await ChildCommentModel.find({ post, parent })
+    //   .populate('user', pp_UserDefault)
+    //   .select(unGetSelectData(unselect))
+    //   .skip(skip)
+    //   .limit(limit)
+    //   .sort(sort)
+    //   .lean();
+
+    return await ChildCommentModel.aggregate([
+      {
+        $match: {
+          post: new ObjectId(post),
+          parent: new ObjectId(parent)
+        }
+      },
+      {
+        $addFields: {
+          is_liked: { $in: [new ObjectId(user), '$likes'] },
+          is_disliked: { $in: [new ObjectId(user), '$dislikes'] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          let: { user_id: '$user' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$user_id'] } } },
+            { $project: getSelectData(se_UserDefault) }
+          ],
+          as: 'user'
+        }
+      },
+      { $project: { ...unGetSelectData(unselect) } },
+      { $sort: sort },
+      { $skip: skip },
+      { $limit: limit }
+    ]);
   }
   static async createComment(payload) {
     return await ChildCommentModel.create(payload);
