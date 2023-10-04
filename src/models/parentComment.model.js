@@ -1,6 +1,6 @@
 'use strict';
 const { model, Schema, Types } = require('mongoose');
-const { getSelectData } = require('../utils/functions');
+const { getSelectData, unGetSelectData } = require('../utils/functions');
 const ObjectId = Types.ObjectId;
 const { pp_UserDefault } = require('../utils/constants');
 
@@ -115,12 +115,12 @@ class ParentCommentClass {
     limit,
     page,
     sort,
-    select = ['user', 'content', 'createdAt', 'type']
+    unselect = ['likes', 'dislikes']
   }) {
     const skip = (page - 1) * limit;
     return await ParentCommentModel.find({ post })
       .populate('user', pp_UserDefault)
-      .select(getSelectData(select))
+      .select(unGetSelectData(unselect))
       .skip(skip)
       .limit(limit)
       .sort(sort)
