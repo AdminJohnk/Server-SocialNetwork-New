@@ -134,7 +134,7 @@ class PostService {
     const result = await PostClass.deletePost({ post_id });
 
     UserClass.changeNumberUser({
-      user_id: me_id,
+      user_id,
       type: 'post',
       number: -1
     }).catch(err => console.log(err));
