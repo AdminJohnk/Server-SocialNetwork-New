@@ -7,7 +7,7 @@ const ObjectId = Types.ObjectId;
 const DOCUMENT_NAME = 'Like';
 const COLLECTION_NAME = 'likes';
 
-var LikeSchema = new Schema(
+const LikeSchema = new Schema(
   {
     user: { type: ObjectId, ref: 'User', required: true },
     post: { type: ObjectId, ref: 'Post', required: true },
