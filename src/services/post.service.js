@@ -30,13 +30,19 @@ class PostService {
 
     return await PostClass.viewPost({ post_id, user_id, cookies, res });
   }
-  static async getAllPopularPost({ user_id, limit = 3, page = 1, sort = { createdAt: -1 }, sortBy }) {
+  static async getAllPopularPost({
+    user_id,
+    limit = 3,
+    page = 1,
+    sort = { 'post_attributes.view_number': -1 },
+    sortBy
+  }) {
     const skip = (page - 1) * limit;
 
     return await PostClass.getAllPopularPost({ user_id, limit, skip, sort, sortBy });
   }
-  static async getAllPostForNewsFeed({ user_id, limit = 4, page = 1, sort = { createdAt: -1 } }) {
-    const skip = (page - 1) * limit;
+  static async getAllPostForNewsFeed({ user_id, limit = 5, page = 0, sort = { createdAt: -1 } }) {
+    const skip = page * limit;
 
     return await PostClass.getAllPostForNewsFeed({
       user_id,
