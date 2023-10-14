@@ -19,7 +19,8 @@ const ParentCommentSchema = new Schema(
     dislikes: { type: [{ type: ObjectId, ref: 'User' }], default: [] },
 
     like_number: { type: Number, default: 0 },
-    dislike_number: { type: Number, default: 0 }
+    dislike_number: { type: Number, default: 0 },
+    child_number: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -30,6 +31,19 @@ const ParentCommentSchema = new Schema(
 const ParentCommentModel = model(DOCUMENT_NAME, ParentCommentSchema);
 
 class ParentCommentClass {
+  // type = ['child']
+  static async changeNumberComment({comment_id, type, number}) {
+    let stringUpdate = type + '_number';
+    return await ParentCommentModel.findByIdAndUpdate(
+      comment_id,
+      {
+        $inc: {
+          [stringUpdate]: number
+        }
+      },
+      { new: true }
+    ).lean();
+  }
   static async dislikeComment({ comment_id, post, user }) {
     const isDisliked = await this.checkExist({
       _id: comment_id,

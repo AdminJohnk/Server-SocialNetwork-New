@@ -18,6 +18,7 @@ const { RoleUser } = require('../utils/constants');
 const { PostClass } = require('../models/post.model');
 const { UserClass } = require('../models/user.model');
 const { LikeClass } = require('../models/like.model');
+const { CommunityClass } = require('../models/community.model');
 const NotificationService = require('./notification.service');
 const PublisherService = require('./publisher.service');
 const { Notification } = require('../utils/notificationType');
@@ -34,17 +35,25 @@ class PostService {
     user_id,
     limit = 3,
     page = 1,
-    sort = { createdAt: -1 }
+    sort = { createdAt: -1 },
+    scope = 'Normal'
   }) {
     const skip = (page - 1) * limit;
 
-    return await PostClass.getAllPopularPost({ user_id, limit, skip, sort });
+    return await PostClass.getAllPopularPost({
+      user_id,
+      limit,
+      skip,
+      sort,
+      scope
+    });
   }
   static async getAllPostForNewsFeed({
     user_id,
     limit = 4,
     page = 1,
-    sort = { createdAt: -1 }
+    sort = { createdAt: -1 },
+    scope = 'Normal'
   }) {
     const skip = (page - 1) * limit;
 
@@ -52,7 +61,8 @@ class PostService {
       user_id,
       limit,
       skip,
-      sort
+      sort,
+      scope
     });
   }
   static async getAllUserSavePost({
@@ -124,14 +134,38 @@ class PostService {
       sort
     });
   }
-  static async deletePost({ post_id, user_id }) {
+  static async deletePost({ post_id, user_id, scope, community }) {
     const foundPost = await PostClass.checkExist({
       _id: post_id,
       'post_attributes.user': user_id
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
+    // Xét thêm điều kiện nếu là post trong community
+    if (scope === 'Community') {
+      // Check xem community có tồn tại không
+      // Check xem user có phải member của community không
+      // Check xem post có thuộc community không
+      const condition = {
+        _id: community,
+        members: { $in: [user_id] },
+        posts: { $in: [post_id] }
+      };
+      const foundCommunity = await CommunityClass.checkExist(condition);
+      if (!foundCommunity) throw new NotFoundError('Community not found');
+    }
+
     const result = await PostClass.deletePost({ post_id });
+
+    // Xóa post trong community
+    if (scope === 'Community') {
+      await CommunityClass.changeToArrayCommunity({
+        community_id: community,
+        type: 'post',
+        itemID: result._id,
+        number: -1
+      });
+    }
 
     UserClass.changeNumberUser({
       user_id,
@@ -141,13 +175,39 @@ class PostService {
 
     return result;
   }
-  static async updatePost({ post_id, user_id, post_attributes }) {
+  static async updatePost({
+    post_id,
+    user_id,
+    content,
+    title,
+    scope,
+    community
+  }) {
+    let post_attributes = { content, title };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
       'post_attributes.user': user_id
     });
     if (!foundPost) throw new NotFoundError('Post not found');
     post_attributes = removeUndefinedFields(post_attributes);
+
+    // Check xem user có thể chỉnh sửa post hay không? (user là người tạo post)
+    if (foundPost.post_attributes.user.toString() !== user_id)
+      throw new ForbiddenError('You do not have permission to edit this post');
+
+    // Xét thêm điều kiện nếu là post trong community
+    if (scope === 'Community') {
+      // Check xem community có tồn tại không
+      // Check xem user có phải member của community không
+      // Check xem post có thuộc community không
+      const condition = {
+        _id: community,
+        members: { $in: [user_id] },
+        posts: { $in: [post_id] }
+      };
+      const foundCommunity = await CommunityClass.checkExist(condition);
+      if (!foundCommunity) throw new NotFoundError('Community not found');
+    }
 
     return await PostClass.updatePost({
       post_id,
@@ -170,20 +230,28 @@ class PostService {
     me_id,
     limit = 4,
     page = 1,
-    sort = { createdAt: -1 }
+    sort = { createdAt: -1 },
+    scope = 'Normal'
   }) {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
     const skip = (page - 1) * limit;
 
-    return PostClass.getAllPostByUserId({ user_id, me_id, limit, skip, sort });
+    return PostClass.getAllPostByUserId({
+      user_id,
+      me_id,
+      limit,
+      skip,
+      sort,
+      scope
+    });
   }
-  static async getPostById({ post_id, user }) {
+  static async getPostById({ post_id, user, scope = 'Normal' }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await PostClass.findByID({ post_id, user });
+    return await PostClass.findByID({ post_id, user, scope });
   }
 
   static async sharePost({ user, post, owner_post }) {
@@ -195,7 +263,7 @@ class PostService {
 
     const { numShare } = await PostClass.sharePost({ user, post, owner_post });
 
-    PostClass.changeBehaviorPost({
+    PostClass.changeToArrayPost({
       post_id: post,
       type: 'share',
       user_id: user,
@@ -215,10 +283,24 @@ class PostService {
 
     return true;
   }
-  static async createPost({ type = 'Post', user, title, content }) {
+  static async createPost({
+    type = 'Post',
+    user,
+    title,
+    content,
+    scope,
+    community
+  }) {
     if (!title || !content)
       throw new BadRequestError('Post must have title or content');
-    const result = await PostClass.createPost({ type, user, title, content });
+    const result = await PostClass.createPost({
+      type,
+      user,
+      title,
+      content,
+      scope,
+      community
+    });
 
     UserClass.changeNumberUser({
       user_id: user,
@@ -233,7 +315,19 @@ class PostService {
     });
 
     PublisherService.publishNotify(msg);
-    // return true;
+
+    // Thêm post trong community
+    if (scope === 'Community') {
+      await CommunityClass.changeToArrayCommunity({
+        community_id: community,
+        type: 'waitlist_post',
+        itemID: result._id,
+        number: 1
+      });
+
+      // Add notification for all member in community
+    }
+
     return result;
   }
 }

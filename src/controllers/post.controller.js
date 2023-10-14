@@ -92,6 +92,7 @@ class PostController {
     new OK({
       message: 'Delete Post Successfully',
       metadata: await PostService.deletePost({
+        ...req.body,
         post_id: req.params.post_id,
         user_id: req.user.userId
       })
@@ -109,9 +110,9 @@ class PostController {
     new OK({
       message: 'Update Post Successfully',
       metadata: await PostService.updatePost({
+        ...req.body,
         post_id: req.params.post_id,
-        user_id: req.user.userId,
-        post_attributes: { ...req.body }
+        user_id: req.user.userId
       })
     }).send(res);
   };

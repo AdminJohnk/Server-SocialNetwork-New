@@ -19,7 +19,6 @@ router.get('/conversations', asyncHandler(ChatController.getAllConversationsByUs
 router.get('/conversations/:conversation_id/messages', asyncHandler(ChatController.getMessagesByConversationId));
 
 // =========================================================
-
 /// POST //
 // Create conversation
 router.post('/conversations/create', asyncHandler(ChatController.createConverSation));

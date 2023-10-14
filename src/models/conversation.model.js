@@ -14,6 +14,7 @@ const ConversationSchema = new Schema(
     type: { type: String, enum: ['private', 'group'], required: true },
     members: { type: [ObjectId], ref: 'User', required: true },
     lastMessage: { type: ObjectId, ref: 'Message', default: null },
+    seenLastMessage: { type: [ObjectId], ref: 'User', default: [] },
 
     // private
 
@@ -38,15 +39,6 @@ class ConversationClass {
     })
       .populate('members', pp_UserDefault)
       .populate('author', pp_UserDefault)
-      .populate([
-        {
-          path: 'lastMessage',
-          populate: {
-            path: 'seen',
-            select: pp_UserDefault
-          }
-        }
-      ])
       .skip(skip)
       .limit(limit)
       .sort(sort)

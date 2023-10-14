@@ -182,10 +182,11 @@ class CommentService {
       deletedCount++;
 
       // Cập nhật số comment của post
-      await PostClass.changeNumberPost({
+      PostClass.changeToArrayPost({
         post_id: post,
         type: 'comment',
-        number: -deletedCount
+        number: -deletedCount,
+        user_id: user
       });
       return result;
     } else if (type === 'child') {
@@ -201,11 +202,19 @@ class CommentService {
         user
       });
 
+      // Cập nhật số lượng comment con của comment cha
+      ParentCommentClass.changeNumberComment({
+        comment_id: foundChildComment.parent,
+        type: 'child',
+        number: -1
+      });
+
       // Cập nhật số comment của post
-      await PostClass.changeNumberPost({
+      PostClass.changeToArrayPost({
         post_id: post,
         type: 'comment',
-        number: -1
+        number: -1,
+        user_id: user
       });
 
       return result;
@@ -291,6 +300,13 @@ class CommentService {
         parent
       });
 
+      // Cập nhật số lượng comment con của comment cha
+      ParentCommentClass.changeNumberComment({
+        comment_id: parent,
+        type: 'child',
+        number: 1
+      });
+
       // Nếu rep comment của người khác thì thông báo cho người đó. Nếu rep comment của chính mình thì không thông báo
       if (user !== parentUser) {
         // Thông báo cho người được rep comment
@@ -305,10 +321,11 @@ class CommentService {
     } else throw new BadRequestError('Type is not valid');
 
     // Cập nhật số comment của post
-    PostClass.changeNumberPost({
+    PostClass.changeToArrayPost({
       post_id: post,
       type: 'comment',
-      number: 1
+      number: 1,
+      user_id: user
     });
 
     if (user !== parentUser) {

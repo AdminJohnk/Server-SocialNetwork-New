@@ -38,13 +38,14 @@ class UserService {
       post
     });
 
-    PostClass.changeNumberPost({
+    PostClass.changeToArrayPost({
       post_id: post,
       type: 'save',
-      number: numSave
+      number: numSave,
+      user_id: user
     });
 
-    PostClass.changeBehaviorPost({
+    PostClass.changeToArrayPost({
       post_id: post,
       type: 'save',
       user_id: user,
@@ -66,13 +67,14 @@ class UserService {
       owner_post
     });
 
-    PostClass.changeNumberPost({
+    PostClass.changeToArrayPost({
       post_id: post,
       type: 'like',
-      number: numLike
+      number: numLike,
+      user_id: user
     });
 
-    PostClass.changeBehaviorPost({
+    PostClass.changeToArrayPost({
       post_id: post,
       type: 'like',
       user_id: user,

@@ -16,6 +16,9 @@ const COLLECTION_NAME = 'posts';
 var PostSchema = new Schema(
   {
     type: { type: String, enum: ['Post', 'Share'], required: true },
+    scope: { type: String, enum: ['Normal', 'Community'], default: 'Normal' },
+    community: { type: ObjectId, ref: 'Community' },
+
     post_attributes: {
       // type = Post
       user: { type: ObjectId, ref: 'User' }, // me_id
@@ -30,11 +33,11 @@ var PostSchema = new Schema(
       owner_post: { type: ObjectId, ref: 'User' },
 
       // common field
-      view_number: { type: Number, default: 0 },
       like_number: { type: Number, default: 0 },
       save_number: { type: Number, default: 0 },
       share_number: { type: Number, default: 0 },
       comment_number: { type: Number, default: 0 },
+      view_number: { type: Number, default: 0 },
 
       likes: {
         type: [{ type: ObjectId, ref: 'User' }],
@@ -45,6 +48,14 @@ var PostSchema = new Schema(
         select: false
       },
       saves: {
+        type: [{ type: ObjectId, ref: 'User' }],
+        select: false
+      },
+      comments: {
+        type: [{ type: ObjectId, ref: 'User' }],
+        select: false
+      },
+      views: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
       }
@@ -138,10 +149,11 @@ class PostClass {
       return await this.findByID({ post_id });
     }
     // Increase view count
-    await this.changeNumberPost({
+    await this.changeToArrayPost({
       post_id,
       type: 'view',
-      number: 1
+      number: 1,
+      user_id
     });
 
     // Add post to viewedPosts
@@ -152,8 +164,8 @@ class PostClass {
 
     return await this.findByID({ post_id });
   }
-  static async getAllPopularPost({ user_id, limit, skip, sort }) {
-    let condition = {};
+  static async getAllPopularPost({ user_id, limit, skip, sort, scope }) {
+    let condition = { scope };
     let foundPost = await this.findPostByAggregate({
       condition,
       me_id: user_id,
@@ -163,8 +175,8 @@ class PostClass {
     });
     return foundPost;
   }
-  static async getAllPostForNewsFeed({ user_id, limit, skip, sort }) {
-    let condition = {};
+  static async getAllPostForNewsFeed({ user_id, limit, skip, sort, scope }) {
+    let condition = { scope };
     let foundPost = await this.findPostByAggregate({
       condition,
       me_id: user_id,
@@ -254,11 +266,12 @@ class PostClass {
       numShare = -1;
     } else PostModel.create({ type, post_attributes });
 
-    this.changeNumberPost({
+    this.changeToArrayPost({
       post_id: post,
       type: 'share',
-      number: numShare
-    }).catch(err => console.log(err));
+      number: numShare,
+      user_id: user
+    })
 
     return {
       numShare
@@ -268,8 +281,15 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort }) {
-    let condition = { 'post_attributes.user': new ObjectId(user_id) };
+  static async getAllPostByUserId({
+    user_id,
+    me_id,
+    limit,
+    skip,
+    sort,
+    scope
+  }) {
+    let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
       me_id,
@@ -279,8 +299,11 @@ class PostClass {
     });
     return foundPost;
   }
-  static async findByID({ post_id, user }) {
-    let condition = { _id: new ObjectId(post_id) };
+  static async findByID({ post_id, user, scope }) {
+    let condition = {
+      _id: new ObjectId(post_id),
+      scope
+    };
     let foundPost = await this.findPostByAggregate({ condition, me_id: user });
     return foundPost[0];
   }
@@ -341,9 +364,14 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content }) {
+  static async createPost({ type, user, title, content, scope, community }) {
     const post_attributes = { user, title, content };
-    const newPost = await PostModel.create({ type, post_attributes });
+    const newPost = await PostModel.create({
+      type,
+      scope,
+      community,
+      post_attributes
+    });
 
     const result = await this.findPostByAggregate({
       condition: { _id: newPost._id },
@@ -368,29 +396,21 @@ class PostClass {
       populate: { path: 'user', select: pp_UserDefault }
     });
   }
-  // type = ['view', 'like', 'share', 'comment', 'save']
-  static async changeNumberPost({ post_id, type, number }) {
-    let stringUpdate = 'post_attributes.' + type + '_number';
-    return await PostModel.findByIdAndUpdate(
-      post_id,
-      {
-        $inc: {
-          [stringUpdate]: number
-        }
-      },
-      { new: true }
-    ).lean();
-  }
-  // type ['like', 'save', 'share']
+  // type = ['like', 'share', 'save', 'comment', 'view']
   // number = 1 or -1
-  static async changeBehaviorPost({ post_id, type, user_id, number }) {
-    let stringUpdate = 'post_attributes.' + type + 's';
+  static async changeToArrayPost({ post_id, type, user_id, number }) {
+    let stringUpdateArr = 'post_attributes.' + type + 's';
+    let stringUpdateNum = 'post_attributes.' + type + '_number';
+
     let operator = number === 1 ? '$addToSet' : '$pull';
     return await PostModel.findByIdAndUpdate(
       post_id,
       {
         [operator]: {
-          [stringUpdate]: user_id
+          [stringUpdateArr]: user_id
+        },
+        $inc: {
+          [stringUpdateNum]: number
         }
       },
       { new: true }
