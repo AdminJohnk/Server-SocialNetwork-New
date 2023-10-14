@@ -10,7 +10,7 @@ const COLLECTION_NAME = 'follows';
 
 // user_id follower_ids following_ids
 
-var FollowSchema = new Schema(
+const FollowSchema = new Schema(
   {
     user: { type: ObjectId, ref: 'User' },
     followers: {
@@ -37,7 +37,7 @@ class FollowClass {
     let numFollow = 1;
     if (isFollowed) {
       FollowClass.removeFollow({ me_id, user });
-      numFollow = -1; 
+      numFollow = -1;
     } else {
       FollowClass.addFollow({ me_id, user });
     }
@@ -49,11 +49,7 @@ class FollowClass {
     // Following
     const updateSet1 = { $addToSet: { followings: user } };
     const options1 = { upsert: true };
-    await FollowModel.findOneAndUpdate(
-      { user: me_id },
-      updateSet1,
-      options1
-    ).lean();
+    await FollowModel.findOneAndUpdate({ user: me_id }, updateSet1, options1).lean();
 
     // Follower
     const updateSet2 = { $addToSet: { followers: me_id } };
@@ -89,14 +85,7 @@ class FollowClass {
       populate: 'followings'
     });
   }
-  static getListFollowByUserId = async ({
-    user,
-    limit,
-    skip,
-    sort,
-    select,
-    populate
-  }) => {
+  static getListFollowByUserId = async ({ user, limit, skip, sort, select, populate }) => {
     console.log({
       user,
       limit,

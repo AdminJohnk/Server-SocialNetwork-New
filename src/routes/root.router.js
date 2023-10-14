@@ -12,6 +12,7 @@ const CommunityRouter = require('./community.router');
 const TestRouter = require('../test/test');
 const { checkApiKey, checkPermission } = require('../auth/checkAuth');
 const { pushToLogDiscord } = require('../middlewares/logger.middleware');
+const { authentication } = require('../auth/authUtils');
 
 // add log to discord
 router.use(pushToLogDiscord);

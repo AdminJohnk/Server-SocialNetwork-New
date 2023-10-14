@@ -12,7 +12,7 @@ const HEADER = {
 };
 
 const avt_default =
-  'https://res.cloudinary.com/dp58kf8pw/image/upload/c_pad,b_auto:predominant,fl_preserve_transparency/v1694576962/default_avatar_ixpwcf.jpg';
+  'https://res.cloudinary.com/dp58kf8pw/image/upload/v1694661730/371328651_317076707558904_3205056811364516698_n_g0ezjp.jpg';
 
 const pp_UserDefault = '_id name email user_image';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image'];

@@ -13,7 +13,7 @@ const ObjectId = Types.ObjectId;
 const DOCUMENT_NAME = 'Post';
 const COLLECTION_NAME = 'posts';
 
-var PostSchema = new Schema(
+const PostSchema = new Schema(
   {
     type: { type: String, enum: ['Post', 'Share'], required: true },
     scope: { type: String, enum: ['Normal', 'Community'], default: 'Normal' },
@@ -70,7 +70,7 @@ var PostSchema = new Schema(
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
-const addFieldsObject = user => {
+const addFieldsObject = (user) => {
   return {
     is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
     is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
@@ -84,15 +84,12 @@ const choosePopulateAttr = ({ from, attribute, select }) => {
     $lookup: {
       from: from,
       let: { temp: '$post_attributes.' + attribute },
-      pipeline: [
-        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
-        { $project: select }
-      ],
+      pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$temp'] } } }, { $project: select }],
       as: 'post_attributes.' + attribute
     }
   };
 };
-const getFirstElement = attribute => {
+const getFirstElement = (attribute) => {
   return {
     $addFields: {
       [`post_attributes.${attribute}`]: {
@@ -112,10 +109,7 @@ const checkIsFollowed = (me_id, attribute) => {
         {
           $match: {
             $expr: {
-              $and: [
-                { $eq: ['$user', new ObjectId(me_id)] },
-                { $in: ['$$temp', '$followings'] }
-              ]
+              $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
             }
           }
         }
@@ -125,7 +119,7 @@ const checkIsFollowed = (me_id, attribute) => {
   };
 };
 
-const trueFalseFollowed = attribute => {
+const trueFalseFollowed = (attribute) => {
   return {
     $addFields: {
       [`post_attributes.${attribute}.is_followed`]: {
@@ -171,7 +165,8 @@ class PostClass {
       me_id: user_id,
       limit,
       skip,
-      sort
+      sort,
+      sortBy
     });
     return foundPost;
   }
@@ -235,13 +230,9 @@ class PostClass {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
   static async updatePost({ post_id, user_id, post_attributes }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(
-      post_id,
-      post_attributes,
-      {
-        new: true
-      }
-    ).lean();
+    const postUpdate = await PostModel.findByIdAndUpdate(post_id, post_attributes, {
+      new: true
+    }).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
@@ -312,7 +303,8 @@ class PostClass {
     me_id,
     limit = 1,
     skip = 0,
-    sort = { createdAt: -1 }
+    sort = { createdAt: -1 },
+    sortBy
   }) {
     let foundPost = await PostModel.aggregate([
       { $match: condition },
@@ -355,11 +347,34 @@ class PostClass {
       { $limit: limit }
     ]);
 
-    foundPost.map(post => {
+    foundPost.map((post) => {
       if (post.type === 'Post') {
         delete post.post_attributes.post;
         delete post.post_attributes.owner_post;
       }
+    });
+
+    foundPost = foundPost.filter((item) => {
+      const date = new Date(item.createdAt);
+      const dateNow = new Date();
+      const diffTime = Math.abs(dateNow.getTime() - date.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (sortBy === 'Today') {
+        return diffDays <= 1;
+      }
+      if (sortBy === 'This week') {
+        return diffDays <= 7;
+      }
+      if (sortBy === 'This month') {
+        return diffDays <= 30;
+      }
+      if (sortBy === 'This year') {
+        return diffDays <= 365;
+      }
+      if (sortBy === 'All time') {
+        return true;
+      }
+      return true;
     });
 
     return foundPost;

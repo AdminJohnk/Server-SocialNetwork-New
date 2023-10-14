@@ -11,13 +11,8 @@ const { ConversationClass } = require('../models/conversation.model');
 const { MessageClass } = require('../models/message.model');
 
 class ChatService {
-  static getAllConversationsByUserId = async ({
-    user_id,
-    limit = 7,
-    page = 1,
-    sort = { updatedAt: -1 }
-  }) => {
-    return ConversationClass.getAllConversationsByUserId({
+  static getAllConversationsByUserId = async ({ user_id, limit = 7, page = 1, sort = { updatedAt: -1 } }) => {
+    return await ConversationClass.getAllConversationsByUserId({
       user_id,
       limit,
       page,
@@ -28,14 +23,14 @@ class ChatService {
     conversation_id,
     limit = 20,
     page = 1,
-    sort = { createAt: -1 }
+    sort = { createdAt: -1 }
   }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
     });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
 
-    return MessageClass.getMessagesByConversationId({
+    return await MessageClass.getMessagesByConversationId({
       conversation_id,
       limit,
       page,
@@ -48,7 +43,7 @@ class ChatService {
     });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
 
-    return ConversationClass.getConversationById({ conversation_id });
+    return await ConversationClass.getConversationById({ conversation_id });
   };
   static createConverSation = async ({ type, members, user }) => {
     if (type === 'private') {
