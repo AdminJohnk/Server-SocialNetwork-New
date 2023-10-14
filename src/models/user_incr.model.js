@@ -5,7 +5,7 @@ const { model, Schema, Types } = require('mongoose');
 const DOCUMENT_NAME = 'UserIncr';
 const COLLECTION_NAME = 'userIncrs';
 
-var UserIncrSchema = new Schema(
+const UserIncrSchema = new Schema(
   {
     id: { type: String, default: 'userIncr' },
     id_current: { type: Number, default: 0 },

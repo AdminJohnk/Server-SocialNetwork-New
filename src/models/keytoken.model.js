@@ -5,7 +5,7 @@ const { Schema, model, Types } = require('mongoose');
 const DOCUMENT_NAME = 'Key';
 const COLLECTION_NAME = 'keys';
 
-var KeyTokenSchema = new Schema(
+const KeyTokenSchema = new Schema(
   {
     user: {
       type: Types.ObjectId,

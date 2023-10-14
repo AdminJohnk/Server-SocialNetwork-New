@@ -23,7 +23,8 @@ class PostController {
     new OK({
       message: 'Get All Popular Post Successfully',
       metadata: await PostService.getAllPopularPost({
-        user_id: req.user.userId
+        user_id: req.user.userId,
+        sortBy: req.query.sortBy,
       })
     }).send(res);
   };

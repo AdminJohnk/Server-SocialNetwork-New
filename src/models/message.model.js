@@ -23,12 +23,7 @@ var MessageSchema = new Schema(
 const MessageModel = model(DOCUMENT_NAME, MessageSchema);
 
 class MessageClass {
-  static async getMessagesByConversationId({
-    conversation_id,
-    limit,
-    page,
-    sort
-  }) {
+  static async getMessagesByConversationId({ conversation_id, limit, page, sort }) {
     const skip = (page - 1) * limit;
     const result = await MessageModel.find({ conversation_id })
       .populate('sender', pp_UserDefault)
@@ -37,7 +32,7 @@ class MessageClass {
       .sort(sort)
       .lean();
 
-    return result || [];
+    return result.reverse() || [];
   }
   static async checkExist(select) {
     return await MessageModel.findOne(select).lean();

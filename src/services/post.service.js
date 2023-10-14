@@ -34,19 +34,15 @@ class PostService {
     user_id,
     limit = 3,
     page = 1,
-    sort = { createdAt: -1 }
+    sort = { 'post_attributes.view_number': -1 },
+    sortBy
   }) {
     const skip = (page - 1) * limit;
 
-    return await PostClass.getAllPopularPost({ user_id, limit, skip, sort });
+    return await PostClass.getAllPopularPost({ user_id, limit, skip, sort, sortBy });
   }
-  static async getAllPostForNewsFeed({
-    user_id,
-    limit = 4,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
-    const skip = (page - 1) * limit;
+  static async getAllPostForNewsFeed({ user_id, limit = 5, page = 0, sort = { createdAt: -1 } }) {
+    const skip = page * limit;
 
     return await PostClass.getAllPostForNewsFeed({
       user_id,
@@ -55,13 +51,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserSavePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserSavePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -78,13 +68,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserSharePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserSharePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -101,13 +85,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserLikePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserLikePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -137,7 +115,7 @@ class PostService {
       user_id,
       type: 'post',
       number: -1
-    }).catch(err => console.log(err));
+    }).catch((err) => console.log(err));
 
     return result;
   }
@@ -165,13 +143,7 @@ class PostService {
 
     return await PostClass.getAllPost({ limit, skip, sort });
   }
-  static async getAllPostByUserId({
-    user_id,
-    me_id,
-    limit = 4,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllPostByUserId({ user_id, me_id, limit = 4, page = 1, sort = { createdAt: -1 } }) {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
@@ -216,8 +188,7 @@ class PostService {
     return true;
   }
   static async createPost({ type = 'Post', user, title, content }) {
-    if (!title || !content)
-      throw new BadRequestError('Post must have title or content');
+    if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({ type, user, title, content });
 
     UserClass.changeNumberUser({
