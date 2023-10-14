@@ -44,7 +44,7 @@ class ConversationClass {
         {
           path: 'lastMessage',
           populate: {
-            path: 'seen',
+            path: 'sender',
             select: pp_UserDefault
           }
         }

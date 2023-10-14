@@ -158,8 +158,8 @@ class PostClass {
 
     return await this.findByID({ post_id });
   }
-  static async getAllPopularPost({ user_id, limit, skip, sort, scope }) {
-    let condition = { scope };
+  static async getAllPopularPost({ user_id, limit, skip, sort, scope, sortBy }) {
+    let condition = { scope, type: 'Post' };
     let foundPost = await this.findPostByAggregate({
       condition,
       me_id: user_id,
