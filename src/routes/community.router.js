@@ -9,6 +9,11 @@ const { authentication } = require('../auth/authUtils');
 router.use(authentication);
 
 /// GET //
+// Search member by keySearch (name, email)
+router.get(
+  '/members/search/:community_id',
+  asyncHandler(Communitytroller.searchMember)
+);
 
 // =========================================================
 
@@ -22,6 +27,11 @@ router.post('/create', asyncHandler(Communitytroller.createCommunity));
 // Join community
 router.put('/join/:community_id', asyncHandler(Communitytroller.joinCommunity));
 
+// Follow community
+router.put(
+  '/follow/:community_id',
+  asyncHandler(Communitytroller.followCommunity)
+);
 
 // Update community --> ADMIN_COMMUNITY
 // Chỉ có thể update các trường: name, description, about, tags, rules

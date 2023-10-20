@@ -6,12 +6,15 @@ const cors = require('cors');
 const compression = require('compression');
 const { checkOverLoad } = require('./helpers/check.connect');
 const router = require('./routes/root.router');
+// const formidable = require('express-formidable');
+const bodyParser = require('body-parser');
 
 // init middleware
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
-app.use(express.json());
+app.use(bodyParser.json());
+// app.use(formidable());
 app.use(
   cors({
     // origin: 'http://localhost:3000',
@@ -21,7 +24,7 @@ app.use(
   })
 );
 app.use(
-  express.urlencoded({
+  bodyParser.urlencoded({
     extended: true
   })
 );

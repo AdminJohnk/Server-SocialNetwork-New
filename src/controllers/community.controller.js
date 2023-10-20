@@ -4,6 +4,24 @@ const CommunityService = require('../services/community.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class CommunityController {
+  static searchMember = async (req, res, next) => {
+    new OK({
+      message: 'Search Member Successfully',
+      metadata: await CommunityService.searchMember({
+        ...req.body,
+        community_id: req.params.community_id
+      })
+    }).send(res);
+  };
+  static followCommunity = async (req, res, next) => {
+    new OK({
+      message: 'Follow Community Successfully',
+      metadata: await CommunityService.followCommunity({
+        community_id: req.params.community_id,
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
   static acceptPost = async (req, res, next) => {
     new OK({
       message: 'Accept Post Successfully',
