@@ -22,8 +22,8 @@ var MessageSchema = new Schema(
 const MessageModel = model(DOCUMENT_NAME, MessageSchema);
 
 class MessageClass {
-  static async getMessagesByConversationId({ conversation_id, limit, page, sort }) {
-    const skip = (page - 1) * limit;
+  static async getMessagesByConversationId({ conversation_id, limit, page, sort, extend }) {
+    const skip = (page - 1) * limit + extend;
     const result = await MessageModel.find({ conversation_id })
       .populate('sender', pp_UserDefault)
       .skip(skip)

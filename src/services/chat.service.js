@@ -21,20 +21,23 @@ class ChatService {
   };
   static getMessagesByConversationId = async ({
     conversation_id,
-    limit = 20,
+    limit = 30,
     page = 1,
+    extend = 0,
     sort = { createdAt: -1 }
   }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
     });
+    console.log(page, extend);
     if (!foundConversation) throw new NotFoundError('Conversation not found');
 
     return await MessageClass.getMessagesByConversationId({
       conversation_id,
       limit,
       page,
-      sort
+      sort,
+      extend
     });
   };
   static getConversationById = async ({ conversation_id }) => {
@@ -45,17 +48,17 @@ class ChatService {
 
     return await ConversationClass.getConversationById({ conversation_id });
   };
-  static createConverSation = async ({ type, members, user }) => {
-    if (type === 'private') {
-      const foundUser = await UserClass.checkExist({ _id: members[0] });
-      if (!foundUser) throw new NotFoundError('User not found');
+  static createConverSation = async ({ type, name, members, user }) => {
+    // check exist all members
+    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
-      const newConversation = await ConversationClass.createConverSation({
-        type,
-        members: [...members, user]
-      });
-      return newConversation;
-    }
+    return await ConversationClass.createConverSation({
+      type,
+      members: [...members, user],
+      name,
+      author: user
+    });
   };
 }
 

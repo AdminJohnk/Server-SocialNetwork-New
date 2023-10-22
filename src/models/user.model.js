@@ -222,7 +222,7 @@ class UserClass {
     ).lean();
   }
   static async checkExist(select) {
-    return await UserModel.findOne(select).lean();
+    return await UserModel.find(select).lean();
   }
 }
 

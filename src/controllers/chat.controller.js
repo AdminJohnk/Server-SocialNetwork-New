@@ -25,7 +25,8 @@ class CommentController {
       message: 'Get Messages Successfully',
       metadata: await ChatService.getMessagesByConversationId({
         conversation_id: req.params.conversation_id,
-        page: req.query.page
+        page: req.query.page,
+        extend: parseInt(req.query.extend)
       })
     }).send(res);
   };
