@@ -29,7 +29,6 @@ class ChatService {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
     });
-    console.log(page, extend);
     if (!foundConversation) throw new NotFoundError('Conversation not found');
 
     return await MessageClass.getMessagesByConversationId({

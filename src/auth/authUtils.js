@@ -54,11 +54,9 @@ const createTokenPair = async (payload, publicKey, privateKey) => {
       algorithm: "RS256",
       expiresIn: "7 days",
     });
-    JWT.verify(accessToken, publicKey, (err, decode) => {
+    JWT.verify(accessToken, publicKey, (err) => {
       if (err) {
         console.error(`error verify::`, err);
-      } else {
-        console.log(`decode verify::`, decode);
       }
     });
     return { accessToken, refreshToken };
