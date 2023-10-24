@@ -46,11 +46,17 @@ class PostService {
       limit,
       skip,
       sort,
-      scope
-   , sortBy });
+      scope,
+      sortBy
+    });
   }
-  static async getAllPostForNewsFeed({ user_id, limit = 5, page = 0, sort = { createdAt: -1 },
-    scope = 'Normal' }) {
+  static async getAllPostForNewsFeed({
+    user_id,
+    limit = 5,
+    page = 0,
+    sort = { createdAt: -1 },
+    scope = 'Normal'
+  }) {
     const skip = page * limit;
 
     return await PostClass.getAllPostForNewsFeed({
@@ -153,14 +159,7 @@ class PostService {
 
     return result;
   }
-  static async updatePost({
-    post_id,
-    user_id,
-    content,
-    title,
-    scope,
-    community
-  }) {
+  static async updatePost({ post_id, user_id, content, title, scope, community }) {
     let post_attributes = { content, title };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
@@ -203,8 +202,14 @@ class PostService {
 
     return await PostClass.getAllPost({ limit, skip, sort });
   }
-  static async getAllPostByUserId({ user_id, me_id, limit = 4, page = 1, sort = { createdAt: -1 },
-    scope = 'Normal' }) {
+  static async getAllPostByUserId({
+    user_id,
+    me_id,
+    limit = 4,
+    page = 1,
+    sort = { createdAt: -1 },
+    scope = 'Normal'
+  }) {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
@@ -255,14 +260,7 @@ class PostService {
 
     return true;
   }
-  static async createPost({
-    type = 'Post',
-    user,
-    title,
-    content,
-    scope,
-    community
-  }) {
+  static async createPost({ type = 'Post', user, title, content, scope, community }) {
     if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,

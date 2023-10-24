@@ -6,7 +6,7 @@ const ObjectId = Types.ObjectId;
 const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
-const { avt_default, pp_UserDefault } = require('../utils/constants');
+const { pp_UserDefault } = require('../utils/constants');
 
 const ConversationSchema = new Schema(
   {
@@ -21,7 +21,7 @@ const ConversationSchema = new Schema(
     // group
     author: { type: ObjectId, ref: 'User' },
     name: { type: String },
-    image: { type: String, default: avt_default }
+    image: { type: String, default: null }
   },
   {
     timestamps: true,
@@ -44,7 +44,7 @@ class ConversationClass {
         {
           path: 'lastMessage',
           populate: {
-            path: 'seen',
+            path: 'sender',
             select: pp_UserDefault
           }
         }
@@ -75,6 +75,15 @@ class ConversationClass {
       } else {
         return foundConversation;
       }
+    } else if (type === 'group') {
+      return await ConversationModel.create({
+        type,
+        members,
+        name,
+        author
+      }).then(async (result) => {
+        return await result.populate('members', pp_UserDefault);
+      });
     }
   }
   static async checkExist(select) {
