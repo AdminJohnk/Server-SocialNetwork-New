@@ -18,6 +18,9 @@ router.get('/conversations', asyncHandler(ChatController.getAllConversationsByUs
 // Get messages By Conversation ID
 router.get('/conversations/:conversation_id/messages', asyncHandler(ChatController.getMessagesByConversationId));
 
+// Get token for call
+router.get('/token', asyncHandler(ChatController.getTokenForCall));
+
 // =========================================================
 /// POST //
 // Create conversation

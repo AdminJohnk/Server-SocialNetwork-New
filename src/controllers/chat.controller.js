@@ -59,6 +59,19 @@ class CommentController {
       })
     }).send(res);
   };
+  /* 
+    Get Token For Call
+    Link: http://localhost:4052/api/v1/chat/token
+  */
+  static getTokenForCall = async (req, res, next) => {
+    new OK({
+      message: 'Get Token For Call Successfully',
+      metadata: await ChatService.getTokenForCall({
+        user_id: req.user.userId,
+        conversation_id: req.query.conversation_id
+      })
+    }).send(res);
+  };
 }
 
 module.exports = CommentController;

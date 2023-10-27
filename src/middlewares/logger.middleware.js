@@ -1,4 +1,4 @@
-'use stric';
+'use strict';
 
 const Logger = require('../loggers/discord.log');
 

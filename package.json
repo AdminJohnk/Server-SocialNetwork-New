@@ -21,6 +21,7 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.1",
     "kafkajs": "^2.2.4",
+    "livekit-server-sdk": "^1.2.7",
     "mongoose": "^7.3.2",
     "nodemon": "^2.0.22",
     "redis": "^4.6.8"
