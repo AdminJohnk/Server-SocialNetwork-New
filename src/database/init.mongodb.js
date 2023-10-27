@@ -28,7 +28,6 @@ class Database {
         })
         .then(() => {
           countConnect();
-          console.log(`ConnectString: ${connectString}`);
           console.log('Connected to MongoDB');
         })
         .catch(err => {

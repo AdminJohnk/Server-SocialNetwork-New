@@ -86,14 +86,6 @@ class FollowClass {
     });
   }
   static getListFollowByUserId = async ({ user, limit, skip, sort, select, populate }) => {
-    console.log({
-      user,
-      limit,
-      skip,
-      sort,
-      select,
-      populate
-    });
     const result = await FollowModel.findOne({ user })
       .select(getSelectData(select))
       .populate(populate, pp_UserDefault)

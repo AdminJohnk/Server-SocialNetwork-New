@@ -24,7 +24,9 @@ class CommentController {
     new OK({
       message: 'Get Messages Successfully',
       metadata: await ChatService.getMessagesByConversationId({
-        conversation_id: req.params.conversation_id
+        conversation_id: req.params.conversation_id,
+        page: req.query.page,
+        extend: parseInt(req.query.extend)
       })
     }).send(res);
   };
@@ -54,6 +56,19 @@ class CommentController {
       metadata: await ChatService.createConverSation({
         ...req.body,
         user: req.user.userId
+      })
+    }).send(res);
+  };
+  /* 
+    Get Token For Call
+    Link: http://localhost:4052/api/v1/chat/token
+  */
+  static getTokenForCall = async (req, res, next) => {
+    new OK({
+      message: 'Get Token For Call Successfully',
+      metadata: await ChatService.getTokenForCall({
+        user_id: req.user.userId,
+        conversation_id: req.query.conversation_id
       })
     }).send(res);
   };
