@@ -1,16 +1,18 @@
-'use strict';
-const express = require('express');
-const router = express.Router();
-
 const path = require('path');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
+const sharp = require('sharp');
+const fs = require('fs');
 const {
   S3Client,
   GetObjectCommand,
   DeleteObjectCommand
 } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const crypto = require('crypto');
+
+const generateFileName = (bytes = 16) =>
+  crypto.randomBytes(bytes).toString('hex');
 
 const s3 = new S3Client({
   credentials: {
@@ -45,7 +47,10 @@ const s3Storage = multerS3({
   },
   key: (req, file, cb) => {
     const fileName =
-      Date.now() + '_' + file.fieldname + '_' + file.originalname;
+      Date.now() +
+      '_' +
+      generateFileName() +
+      path.extname(file.originalname.toLowerCase());
     cb(null, fileName);
   }
 });
@@ -57,7 +62,7 @@ const uploadImage = multer({
     sanitizeFile(file, callback);
   },
   limits: {
-    fileSize: 1024 * 1024 * 5 // 2mb file size
+    fileSize: 1024 * 1024 * 10 // 2mb file size,
   }
 });
 
@@ -73,35 +78,7 @@ const deleteImage = async key => {
   }
 };
 
-router.put('/upload-image', uploadImage.single('image'), async (req, res) => {
-  if (req.file) {
-    res.status(200).json({
-      message: 'success',
-      data: req.file
-    });
-  }
-});
-router.put('/upload-images', uploadImage.array('image'), async (req, res) => {
-  if (req.file) {
-    res.status(200).json({
-      message: 'success',
-      data: req.file
-    });
-  }
-});
-router.delete('/delete-image/:key', async (req, res, next) => {
-  const key = req.params.key;
-  deleteImage(key).then(() => { 
-    res.status(200).json({
-      message: 'success'
-    });
-  }).catch(error => {
-    next(error);
-  })
-});
-
-router.get('', (req, res, next) => {
-  res.status(200).send('Hello world');
-});
-
-module.exports = router;
+module.exports = {
+  uploadImage,
+  deleteImage
+};
