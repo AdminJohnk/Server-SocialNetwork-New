@@ -68,22 +68,23 @@ class ChatService {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
-    const room = conversation_id + '-' + type;
+    const roomName = conversation_id + '-' + type;
 
     await roomService.listRooms().then(async (rooms) => {
-      const foundRoom = rooms.find((room) => room.name === room);
+      const foundRoom = rooms.find((room) => room.name === roomName);
       if (!foundRoom) {
-        await roomService.createRoom({ name: room, emptyTimeout: 30 });
+        await roomService.createRoom({ name: roomName, emptyTimeout: 10 });
       }
     });
 
     const participantName = foundUser[0].name;
 
     const at = new AccessToken(process.env.LK_API_KEY, process.env.LK_API_SECRET, {
-      identity: participantName,
-      name: participantName
+      identity: foundUser[0]._id.toString(),
+      name: participantName,
+      metadata: foundUser[0].user_image
     });
-    at.addGrant({ room, roomJoin: true, canPublish: true, canSubscribe: true });
+    at.addGrant({ room: roomName, roomJoin: true, canPublish: true, canSubscribe: true });
 
     return at.toJwt();
   };
