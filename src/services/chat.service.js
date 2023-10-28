@@ -10,7 +10,10 @@ const { UserClass } = require('../models/user.model');
 const { ConversationClass } = require('../models/conversation.model');
 const { MessageClass } = require('../models/message.model');
 
-const { AccessToken } = require('livekit-server-sdk');
+const { AccessToken, RoomServiceClient } = require('livekit-server-sdk');
+
+const livekitHost = process.env.LK_SERVER_URL;
+const roomService = new RoomServiceClient(livekitHost, process.env.LK_API_KEY, process.env.LK_API_SECRET);
 
 class ChatService {
   static getAllConversationsByUserId = async ({ user_id, limit = 7, page = 1, sort = { updatedAt: -1 } }) => {
@@ -61,21 +64,26 @@ class ChatService {
       author: user
     });
   };
-  static getTokenForCall = async ({ user_id, conversation_id }) => {
+  static getTokenForCall = async ({ user_id, conversation_id, type }) => {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
-    // if this room doesn't exist, it'll be automatically created when the first
-    // client joins
-    const roomName = conversation_id;
-    // identifier to be used for participant.
-    // it's available as LocalParticipant.identity with livekit-client SDK
+    const room = conversation_id + '-' + type;
+
+    await roomService.listRooms().then(async (rooms) => {
+      const foundRoom = rooms.find((room) => room.name === room);
+      if (!foundRoom) {
+        await roomService.createRoom({ name: room, emptyTimeout: 30 });
+      }
+    });
+
     const participantName = foundUser[0].name;
 
     const at = new AccessToken(process.env.LK_API_KEY, process.env.LK_API_SECRET, {
-      identity: participantName
+      identity: participantName,
+      name: participantName
     });
-    at.addGrant({ roomJoin: true, room: roomName });
+    at.addGrant({ room, roomJoin: true, canPublish: true, canSubscribe: true });
 
     return at.toJwt();
   };
