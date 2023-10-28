@@ -68,7 +68,8 @@ class CommentController {
       message: 'Get Token For Call Successfully',
       metadata: await ChatService.getTokenForCall({
         user_id: req.user.userId,
-        conversation_id: req.query.conversation_id
+        conversation_id: req.query.conversation_id,
+        type: req.query.type
       })
     }).send(res);
   };
