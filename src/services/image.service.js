@@ -28,7 +28,7 @@ class ImageService {
       const newImage = await ImageClass.createImage({
         key,
         link: location,
-        user_id: user
+        user
       });
       metadata.push(newImage);
     }
@@ -39,7 +39,7 @@ class ImageService {
     return await ImageClass.createImage({
       key,
       link: location,
-      user_id: user
+      user
     });
   };
 }
