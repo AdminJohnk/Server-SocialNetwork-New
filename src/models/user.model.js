@@ -73,10 +73,11 @@ const UserSchema = new Schema(
       default: []
     },
 
-    // Number behavior
+    // Number
     follower_number: { type: Number, default: 0 },
     following_number: { type: Number, default: 0 },
-    post_number: { type: Number, default: 0 }
+    post_number: { type: Number, default: 0 },
+    community_number: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -106,6 +107,9 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
+// create index for search
+UserSchema.index({ name: 'text', email: 'text' });
+
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
 // attribute = ['_id'] --> check me_id is followed user_id
@@ -118,7 +122,10 @@ const checkIsFollowed = (me_id, attribute) => {
         {
           $match: {
             $expr: {
-              $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
+              $and: [
+                { $eq: ['$user', new ObjectId(me_id)] },
+                { $in: ['$$temp', '$followings'] }
+              ]
             }
           }
         }
@@ -144,8 +151,26 @@ const trueFalseFollowed = () => {
 };
 
 class UserClass {
+  static async SearchUserInCommunity({ community_id, key_search }) {
+    const regexSearch = new RegExp(key_search, 'i');
+
+    const result = await UserModel.find(
+      {
+        communities: { $in: [community_id] },
+        $text: { $search: regexSearch }
+      },
+      { score: { $meta: 'textScore' } }
+    )
+      .sort({ score: { $meta: 'textScore' } })
+      .select(getSelectData(se_UserDefault))
+      .lean();
+
+    return result;
+  }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
+    return await UserModel.findOne({ _id: user_id })
+      .select(getSelectData(select))
+      .lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -170,7 +195,11 @@ class UserClass {
     };
   }
   static async updateTags({ user_id, tags }) {
-    return await UserModel.findByIdAndUpdate(user_id, { $set: { tags: tags } }, { new: true }).lean();
+    return await UserModel.findByIdAndUpdate(
+      user_id,
+      { $set: { tags: tags } },
+      { new: true }
+    ).lean();
   }
   static async getShouldFollow({ user_id }) {}
   static async updateByID({ user_id, payload }) {
@@ -207,6 +236,27 @@ class UserClass {
       role: [RoleUser.USER]
     });
     return user;
+  }
+  // type = ['community']
+  // number = 1 or -1
+  static async changeToArrayUser({ user_id, type, item_id, number }) {
+    let stringUpdateArr = type + 's';
+    let stringUpdateNum = type + '_number';
+    let operator = number === 1 ? '$addToSet' : '$pull';
+
+    if (type === 'community') {
+      stringUpdateArr = 'communities';
+      stringUpdateNum = 'community_number';
+    }
+
+    return await UserModel.findByIdAndUpdate(
+      user_id,
+      {
+        [operator]: { [stringUpdateArr]: item_id },
+        $inc: { [stringUpdateNum]: number }
+      },
+      { new: true }
+    ).lean();
   }
   // type = ['follower', 'following', 'post']
   static async changeNumberUser({ user_id, type, number }) {

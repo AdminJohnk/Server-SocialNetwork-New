@@ -1,4 +1,6 @@
 const { model, Schema, Types } = require('mongoose');
+const { se_UserDefault } = require('../utils/constants');
+const { getSelectData } = require('../utils/functions');
 
 const ObjectId = Types.ObjectId;
 
@@ -33,6 +35,10 @@ const CommunitySchema = new Schema(
       type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
+    follows: {
+      type: [{ type: ObjectId, ref: 'User' }],
+      default: []
+    },
     members: {
       type: [{ type: ObjectId, ref: 'User' }],
       required: true
@@ -55,6 +61,7 @@ const CommunitySchema = new Schema(
 
     // Number
     post_number: { type: Number, default: 0 },
+    follow_number: { type: Number, default: 0 },
     member_number: { type: Number, default: 0 },
     admin_number: { type: Number, default: 0 },
     waitlist_user_number: { type: Number, default: 0 },
@@ -69,6 +76,32 @@ const CommunitySchema = new Schema(
 const CommunityModel = model(DOCUMENT_NAME, CommunitySchema);
 
 class CommunityClass {
+  static async followCommunity({ community_id, user_id }) {
+    const isFollowed = await CommunityModel.findOne({
+      _id: community_id,
+      follows: { $in: [user_id] }
+    }).lean();
+
+    if (isFollowed) {
+      return await CommunityModel.findByIdAndUpdate(
+        community_id,
+        {
+          $pull: { follows: user_id },
+          $inc: { follow_number: -1 }
+        },
+        { new: true }
+      ).lean();
+    } else {
+      return await CommunityModel.findByIdAndUpdate(
+        community_id,
+        {
+          $addToSet: { follows: user_id },
+          $inc: { follow_number: 1 }
+        },
+        { new: true }
+      ).lean();
+    }
+  }
   static async acceptPost({ community_id, post_id }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
@@ -90,12 +123,12 @@ class CommunityClass {
       { new: true }
     ).lean();
   }
-  static async addMemberToCommunity({ community_id, members }) {
+  static async addMemberToCommunity({ community_id, member_id }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
       {
-        $addToSet: { members: { $each: members } },
-        $inc: { member_number: members.length }
+        $addToSet: { members: member_id },
+        $inc: { member_number: 1 }
       },
       { new: true }
     ).lean();
@@ -114,14 +147,18 @@ class CommunityClass {
     ).lean();
   }
   static async joinCommunity({ community_id, user_id }) {
+    let result;
     const community = await CommunityModel.findById(community_id).lean();
+
+    let join_number;
 
     // Member đã là thành viên của community thì xóa đi
     if (
       community.members.findIndex(member => member.toString() === user_id) !==
       -1
     ) {
-      return await CommunityModel.findByIdAndUpdate(
+      join_number = -1;
+      result = await CommunityModel.findByIdAndUpdate(
         community_id,
         { $pull: { members: user_id }, $inc: { member_number: -1 } },
         { new: true }
@@ -133,7 +170,7 @@ class CommunityClass {
         member => member.toString() === user_id
       ) !== -1
     ) {
-      return await CommunityModel.findByIdAndUpdate(
+      result = await CommunityModel.findByIdAndUpdate(
         community_id,
         {
           $pull: { waitlist_users: user_id },
@@ -144,7 +181,7 @@ class CommunityClass {
     }
 
     // Member chưa là thành viên của community thì thêm vào waitlist
-    return await CommunityModel.findByIdAndUpdate(
+    result = await CommunityModel.findByIdAndUpdate(
       community_id,
       {
         $addToSet: { waitlist_users: user_id },
@@ -152,6 +189,14 @@ class CommunityClass {
       },
       { new: true }
     ).lean();
+
+    // follow community
+    this.followCommunity({ community_id, user_id });
+
+    return {
+        result,
+        join_number
+    };
   }
   static async updateCommunity({ community_id, ...payload }) {
     return await CommunityModel.findByIdAndUpdate(
@@ -161,7 +206,7 @@ class CommunityClass {
     ).lean();
   }
 
-  // type = ['member', 'post', 'admin', 'waitlist_user', 'waitlist_post']
+  // type = ['member', 'post', 'follow', 'admin', 'waitlist_user', 'waitlist_post']
   // number = 1 or -1
   static async changeToArrayCommunity({ community_id, type, itemID, number }) {
     let stringUpdateArr = type + 's';
