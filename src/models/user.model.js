@@ -150,6 +150,16 @@ const trueFalseFollowed = () => {
   };
 };
 
+const getFirstElement = attribute => {
+  return {
+    $addFields: {
+      [attribute]: {
+        $arrayElemAt: [`$${attribute}`, 0]
+      }
+    }
+  };
+};
+
 // attribute = ['user_image', 'cover_image]
 const choosePopulateAttr = ({ from, attribute, select }) => {
   return {
@@ -235,11 +245,14 @@ class UserClass {
         attribute: 'user_image',
         select: unGetSelectData(['__v'])
       }),
+      getFirstElement('user_image'),
+
       choosePopulateAttr({
         from: 'images',
         attribute: 'cover_image',
         select: unGetSelectData(['__v'])
       }),
+      getFirstElement('cover_image'),
 
       checkIsFollowed(me_id, '_id'),
       trueFalseFollowed()
