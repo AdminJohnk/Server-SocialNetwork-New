@@ -37,31 +37,33 @@ class ConversationClass {
       conversation_id,
       { $pull: { admins: { $in: admins } } },
       { new: true }
-    ).lean();
+    )
+      .populate('admins', pp_UserDefault)
+      .lean();
   }
   static async appointAdmin({ members, conversation_id }) {
     return await ConversationModel.findByIdAndUpdate(
       conversation_id,
       { $addToSet: { admins: { $each: members } } },
       { new: true }
-    ).lean();
+    )
+      .populate('admins', pp_UserDefault)
+      .lean();
   }
   static async leaveGroupConversation({ conversation_id, user_id }) {
     return await ConversationModel.findByIdAndUpdate(
       conversation_id,
       { $pull: { members: user_id, admins: user_id } },
       { new: true }
-    ).lean();
+    )
+      .populate('members', pp_UserDefault)
+      .lean();
   }
   static async deleteConversation({ conversation_id }) {
     return await ConversationModel.findByIdAndDelete(conversation_id);
   }
   static async changeConversationImage({ conversation_id, image }) {
-    return await ConversationModel.findByIdAndUpdate(
-      conversation_id,
-      { image },
-      { new: true }
-    ).lean();
+    return await ConversationModel.findByIdAndUpdate(conversation_id, { image }, { new: true }).lean();
   }
   static async deleteMemberFromConversation({ members, conversation_id }) {
     return await ConversationModel.findByIdAndUpdate(
@@ -82,11 +84,7 @@ class ConversationClass {
       .lean();
   }
   static async changeConversationName({ name, conversation_id }) {
-    return await ConversationModel.findByIdAndUpdate(
-      conversation_id,
-      { name },
-      { new: true }
-    ).lean();
+    return await ConversationModel.findByIdAndUpdate(conversation_id, { name }, { new: true }).lean();
   }
   static async getAllConversationsByUserId({ user_id, limit, page, sort }) {
     const skip = (page - 1) * limit;
@@ -141,7 +139,7 @@ class ConversationClass {
         members,
         name,
         admins
-      }).then(async result => {
+      }).then(async (result) => {
         return await result.populate('members', pp_UserDefault);
       });
     }
