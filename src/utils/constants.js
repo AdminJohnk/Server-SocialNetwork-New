@@ -11,8 +11,7 @@ const HEADER = {
   GITHUB_TOKEN: 'x-github-token'
 };
 
-const avt_default =
-  'https://res.cloudinary.com/dp58kf8pw/image/upload/v1694661730/371328651_317076707558904_3205056811364516698_n_g0ezjp.jpg';
+const avt_default = '653e1919c9d9ff798b7537ec';
 
 const pp_UserDefault = '_id name email user_image';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image'];
