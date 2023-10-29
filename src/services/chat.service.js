@@ -11,12 +11,213 @@ const { ConversationClass } = require('../models/conversation.model');
 const { MessageClass } = require('../models/message.model');
 
 const { AccessToken, RoomServiceClient } = require('livekit-server-sdk');
+const { ImageClass } = require('../models/image.model');
+const ImageService = require('./image.service');
+const { deleteImage } = require('../helpers/uploadImage');
 
 const livekitHost = process.env.LK_SERVER_URL;
-const roomService = new RoomServiceClient(livekitHost, process.env.LK_API_KEY, process.env.LK_API_SECRET);
+const roomService = new RoomServiceClient(
+  livekitHost,
+  process.env.LK_API_KEY,
+  process.env.LK_API_SECRET
+);
 
 class ChatService {
-  static getAllConversationsByUserId = async ({ user_id, limit = 7, page = 1, sort = { updatedAt: -1 } }) => {
+  static removeAdmin = async ({ conversation_id, user, admins }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user] }
+    });
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    // Check exist all admins
+    const foundUsers = await UserClass.checkExist({ _id: { $in: admins } });
+    if (foundUsers.length !== admins.length)
+      throw new NotFoundError('User not found');
+
+    // Check is admins
+    const isMembers = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: admins }
+    });
+    if (!isMembers) throw new NotFoundError('User are not admins');
+
+    return await ConversationClass.removeAdmin({ admins, conversation_id });
+  };
+  static appointAdmin = async ({ conversation_id, user, members }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user] }
+    });
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    // Check exist all members
+    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    if (foundUsers.length !== members.length)
+      throw new NotFoundError('User not found');
+
+    // Check is membsers
+    const isMembers = await ConversationClass.checkExist({
+      _id: conversation_id,
+      members: { $in: members }
+    });
+    if (!isMembers) throw new NotFoundError('User are not members');
+
+    return await ConversationClass.appointAdmin({ members, conversation_id });
+  };
+  static leaveGroupConversation = async ({ conversation_id, user_id }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    return await ConversationClass.leaveGroupConversation({
+      conversation_id,
+      user_id
+    });
+  };
+  static deleteConversation = async ({ conversation_id, user }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user] }
+    });
+
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    const result = await ConversationClass.deleteConversation({
+      conversation_id
+    });
+
+    // Delete all messages
+    await MessageClass.deleteMessagesByConversationId({ conversation_id });
+
+    return result;
+  };
+  static changeConversationImage = async ({ conversation_id, image, user }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user] }
+    });
+
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    const { key } = image;
+
+    // Delete old image
+    if (foundConversation.image) deleteImage(foundConversation.image);
+
+    return await ConversationClass.changeConversationImage({
+      conversation_id,
+      image: key
+    });
+  };
+  static deleteMemberFromConversation = async ({
+    user_id,
+    members,
+    conversation_id
+  }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user_id] }
+    });
+
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    // Check exist all members
+    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    if (foundUsers.length !== members.length)
+      throw new NotFoundError('User not found');
+
+    return await ConversationClass.deleteMemberFromConversation({
+      members,
+      conversation_id
+    });
+  };
+  static addMemberToConversation = async ({
+    user_id,
+    members,
+    conversation_id
+  }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user_id] }
+    });
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    // Check exist all members
+    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    if (foundUsers.length !== members.length)
+      throw new NotFoundError('User not found');
+
+    return await ConversationClass.addMemberToConversation({
+      members,
+      conversation_id
+    });
+  };
+  static changeConversationName = async ({
+    user_id,
+    name,
+    conversation_id
+  }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is admin
+    const isAdmin = await ConversationClass.checkExist({
+      _id: conversation_id,
+      admins: { $in: [user_id] }
+    });
+    if (!isAdmin) throw new ForbiddenError('You are not admin');
+
+    return await ConversationClass.changeConversationName({
+      name,
+      conversation_id
+    });
+  };
+  static getAllConversationsByUserId = async ({
+    user_id,
+    limit = 7,
+    page = 1,
+    sort = { updatedAt: -1 }
+  }) => {
     return await ConversationClass.getAllConversationsByUserId({
       user_id,
       limit,
@@ -55,7 +256,8 @@ class ChatService {
   static createConverSation = async ({ type, name, members, user }) => {
     // check exist all members
     const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
-    if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
+    if (foundUsers.length !== members.length)
+      throw new NotFoundError('User not found');
 
     return await ConversationClass.createConverSation({
       type,
@@ -70,8 +272,8 @@ class ChatService {
 
     const roomName = conversation_id + '-' + type;
 
-    await roomService.listRooms().then(async (rooms) => {
-      const foundRoom = rooms.find((room) => room.name === roomName);
+    await roomService.listRooms().then(async rooms => {
+      const foundRoom = rooms.find(room => room.name === roomName);
       if (!foundRoom) {
         await roomService.createRoom({ name: roomName, emptyTimeout: 10 });
       }
@@ -79,12 +281,21 @@ class ChatService {
 
     const participantName = foundUser[0].name;
 
-    const at = new AccessToken(process.env.LK_API_KEY, process.env.LK_API_SECRET, {
-      identity: foundUser[0]._id.toString(),
-      name: participantName,
-      metadata: foundUser[0].user_image
+    const at = new AccessToken(
+      process.env.LK_API_KEY,
+      process.env.LK_API_SECRET,
+      {
+        identity: foundUser[0]._id.toString(),
+        name: participantName,
+        metadata: foundUser[0].user_image
+      }
+    );
+    at.addGrant({
+      room: roomName,
+      roomJoin: true,
+      canPublish: true,
+      canSubscribe: true
     });
-    at.addGrant({ room: roomName, roomJoin: true, canPublish: true, canSubscribe: true });
 
     return at.toJwt();
   };

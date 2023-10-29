@@ -11,8 +11,7 @@ const HEADER = {
   GITHUB_TOKEN: 'x-github-token'
 };
 
-const avt_default =
-  'https://res.cloudinary.com/dp58kf8pw/image/upload/v1694661730/371328651_317076707558904_3205056811364516698_n_g0ezjp.jpg';
+const avt_default = '1698572889773_fad78a0c51c688da37563828a1ffb880.png';
 
 const pp_UserDefault = '_id name email user_image';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image'];
@@ -32,6 +31,8 @@ const unSe_PostDefault = [
   'post_attributes.likes',
   'post_attributes.shares',
   'post_attributes.saves',
+  'post_attributes.views',
+  'post_attributes.comments',
   'updatedAt',
   '__v'
 ];

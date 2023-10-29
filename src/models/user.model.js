@@ -150,6 +150,16 @@ const trueFalseFollowed = () => {
   };
 };
 
+const getFirstElement = attribute => {
+  return {
+    $addFields: {
+      [attribute]: {
+        $arrayElemAt: [`$${attribute}`, 0]
+      }
+    }
+  };
+};
+
 class UserClass {
   static async SearchUserInCommunity({ community_id, key_search }) {
     const regexSearch = new RegExp(key_search, 'i');
@@ -215,6 +225,7 @@ class UserClass {
           _id: new ObjectId(user_id)
         }
       },
+
       checkIsFollowed(me_id, '_id'),
       trueFalseFollowed()
     ]);

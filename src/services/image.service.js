@@ -14,9 +14,7 @@ const { deleteImage, sendImageToS3 } = require('../helpers/uploadImage');
 class ImageService {
   static deleteImages = async ({ images }) => {
     for (let image of images) {
-      const { key, image_id } = image;
-      ImageClass.deleteImageById({ image_id });
-      deleteImage(key); //S3
+      await deleteImage(image); //S3
     }
     return true;
   };
@@ -28,19 +26,15 @@ class ImageService {
       const newImage = await ImageClass.createImage({
         key,
         link: location,
-        user_id: user
+        user
       });
       metadata.push(newImage);
     }
     return metadata;
   };
   static uploadImage = async ({ image, user }) => {
-    const { key, location } = image;
-    return await ImageClass.createImage({
-      key,
-      link: location,
-      user_id: user
-    });
+    const { key } = image;
+    return { key };
   };
 }
 

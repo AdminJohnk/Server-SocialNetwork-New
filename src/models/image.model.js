@@ -9,7 +9,7 @@ const ImageSchema = new Schema(
   {
     key: { type: String, required: true },
     link: { type: String, required: true },
-    user_id: { type: Types.ObjectId, ref: 'User' }
+    user: { type: Types.ObjectId, ref: 'User' }
   },
   {
     timestamps: true,
@@ -23,8 +23,8 @@ class ImageClass {
   static deleteImageById = async ({ image_id }) => {
     return ImageModel.findByIdAndDelete(image_id);
   };
-  static createImage = async ({ key, link, user_id }) => {
-    return await ImageModel.create({ key, link, user_id });
+  static createImage = async ({ key, link, user }) => {
+    return await ImageModel.create({ key, link, user });
   };
   static async checkExist(select) {
     return await ImageModel.findOne(select).lean();
