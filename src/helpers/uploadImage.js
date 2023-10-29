@@ -29,7 +29,7 @@ function sanitizeFile(file, cb) {
     path.extname(file.originalname.toLowerCase())
   );
 
-  const isAllowedMimeType = file.mimetype.startsWith('image/');
+  const isAllowedMimeType = file.mimetype?.startsWith('image/');
 
   if (isAllowedExt && isAllowedMimeType) {
     return cb(null, true);

@@ -11,97 +11,34 @@ const {
   DeleteObjectCommand
 } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { MessageModel } = require('../models/message.model');
+const { default: mongoose } = require('mongoose');
 
-const s3 = new S3Client({
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
-  },
-  region: process.env.S3_BUCKET_REGION
-});
+// var MessageSchema = new Schema(
+//   {
+//     conversation_id: { type: ObjectId, ref: 'Conversation', required: true },
+//     sender: { type: ObjectId, ref: 'User', required: true },
+//     content: { type: String, required: true },
+//     createdAt: { type: Date, required: true }
+//   },
+//   {
+//     collection: COLLECTION_NAME
+//   }
+// );
 
-function sanitizeFile(file, cb) {
-  const fileExts = ['.png', '.jpg', '.jpeg', '.gif'];
+router.get('', async (req, res, next) => {
+  // conver conversation_id in all document from string to ObjectId in MessageModel
 
-  const isAllowedExt = fileExts.includes(
-    path.extname(file.originalname.toLowerCase())
-  );
+  const messages = await MessageModel.find({}).lean();
 
-  const isAllowedMimeType = file.mimetype.startsWith('image/');
-
-  if (isAllowedExt && isAllowedMimeType) {
-    return cb(null, true);
-  } else {
-    cb('Error: File type not allowed!');
-  }
-}
-
-const s3Storage = multerS3({
-  s3,
-  bucket: process.env.S3_BUCKET_NAME,
-  // acl: 'public-read',
-  metadata: (req, file, cb) => {
-    cb(null, { fieldname: file.fieldname });
-  },
-  key: (req, file, cb) => {
-    const fileName =
-      Date.now() + '_' + file.fieldname + '_' + file.originalname;
-    cb(null, fileName);
-  }
-});
-
-// our middleware
-const uploadImage = multer({
-  storage: s3Storage,
-  fileFilter: (req, file, callback) => {
-    sanitizeFile(file, callback);
-  },
-  limits: {
-    fileSize: 1024 * 1024 * 5 // 2mb file size
-  }
-});
-
-const deleteImage = async key => {
-  const params = {
-    Bucket: process.env.S3_BUCKET_NAME,
-    Key: key
-  };
-  try {
-    await s3.send(new DeleteObjectCommand(params));
-  } catch (error) {
-    console.log(`error::`, error);
-  }
-};
-
-router.put('/upload-image', uploadImage.single('image'), async (req, res) => {
-  if (req.file) {
-    res.status(200).json({
-      message: 'success',
-      data: req.file
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
+    await MessageModel.findByIdAndUpdate(message._id, {
+      conversation_id: new mongoose.Types.ObjectId(message.conversation_id)
     });
   }
-});
-router.put('/upload-images', uploadImage.array('image'), async (req, res) => {
-  if (req.file) {
-    res.status(200).json({
-      message: 'success',
-      data: req.file
-    });
-  }
-});
-router.delete('/delete-image/:key', async (req, res, next) => {
-  const key = req.params.key;
-  deleteImage(key).then(() => { 
-    res.status(200).json({
-      message: 'success'
-    });
-  }).catch(error => {
-    next(error);
-  })
-});
 
-router.get('', (req, res, next) => {
-  res.status(200).send('Hello world');
+  res.send('done');
 });
 
 module.exports = router;
