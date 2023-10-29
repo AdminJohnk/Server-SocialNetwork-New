@@ -20,8 +20,8 @@ const ConversationSchema = new Schema(
 
     // group
     admins: { type: [ObjectId], ref: 'User', default: [] },
-    name: { type: String },
-    image: { type: ObjectId, ref: 'Image', default: null }
+    name: String,
+    image: String
   },
   {
     timestamps: true,
@@ -96,7 +96,6 @@ class ConversationClass {
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
       .populate('seen', pp_UserDefault)
-      .populate('image')
       .populate([
         {
           path: 'lastMessage',
@@ -117,7 +116,6 @@ class ConversationClass {
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
       .populate('seen', pp_UserDefault)
-      .populate('image')
       .lean();
   }
   static async createConverSation({ type, members, name, author }) {
