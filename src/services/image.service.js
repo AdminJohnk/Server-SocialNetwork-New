@@ -35,12 +35,16 @@ class ImageService {
     return metadata;
   };
   static uploadImage = async ({ image, user }) => {
+
     const { key, location } = image;
     return await ImageClass.createImage({
       key,
       link: location,
       user
     });
+  };
+  static checkExist = async (select) => {
+    return await ImageClass.findOne(select).lean();
   };
 }
 

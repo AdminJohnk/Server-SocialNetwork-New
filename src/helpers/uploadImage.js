@@ -62,7 +62,7 @@ const uploadImage = multer({
     sanitizeFile(file, callback);
   },
   limits: {
-    fileSize: 1024 * 1024 * 10 // 2mb file size,
+    fileSize: 1024 * 1024 * 10 // 10mb file size,
   }
 });
 

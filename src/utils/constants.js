@@ -32,6 +32,8 @@ const unSe_PostDefault = [
   'post_attributes.likes',
   'post_attributes.shares',
   'post_attributes.saves',
+  'post_attributes.views',
+  'post_attributes.comments',
   'updatedAt',
   '__v'
 ];

@@ -12,6 +12,7 @@ const { MessageClass } = require('../models/message.model');
 
 const { AccessToken, RoomServiceClient } = require('livekit-server-sdk');
 const { ImageClass } = require('../models/image.model');
+const ImageService = require('./image.service');
 
 const livekitHost = process.env.LK_SERVER_URL;
 const roomService = new RoomServiceClient(
@@ -130,6 +131,19 @@ class ChatService {
       link: location,
       user
     });
+
+    // Delete old image
+    if (foundConversation.image) {
+      const fountImage = await ImageClass.checkExist({
+        _id: foundConversation.image
+      });
+
+      if (fountImage) {
+        await ImageService.deleteImages({
+          images: [{ key: fountImage.key, image_id: fountImage._id }]
+        });
+      }
+    }
 
     return await ConversationClass.changeConversationImage({
       conversation_id,
