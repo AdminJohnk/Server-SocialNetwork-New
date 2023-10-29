@@ -30,8 +30,8 @@ const UserSchema = new Schema(
     // ==================================================
 
     phone_number: Number,
-    user_image: { type: String, default: avt_default },
-    cover_image: String,
+    user_image: { type: ObjectId, ref: 'Image' ,default: avt_default },
+    cover_image: { type: ObjectId, ref: 'Image' },
     verified: { type: Boolean, default: false },
     tags: [{ type: String }],
     alias: { type: String, unique: true, trim: true, default: '' },
