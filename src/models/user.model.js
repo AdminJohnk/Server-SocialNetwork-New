@@ -30,8 +30,8 @@ const UserSchema = new Schema(
     // ==================================================
 
     phone_number: Number,
-    user_image: { type: ObjectId, ref: 'Image', default: avt_default },
-    cover_image: { type: ObjectId, ref: 'Image', default: null },
+    user_image: { type: String, default: avt_default },
+    cover_image: String,
     verified: { type: Boolean, default: false },
     tags: [{ type: String }],
     alias: { type: String, unique: true, trim: true, default: '' },
@@ -160,21 +160,6 @@ const getFirstElement = attribute => {
   };
 };
 
-// attribute = ['user_image', 'cover_image]
-const choosePopulateAttr = ({ from, attribute, select }) => {
-  return {
-    $lookup: {
-      from: from,
-      let: { temp: `$${attribute}` },
-      pipeline: [
-        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
-        { $project: select }
-      ],
-      as: attribute
-    }
-  };
-};
-
 class UserClass {
   static async SearchUserInCommunity({ community_id, key_search }) {
     const regexSearch = new RegExp(key_search, 'i');
@@ -240,19 +225,6 @@ class UserClass {
           _id: new ObjectId(user_id)
         }
       },
-      choosePopulateAttr({
-        from: 'images',
-        attribute: 'user_image',
-        select: unGetSelectData(['__v'])
-      }),
-      getFirstElement('user_image'),
-
-      choosePopulateAttr({
-        from: 'images',
-        attribute: 'cover_image',
-        select: unGetSelectData(['__v'])
-      }),
-      getFirstElement('cover_image'),
 
       checkIsFollowed(me_id, '_id'),
       trueFalseFollowed()

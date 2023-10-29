@@ -78,21 +78,6 @@ const addFieldsObject = user => {
   };
 };
 
-// attribute = ['images']
-const choosePopulateAttrForArray = ({ from, attribute, select }) => {
-  return {
-    $lookup: {
-      from: from,
-      let: { temp: '$post_attributes.' + attribute },
-      pipeline: [
-        { $match: { $expr: { $in: ['$_id', '$$temp'] } } },
-        { $project: select }
-      ],
-      as: 'post_attributes.' + attribute
-    }
-  };
-};
-
 // attribute = ['user', 'owner_post', 'post']
 const choosePopulateAttr = ({ from, attribute, select }) => {
   return {
@@ -362,12 +347,6 @@ class PostClass {
         select: unGetSelectData(unSe_PostDefault)
       }),
       getFirstElement('post'),
-      // ================== images ==================
-      choosePopulateAttrForArray({
-        from: 'images',
-        attribute: 'images',
-        select: unGetSelectData(['__v'])
-      }),
 
       // ===========================================
 
