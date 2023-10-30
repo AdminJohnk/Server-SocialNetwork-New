@@ -14,18 +14,10 @@ router.use(authentication);
 // =========================================================
 /// POST //
 // Upload One Image
-router.post(
-  '/upload-image',
-  uploadImage.single('image'),
-  asyncHandler(ImageController.uploadImage)
-);
+router.post('/upload-one', uploadImage.single('image'), asyncHandler(ImageController.uploadImage));
 
 // Upload Multiple Images
-router.post(
-  '/upload-images',
-  uploadImage.array('images'),
-  asyncHandler(ImageController.uploadImages)
-);
+router.post('/upload-multiple', uploadImage.array('images'), asyncHandler(ImageController.uploadImages));
 
 // =========================================================
 
@@ -35,7 +27,7 @@ router.post(
 
 /// DELETE //
 // Delete Image
-router.delete('/delete-images', asyncHandler(ImageController.deleteImages));
+router.delete('/delete-multiple', asyncHandler(ImageController.deleteImages));
 
 // =========================================================
 

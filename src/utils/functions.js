@@ -44,7 +44,7 @@ const removeUndefinedFields = obj => {
   return obj;
 };
 
-// limit object in array by limit and page parametter
+// limit object in array by limit and page parameter
 const limitData = ({ data = [], limit = 10, page = 1 }) => {
   const start = (page - 1) * limit;
   const end = page * limit;
