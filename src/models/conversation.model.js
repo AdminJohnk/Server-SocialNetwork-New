@@ -94,15 +94,13 @@ class ConversationClass {
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
       .populate('seen', pp_UserDefault)
-      .populate([
-        {
-          path: 'lastMessage',
-          populate: {
-            path: 'sender',
-            select: pp_UserDefault
-          }
+      .populate({
+        path: 'lastMessage',
+        populate: {
+          path: 'sender',
+          select: pp_UserDefault
         }
-      ])
+      })
       .skip(skip)
       .limit(limit)
       .sort(sort)
