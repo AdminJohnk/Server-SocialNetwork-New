@@ -61,6 +61,13 @@ router.put(
   asyncHandler(ChatController.changeConversationImage)
 );
 
+// Change Conversation Cover Image
+router.put(
+  '/conversations/:conversation_id/cover-image',
+  uploadImage.single('image'),
+  asyncHandler(ChatController.changeConversationCoverImage)
+);
+
 // Leave Group Conversation
 router.put(
   '/conversations/:conversation_id/leave',

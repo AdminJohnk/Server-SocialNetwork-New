@@ -21,7 +21,8 @@ const ConversationSchema = new Schema(
     // group
     admins: { type: [ObjectId], ref: 'User', default: [] },
     name: String,
-    image: String
+    image: String,
+    cover_image: String
   },
   {
     timestamps: true,
@@ -61,6 +62,9 @@ class ConversationClass {
   }
   static async deleteConversation({ conversation_id }) {
     return await ConversationModel.findByIdAndDelete(conversation_id);
+  }
+  static async changeConversationCoverImage({ conversation_id, cover_image }) {
+    return await ConversationModel.findByIdAndUpdate(conversation_id, { cover_image }, { new: true }).lean();
   }
   static async changeConversationImage({ conversation_id, image }) {
     return await ConversationModel.findByIdAndUpdate(conversation_id, { image }, { new: true }).lean();
