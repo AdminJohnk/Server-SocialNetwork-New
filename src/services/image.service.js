@@ -9,7 +9,7 @@ const {
 } = require('../core/error.response');
 
 const { ImageClass } = require('../models/image.model');
-const { deleteImage, sendImageToS3 } = require('../helpers/uploadImage');
+const { deleteImage } = require('../helpers/uploadImage');
 
 class ImageService {
   static deleteImages = async ({ images }) => {
@@ -21,14 +21,8 @@ class ImageService {
   static uploadImages = async ({ images, user }) => {
     const metadata = [];
     for (let image of images) {
-      const { key, location } = image;
-
-      const newImage = await ImageClass.createImage({
-        key,
-        link: location,
-        user
-      });
-      metadata.push(newImage);
+      const { key } = image;
+      metadata.push(key);
     }
     return metadata;
   };

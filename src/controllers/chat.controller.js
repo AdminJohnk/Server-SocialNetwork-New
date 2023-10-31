@@ -61,6 +61,21 @@ class CommentController {
     }).send(res);
   };
   /* 
+    Change Conversation Cover Image
+    Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/cover-image?type=group
+  */
+  static changeConversationCoverImage = async (req, res, next) => {
+    new OK({
+      message: 'Change Conversation Cover Image Successfully',
+      metadata: await ChatService.changeConversationCoverImage({
+        conversation_id: req.params.conversation_id,
+        image: req.file,
+        user: req.user.userId,
+        type: req.query.type
+      })
+    }).send(res);
+  };
+  /* 
     Change Conversation Image
     Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/image
   */

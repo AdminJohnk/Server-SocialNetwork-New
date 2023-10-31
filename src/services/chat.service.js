@@ -111,6 +111,37 @@ class ChatService {
 
     return result;
   };
+  static changeConversationCoverImage = async ({
+    conversation_id,
+    image,
+    user,
+    type
+  }) => {
+    const foundConversation = await ConversationClass.checkExist({
+      _id: conversation_id
+    });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    if (type === 'group') {
+      // Check is admin
+      const isAdmin = await ConversationClass.checkExist({
+        _id: conversation_id,
+        admins: { $in: [user] }
+      });
+
+      if (!isAdmin) throw new ForbiddenError('You are not admin');
+    }
+
+    const { key } = image;
+
+    // Delete old image
+    if (foundConversation.cover_image) deleteImage(foundConversation.cover_image);
+
+    return await ConversationClass.changeConversationCoverImage({
+      conversation_id,
+      cover_image: key
+    });
+  };
   static changeConversationImage = async ({ conversation_id, image, user }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
