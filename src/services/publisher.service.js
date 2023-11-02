@@ -42,7 +42,7 @@ class PublisherService {
         connection.close();
       }, 1000);
     } catch (error) {
-      console.error('erro::', error);
+      console.error('error::', error);
     }
   }
 }
