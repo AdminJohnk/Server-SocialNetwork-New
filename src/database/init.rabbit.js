@@ -1,7 +1,6 @@
 'use strict';
 
 const amqp = require('amqplib');
-const { RABBITMQ_HOST, RABBITMQ_PORT } = process.env;
 
 const connectToRabbitMQ = async () => {
   try {

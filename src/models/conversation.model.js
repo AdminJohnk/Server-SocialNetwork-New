@@ -56,9 +56,7 @@ class ConversationClass {
       conversation_id,
       { $pull: { members: user_id, admins: user_id } },
       { new: true }
-    )
-      .populate('members', pp_UserDefault)
-      .lean();
+    ).lean();
   }
   static async deleteConversation({ conversation_id }) {
     return await ConversationModel.findByIdAndDelete(conversation_id);
@@ -74,18 +72,14 @@ class ConversationClass {
       conversation_id,
       { $pull: { members: { $in: members } } },
       { new: true }
-    )
-      .populate('members', pp_UserDefault)
-      .lean();
+    ).lean();
   }
   static async addMemberToConversation({ members, conversation_id }) {
     return await ConversationModel.findByIdAndUpdate(
       conversation_id,
       { $addToSet: { members: { $each: members } } },
       { new: true }
-    )
-      .populate('members', pp_UserDefault)
-      .lean();
+    ).lean();
   }
   static async changeConversationName({ name, conversation_id }) {
     return await ConversationModel.findByIdAndUpdate(conversation_id, { name }, { new: true }).lean();
@@ -98,15 +92,13 @@ class ConversationClass {
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
       .populate('seen', pp_UserDefault)
-      .populate([
-        {
-          path: 'lastMessage',
-          populate: {
-            path: 'sender',
-            select: pp_UserDefault
-          }
+      .populate({
+        path: 'lastMessage',
+        populate: {
+          path: 'sender',
+          select: pp_UserDefault
         }
-      ])
+      })
       .skip(skip)
       .limit(limit)
       .sort(sort)
@@ -141,8 +133,6 @@ class ConversationClass {
         members,
         name,
         admins
-      }).then(async (result) => {
-        return await result.populate('members', pp_UserDefault);
       });
     }
   }

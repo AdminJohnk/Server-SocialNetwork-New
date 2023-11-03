@@ -13,8 +13,8 @@ const HEADER = {
 
 const avt_default = '1698572889773_fad78a0c51c688da37563828a1ffb880.png';
 
-const pp_UserDefault = '_id name email user_image';
-const se_UserDefault = ['_id', 'name', 'email', 'user_image'];
+const pp_UserDefault = '_id name email user_image last_online';
+const se_UserDefault = ['_id', 'name', 'email', 'user_image', 'last_online'];
 
 const se_UserDefaultForPost = [
   '_id',
@@ -24,7 +24,8 @@ const se_UserDefaultForPost = [
   'experiences',
   'follower_number',
   'following_number',
-  'post_number'
+  'post_number',
+  'last_online'
 ];
 
 const unSe_PostDefault = [
