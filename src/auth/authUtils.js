@@ -17,7 +17,8 @@ const authentication = asyncHandler(async (req, res, next) => {
     try {
       const refreshToken = req.headers[HEADER.REFRESHTOKEN];
       const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
-      if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid UserId');
+      if (userId !== decodeUser.userId)
+        throw new AuthFailureError('Invalid UserId');
       req.keyStore = keyStore;
       req.user = decodeUser;
       req.refreshToken = refreshToken;
@@ -32,11 +33,14 @@ const authentication = asyncHandler(async (req, res, next) => {
 
   try {
     const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
-    if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid UserId');
+    if (userId !== decodeUser.userId)
+      throw new AuthFailureError('Invalid UserId');
     req.keyStore = keyStore;
     req.user = decodeUser;
     return next();
   } catch (error) {
+    console.log('error-name: ', error.name); // TokenExpiredError
+    console.log('error-message: ', error.message); // jwt expired
     throw error;
   }
 });
