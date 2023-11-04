@@ -109,14 +109,15 @@ class ConversationClass {
   static async getConversationsByMessageTypes({ user_id, limit, page, sort }) {
     const skip = (page - 1) * limit;
     const conversations = await ConversationModel.find({
-      members: { $in: [user_id] },
-    })
+      members: { $in: [user_id] }
+    });
 
     const messages = await MessageModel.find({
-      conversation_id: { $in: conversations.map(item => item._id) },
+      conversation_id: { $in: conversations.map((item) => item._id) },
       type: { $in: ['voice', 'video'] }
     })
       .populate('sender', pp_UserDefault)
+      .populate({ path: 'conversation_id', populate: { path: 'members', select: pp_UserDefault } })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
