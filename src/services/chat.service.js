@@ -239,7 +239,7 @@ class ChatService {
       page,
       sort
     });
-  }
+  };
   static getMessagesByConversationId = async ({
     conversation_id,
     limit = 30,
@@ -314,6 +314,7 @@ class ChatService {
 
     return {
       token: at.toJwt(),
+      conversation_id,
       name: participantName,
       user_image: foundUser[0].user_image,
       user_id: foundUser[0]._id.toString(),
