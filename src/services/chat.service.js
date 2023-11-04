@@ -18,6 +18,15 @@ const { deleteImage } = require('../helpers/uploadImage');
 const livekitHost = process.env.LK_SERVER_URL;
 const roomService = new RoomServiceClient(livekitHost, process.env.LK_API_KEY, process.env.LK_API_SECRET);
 
+/**
+ * @type {{get: (function(string): string|number), set: (function(string,  string|number): void), del: (function(string): void)}}
+ */
+const cache = {
+  get: (key) => cache[key],
+  set: (key, value) => (cache[key] = value),
+  del: (key) => delete cache[key]
+};
+
 class ChatService {
   static removeAdmin = async ({ conversation_id, user, admins }) => {
     const foundConversation = await ConversationClass.checkExist({
@@ -294,6 +303,7 @@ class ChatService {
       const foundRoom = rooms.find((room) => room.name === roomName);
       if (!foundRoom) {
         first_call = true;
+        cache.set(roomName, user_id);
         await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
       }
     });
@@ -315,6 +325,7 @@ class ChatService {
     return {
       token: at.toJwt(),
       conversation_id,
+      author: cache.get(roomName),
       name: participantName,
       user_image: foundUser[0].user_image,
       user_id: foundUser[0]._id.toString(),
