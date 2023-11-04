@@ -148,6 +148,20 @@ class CommentController {
       })
     }).send(res);
   };
+
+  /*
+    Get All Conversations By Message Types
+  */
+  static getConversationsByMessageTypes = async (req, res, next) => {
+    console.log(req)
+    new OK({
+      message: 'Get Conversations Successfully',
+      metadata: await ChatService.getConversationsByMessageTypes({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+
   /* 
     Get Messages By Conversation ID
     Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/messages

@@ -7,6 +7,7 @@ const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
 const { pp_UserDefault } = require('../utils/constants');
+const { MessageModel } = require('./message.model');
 
 const ConversationSchema = new Schema(
   {
@@ -105,6 +106,25 @@ class ConversationClass {
       .lean();
     return result || [];
   }
+  static async getConversationsByMessageTypes({ user_id, limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    const conversations = await ConversationModel.find({
+      members: { $in: [user_id] },
+    })
+
+    const messages = await MessageModel.find({
+      conversation_id: { $in: conversations.map(item => item._id) },
+      type: { $in: ['voice', 'video'] }
+    })
+      .populate('sender', pp_UserDefault)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return messages || [];
+  }
+
   static async getConversationById({ conversation_id }) {
     return await ConversationModel.findById(conversation_id)
       .populate('members', pp_UserDefault)
