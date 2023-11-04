@@ -22,6 +22,12 @@ router.get(
   asyncHandler(ChatController.getAllConversationsByUserId)
 );
 
+// Get conversations by Message Types
+router.get(
+  '/conversations/called',
+  asyncHandler(ChatController.getConversationsByMessageTypes)
+);
+
 // Get messages By Conversation ID
 router.get(
   '/conversations/:conversation_id/messages',

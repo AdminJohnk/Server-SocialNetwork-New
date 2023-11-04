@@ -226,6 +226,20 @@ class ChatService {
       sort
     });
   };
+
+  static getConversationsByMessageTypes = async ({
+    user_id,
+    limit = 7,
+    page = 1,
+    sort = { updatedAt: -1 }
+  }) => {
+    return await ConversationClass.getConversationsByMessageTypes({
+      user_id,
+      limit,
+      page,
+      sort
+    });
+  }
   static getMessagesByConversationId = async ({
     conversation_id,
     limit = 30,
