@@ -17,9 +17,8 @@ const PublisherService = require('./publisher.service');
 const NotificationService = require('./notification.service');
 const { Notification } = require('../utils/notificationType');
 const { LIKEPOST_001, FOLLOWUSER_001 } = Notification;
-// const { Advised } = require('aspect.js');
 
-// @Advised()
+
 class UserService {
   static deleteUser = async ({ user_id }) => {
     return await UserClass.deleteUser({
