@@ -6,13 +6,12 @@ const cors = require('cors');
 const compression = require('compression');
 const { checkOverLoad } = require('./helpers/check.connect');
 const router = require('./routes/root.router');
-const bodyParser = require('body-parser');
 
 // init middleware
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(
   cors({
     // origin: 'http://localhost:3000',
@@ -22,7 +21,7 @@ app.use(
   })
 );
 app.use(
-  bodyParser.urlencoded({
+    express.urlencoded({
     extended: true
   })
 );
@@ -31,8 +30,8 @@ app.use(
 require('./database/init.mongodb');
 
 // init redis
-// require("./services/redisPubSub.service")
-// require("./services/redis.service")
+const { redisClient } = require('./database/init.redis');
+global.__redisClient = redisClient;
 
 // checkOverLoad();
 
