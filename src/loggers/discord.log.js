@@ -26,7 +26,7 @@ class LoggerService {
   async sendToFormatCode(logData) {
     const {
         code,
-        message = 'This is some addtional information about the code',
+        message = 'This is some additional information about the code',
         title = 'Code Example'
     } = logData;
     
@@ -34,7 +34,7 @@ class LoggerService {
         content: message,
         embeds: [
             {
-                color: parseInt('00ff00', 16), // Convert hexadicimal color code to integer
+                color: parseInt('00ff00', 16), // Convert hexadecimal color code to integer
                 title,
                 description: '```json\n' + JSON.stringify(code, null, 2) + '\n```'
             }

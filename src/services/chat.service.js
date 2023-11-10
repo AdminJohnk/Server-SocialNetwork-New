@@ -240,7 +240,7 @@ class ChatService {
     user_id,
     limit = 7,
     page = 1,
-    sort = { updatedAt: -1 }
+    sort = { createdAt: -1 }
   }) => {
     return await ConversationClass.getConversationsByMessageTypes({
       user_id,
@@ -325,6 +325,8 @@ class ChatService {
     return {
       token: at.toJwt(),
       conversation_id,
+      typeofConversation: foundConversation.type,
+      conversation_name: foundConversation.name,
       author: cache.get(roomName),
       name: participantName,
       user_image: foundUser[0].user_image,
