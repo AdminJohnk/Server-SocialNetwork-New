@@ -120,7 +120,6 @@ class ConversationClass {
       .populate({ path: 'conversation_id', populate: { path: 'members', select: pp_UserDefault } })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit)
       .lean();
 
     return messages || [];
