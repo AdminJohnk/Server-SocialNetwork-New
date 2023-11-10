@@ -31,6 +31,8 @@ const ConversationSchema = new Schema(
   }
 );
 
+ConversationSchema.index({ members: 1, updatedAt: -1 });
+
 const ConversationModel = model(DOCUMENT_NAME, ConversationSchema);
 
 class ConversationClass {
@@ -91,7 +93,6 @@ class ConversationClass {
       members: { $in: [user_id] }
     })
       .populate('members', pp_UserDefault)
-      .populate('admins', pp_UserDefault)
       .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
@@ -118,7 +119,7 @@ class ConversationClass {
     })
       .populate('sender', pp_UserDefault)
       .populate({ path: 'conversation_id', populate: { path: 'members', select: pp_UserDefault } })
-      .sort({ createdAt: -1 })
+      .sort(sort)
       .skip(skip)
       .limit(limit)
       .lean();

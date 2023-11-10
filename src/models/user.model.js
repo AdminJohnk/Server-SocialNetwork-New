@@ -11,7 +11,7 @@ const COLLECTION_NAME = 'users';
 
 const UserSchema = new Schema(
   {
-    id_incr: { type: Number, default: 0 },
+    id_incr: { type: Number, default: 0, index: true },
     name: {
       type: String,
       trim: true,
@@ -24,7 +24,7 @@ const UserSchema = new Schema(
       trim: true,
       required: true
     },
-    password: { type: String, required: true },
+    password: { type: String },
     role: Array,
     last_online: { type: Date, default: Date.now },
 
@@ -109,7 +109,7 @@ UserSchema.pre('save', async function (next) {
 });
 
 // create index for search
-UserSchema.index({ name: 'text', email: 'text' });
+UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
@@ -231,11 +231,12 @@ class UserClass {
     await UserIncrClass.pushIdDelete(user.id_incr);
     return true;
   }
-  static async createUser({ name, email, password }) {
+  static async createUser({ name, email, password, user_image }) {
     const user = UserModel.create({
       name,
       email,
       password,
+      user_image,
       role: [RoleUser.USER]
     });
     return user;

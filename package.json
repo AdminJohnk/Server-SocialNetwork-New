@@ -2,7 +2,7 @@
   "name": "nodejs-backend-pro",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js"
@@ -31,6 +31,15 @@
     "sharp": "^0.32.6"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.10.3",
+    "@types/axios": "^0.14.0",
+    "@types/bcrypt": "^5.0.1",
+    "@types/compression": "^1.7.4",
+    "@types/cors": "^2.8.15",
+    "@types/express": "^4.17.20",
+    "@types/morgan": "^1.9.7",
+    "@types/multer": "^1.4.9",
+    "@types/multer-s3": "^3.0.2",
     "compression": "^1.7.4",
     "helmet": "^7.0.0",
     "morgan": "^1.10.0"

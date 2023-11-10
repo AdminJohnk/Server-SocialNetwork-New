@@ -18,11 +18,11 @@ const { authentication } = require('../auth/authUtils');
 // add log to discord
 router.use(pushToLogDiscord);
 
-// check apiKey
-router.use(checkApiKey);
+// // check apiKey
+// router.use(checkApiKey);
 
-// check permission
-router.use(checkPermission('0000'));
+// // check permission
+// router.use(checkPermission('0000'));
 
 router.use('/auth', authRouter);
 router.use('/images', ImageRouter);

@@ -12,26 +12,15 @@ app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
 app.use(express.json());
-app.use(
-  cors({
-    // origin: 'http://localhost:3000',
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    credentials: true
-  })
-);
-app.use(
-    express.urlencoded({
-    extended: true
-  })
-);
+app.use(cors({ /*  origin: 'http://localhost:3000', */ credentials: true }));
+app.use(express.urlencoded({ extended: true }));
 
 // init db
 require('./database/init.mongodb');
 
 // init redis
-const { redisClient } = require('./database/init.redis');
-global.__redisClient = redisClient;
+// const { redisClient } = require('./database/init.redis');
+// global.__redisClient = redisClient;
 
 // checkOverLoad();
 

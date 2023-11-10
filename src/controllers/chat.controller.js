@@ -153,7 +153,6 @@ class CommentController {
     Get All Conversations By Message Types
   */
   static getConversationsByMessageTypes = async (req, res, next) => {
-    console.log(req)
     new OK({
       message: 'Get Conversations Successfully',
       metadata: await ChatService.getConversationsByMessageTypes({

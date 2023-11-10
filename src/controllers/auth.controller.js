@@ -28,11 +28,20 @@ class AuthController {
       metadata: await AuthService.loginService(req.body)
     }).send(res);
   };
-  
+
   static signUp = async (req, res, next) => {
     new CREATED({
       message: 'Sign Up Successfully',
       metadata: await AuthService.signUpService(req.body)
+    }).send(res);
+  };
+
+  static callbackGithub = async (req, res, next) => {
+    new OK({
+      message: 'Get Repository Github Successfully',
+      metadata: await AuthService.callbackGithub({
+        code: req.query.code
+      })
     }).send(res);
   };
 }
