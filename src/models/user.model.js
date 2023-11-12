@@ -123,7 +123,10 @@ const checkIsFollowed = (me_id, attribute) => {
         {
           $match: {
             $expr: {
-              $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
+              $and: [
+                { $eq: ['$user', new ObjectId(me_id)] },
+                { $in: ['$$temp', '$followings'] }
+              ]
             }
           }
         }
@@ -148,7 +151,7 @@ const trueFalseFollowed = () => {
   };
 };
 
-const getFirstElement = (attribute) => {
+const getFirstElement = attribute => {
   return {
     $addFields: {
       [attribute]: {
@@ -176,7 +179,9 @@ class UserClass {
     return result;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
+    return await UserModel.findOne({ _id: user_id })
+      .select(getSelectData(select))
+      .lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -200,9 +205,6 @@ class UserClass {
       numSave
     };
   }
-  static async updateTags({ user_id, tags }) {
-    return await UserModel.findByIdAndUpdate(user_id, { $set: { tags: tags } }, { new: true }).lean();
-  }
   static async getShouldFollow({ user_id }) {}
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
@@ -217,9 +219,11 @@ class UserClass {
           _id: new ObjectId(user_id)
         }
       },
-
       checkIsFollowed(me_id, '_id'),
-      trueFalseFollowed()
+      trueFalseFollowed(),
+      {
+        $project: unGetSelectData(unselect)
+      }
     ]);
     return result[0];
   }

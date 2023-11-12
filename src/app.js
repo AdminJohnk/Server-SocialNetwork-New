@@ -21,7 +21,7 @@ app.use(
   })
 );
 app.use(
-    express.urlencoded({
+  express.urlencoded({
     extended: true
   })
 );
@@ -30,8 +30,10 @@ app.use(
 require('./database/init.mongodb');
 
 // init redis
-const { redisClient } = require('./database/init.redis');
-global.__redisClient = redisClient;
+const RedisInit = require('./database/init.redis');
+RedisInit.getInstanceRedis().then(redisClient => {
+  global.__redisClient = redisClient;
+});
 
 // checkOverLoad();
 
