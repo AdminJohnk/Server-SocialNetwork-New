@@ -19,7 +19,7 @@ const livekitHost = process.env.LK_SERVER_URL;
 const roomService = new RoomServiceClient(livekitHost, process.env.LK_API_KEY, process.env.LK_API_SECRET);
 
 /**
- * @type {{get: (function(string): string|number), set: (function(string,  string|number): void), del: (function(string): void)}}
+ * @type {{get: (function(string): object), set: (function(string, object): void), del: (function(string): void)}}
  */
 const cache = {
   get: (key) => cache[key],
@@ -91,7 +91,7 @@ class ChatService {
       user_id
     });
   };
-  static deleteConversation = async ({ conversation_id, user }) => {
+  static dissolveGroup = async ({ conversation_id, user }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
     });
@@ -269,6 +269,24 @@ class ChatService {
       extend
     });
   };
+  static getImageMessageByConversationId = async ({
+    conversation_id,
+    limit = 30,
+    page = 1,
+    extend = 0,
+    sort = { createdAt: -1 }
+  }) => {
+    const foundConversation = await ConversationClass.checkExist({ _id: conversation_id });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    return await MessageClass.getImageMessageByConversationId({
+      conversation_id,
+      limit,
+      page,
+      sort,
+      extend
+    });
+  };
   static getConversationById = async ({ conversation_id }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
@@ -303,7 +321,7 @@ class ChatService {
       const foundRoom = rooms.find((room) => room.name === roomName);
       if (!foundRoom) {
         first_call = true;
-        cache.set(roomName, user_id);
+        cache.set(roomName, foundUser[0]);
         await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
       }
     });
@@ -328,7 +346,7 @@ class ChatService {
       typeofConversation: foundConversation.type,
       conversation_name: foundConversation.name,
       author: cache.get(roomName),
-      name: participantName,
+      user_name: participantName,
       user_image: foundUser[0].user_image,
       user_id: foundUser[0]._id.toString(),
       first_call,

@@ -21,6 +21,7 @@ const ConversationSchema = new Schema(
 
     // group
     admins: { type: [ObjectId], ref: 'User', default: [] },
+    creator: { type: ObjectId, ref: 'User' },
     name: String,
     image: String,
     cover_image: String
@@ -55,11 +56,21 @@ class ConversationClass {
       .lean();
   }
   static async leaveGroupConversation({ conversation_id, user_id }) {
-    return await ConversationModel.findByIdAndUpdate(
-      conversation_id,
-      { $pull: { members: user_id, admins: user_id } },
-      { new: true }
-    ).lean();
+    const conversation = await ConversationModel.findById(conversation_id).lean();
+    let update;
+    if (conversation.creator === user_id) {
+      update = {
+        $pull: { members: user_id, admins: user_id },
+        $set: { creator: null }
+      };
+    } else {
+      update = {
+        $pull: { members: user_id, admins: user_id }
+      };
+    }
+    return await ConversationModel.findByIdAndUpdate(conversation_id, update, { new: true })
+      .populate('members', pp_UserDefault)
+      .lean();
   }
   static async deleteConversation({ conversation_id }) {
     return await ConversationModel.findByIdAndDelete(conversation_id);
@@ -86,6 +97,14 @@ class ConversationClass {
       { new: true }
     )
       .populate('members', pp_UserDefault)
+      .populate('seen', pp_UserDefault)
+      .populate({
+        path: 'lastMessage',
+        populate: {
+          path: 'sender',
+          select: pp_UserDefault
+        }
+      })
       .lean();
   }
   static async changeConversationName({ name, conversation_id }) {
@@ -144,21 +163,26 @@ class ConversationClass {
         members: { $all: members, $size: 2 }
       });
       if (!foundConversation) {
-        return await ConversationModel.create({
+        const result = await ConversationModel.create({
           type,
-          members
+          members,
+          creator: author
         });
+        return await result.populate('members', pp_UserDefault);
       } else {
         return foundConversation;
       }
     } else if (type === 'group') {
       const admins = [author];
-      return await ConversationModel.create({
+      const result = await ConversationModel.create({
         type,
         members,
         name,
-        admins
+        admins,
+        creator: author
       });
+
+      return await result.populate('members', pp_UserDefault);
     }
   }
   static async checkExist(select) {
