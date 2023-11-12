@@ -31,7 +31,7 @@ class NotificationService {
     const checkQueue = await channel.checkQueue(queueName);
     const msgNumber = checkQueue.messageCount;
 
-    channel.prefetch(msgNumber);
+    await channel.prefetch(msgNumber);
 
     await channel.consume(
       queueName,

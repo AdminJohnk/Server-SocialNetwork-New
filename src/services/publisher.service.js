@@ -29,7 +29,7 @@ class PublisherService {
       await channel.bindQueue(queueResult.queue, notificationExchange);
 
       // 4. send message
-      await channel.sendToQueue(
+      channel.sendToQueue(
         queueResult.queue,
         Buffer.from(JSON.stringify(message)),
         {
@@ -42,7 +42,7 @@ class PublisherService {
         connection.close();
       }, 1000);
     } catch (error) {
-      console.error('erro::', error);
+      console.error('error::', error);
     }
   }
 }

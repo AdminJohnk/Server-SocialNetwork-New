@@ -7,6 +7,7 @@ const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
 const { pp_UserDefault } = require('../utils/constants');
+const { MessageModel } = require('./message.model');
 
 const ConversationSchema = new Schema(
   {
@@ -20,6 +21,7 @@ const ConversationSchema = new Schema(
 
     // group
     admins: { type: [ObjectId], ref: 'User', default: [] },
+    creator: { type: ObjectId, ref: 'User' },
     name: String,
     image: String,
     cover_image: String
@@ -29,6 +31,8 @@ const ConversationSchema = new Schema(
     collection: COLLECTION_NAME
   }
 );
+
+ConversationSchema.index({ members: 1, updatedAt: -1 });
 
 const ConversationModel = model(DOCUMENT_NAME, ConversationSchema);
 
@@ -52,11 +56,19 @@ class ConversationClass {
       .lean();
   }
   static async leaveGroupConversation({ conversation_id, user_id }) {
-    return await ConversationModel.findByIdAndUpdate(
-      conversation_id,
-      { $pull: { members: user_id, admins: user_id } },
-      { new: true }
-    )
+    const conversation = await ConversationModel.findById(conversation_id).lean();
+    let update;
+    if (conversation.creator === user_id) {
+      update = {
+        $pull: { members: user_id, admins: user_id },
+        $set: { creator: null }
+      };
+    } else {
+      update = {
+        $pull: { members: user_id, admins: user_id }
+      };
+    }
+    return await ConversationModel.findByIdAndUpdate(conversation_id, update, { new: true })
       .populate('members', pp_UserDefault)
       .lean();
   }
@@ -85,6 +97,14 @@ class ConversationClass {
       { new: true }
     )
       .populate('members', pp_UserDefault)
+      .populate('seen', pp_UserDefault)
+      .populate({
+        path: 'lastMessage',
+        populate: {
+          path: 'sender',
+          select: pp_UserDefault
+        }
+      })
       .lean();
   }
   static async changeConversationName({ name, conversation_id }) {
@@ -96,7 +116,6 @@ class ConversationClass {
       members: { $in: [user_id] }
     })
       .populate('members', pp_UserDefault)
-      .populate('admins', pp_UserDefault)
       .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
@@ -111,6 +130,26 @@ class ConversationClass {
       .lean();
     return result || [];
   }
+  static async getConversationsByMessageTypes({ user_id, limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    const conversations = await ConversationModel.find({
+      members: { $in: [user_id] }
+    });
+
+    const messages = await MessageModel.find({
+      conversation_id: { $in: conversations.map((item) => item._id) },
+      type: { $in: ['voice', 'video'] }
+    })
+      .populate('sender', pp_UserDefault)
+      .populate({ path: 'conversation_id', populate: { path: 'members', select: pp_UserDefault } })
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return messages || [];
+  }
+
   static async getConversationById({ conversation_id }) {
     return await ConversationModel.findById(conversation_id)
       .populate('members', pp_UserDefault)
@@ -125,23 +164,26 @@ class ConversationClass {
         members: { $all: members, $size: 2 }
       });
       if (!foundConversation) {
-        return await ConversationModel.create({
+        const result = await ConversationModel.create({
           type,
-          members
+          members,
+          creator: author
         });
+        return await result.populate('members', pp_UserDefault);
       } else {
         return foundConversation;
       }
     } else if (type === 'group') {
       const admins = [author];
-      return await ConversationModel.create({
+      const result = await ConversationModel.create({
         type,
         members,
         name,
-        admins
-      }).then(async (result) => {
-        return await result.populate('members', pp_UserDefault);
+        admins,
+        creator: author
       });
+
+      return await result.populate('members', pp_UserDefault);
     }
   }
   static async checkExist(select) {

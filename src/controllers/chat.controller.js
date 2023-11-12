@@ -51,10 +51,10 @@ class CommentController {
     Get All Conversations By User ID
     Link: http://localhost:4052/api/v1/chat/conversations
   */
-  static deleteConversation = async (req, res, next) => {
+  static dissolveGroup = async (req, res, next) => {
     new OK({
       message: 'Delete Conversation Successfully',
-      metadata: await ChatService.deleteConversation({
+      metadata: await ChatService.dissolveGroup({
         conversation_id: req.params.conversation_id,
         user: req.user.userId
       })
@@ -148,6 +148,19 @@ class CommentController {
       })
     }).send(res);
   };
+
+  /*
+    Get All Conversations By Message Types
+  */
+  static getConversationsByMessageTypes = async (req, res, next) => {
+    new OK({
+      message: 'Get Conversations Successfully',
+      metadata: await ChatService.getConversationsByMessageTypes({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+
   /* 
     Get Messages By Conversation ID
     Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/messages
@@ -156,6 +169,20 @@ class CommentController {
     new OK({
       message: 'Get Messages Successfully',
       metadata: await ChatService.getMessagesByConversationId({
+        conversation_id: req.params.conversation_id,
+        page: req.query.page,
+        extend: parseInt(req.query.extend)
+      })
+    }).send(res);
+  };
+  /*
+    Get Image Message By Conversation ID
+    Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/images
+  */
+  static getImageMessageByConversationId = async (req, res, next) => {
+    new OK({
+      message: 'Get Image Message Successfully',
+      metadata: await ChatService.getImageMessageByConversationId({
         conversation_id: req.params.conversation_id,
         page: req.query.page,
         extend: parseInt(req.query.extend)

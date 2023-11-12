@@ -5,11 +5,9 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils/functions');
-const {
-  BadRequestError,
-  AuthFailureError,
-  ForbiddenError
-} = require('../core/error.response');
+const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response');
+const { default: axios } = require('axios');
+const qs = require('qs');
 
 class AuthService {
   static handleRefreshToken = async ({ refreshToken, keyStore, user }) => {
@@ -22,18 +20,13 @@ class AuthService {
     }
 
     // keyStore.refreshToken là Token đang sử dụng so sánh với refreshToken gửi lên
-    if (keyStore.refreshToken !== refreshToken)
-      throw new AuthFailureError('User not registered');
+    if (keyStore.refreshToken !== refreshToken) throw new AuthFailureError('User not registered');
 
     const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new AuthFailureError('User not registered');
 
     // create accessToken và refreshToken
-    const tokens = await createTokenPair(
-      { userId, email },
-      keyStore.publicKey,
-      keyStore.privateKey
-    );
+    const tokens = await createTokenPair({ userId, email }, keyStore.publicKey, keyStore.privateKey);
 
     // update Token
     await keyStore.updateOne({
@@ -50,7 +43,7 @@ class AuthService {
     };
   };
 
-  static logoutService = async keyStore => {
+  static logoutService = async (keyStore) => {
     const delKey = await KeyTokenClass.removeKeyByID(keyStore._id);
     return delKey;
   };
@@ -82,11 +75,7 @@ class AuthService {
     });
 
     // 4 - Generate accessTokens vs refreshToken
-    const tokens = await createTokenPair(
-      { userId: foundUser._id, email },
-      publicKey,
-      privateKey
-    );
+    const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
 
     const keyStore = await KeyTokenClass.createKeyToken({
       userId: foundUser._id,
@@ -129,21 +118,17 @@ class AuthService {
       const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
-          type: 'pkcs1',
+          type: 'spki',
           format: 'pem'
         },
         privateKeyEncoding: {
-          type: 'pkcs1',
+          type: 'pkcs8',
           format: 'pem'
         }
       });
 
       // create token pair
-      const tokens = await createTokenPair(
-        { userId: newUser._id, email },
-        publicKey,
-        privateKey
-      );
+      const tokens = await createTokenPair({ userId: newUser._id, email }, publicKey, privateKey);
 
       const keyStore = await KeyTokenClass.createKeyToken({
         userId: newUser._id,
@@ -160,6 +145,118 @@ class AuthService {
           object: newUser
         }),
         tokens
+      };
+    }
+    return {
+      code: 200,
+      metadata: null
+    };
+  };
+
+  static callbackGithub = async ({ code }) => {
+    const URL = 'https://github.com/login/oauth/access_token';
+    const options = {
+      client_id: process.env.GITHUB_OAUTH_CLIENT_ID,
+      client_secret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
+      code: code
+    };
+
+    const queryString = qs.stringify(options);
+
+    const { data } = await axios.post(`${URL}?${queryString}`, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+
+    const accessTokenGitHub = qs.parse(data).access_token;
+
+    const { data: user } = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${accessTokenGitHub}` }
+    });
+
+    const { data: emailArr } = await axios.get('https://api.github.com/user/emails', {
+      headers: { Authorization: `Bearer ${accessTokenGitHub}` }
+    });
+
+    const userEmail = emailArr[0].email;
+
+    const foundUser = await UserClass.findByEmail({ email: userEmail });
+    if (foundUser) {
+      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 4096,
+        publicKeyEncoding: {
+          type: 'spki',
+          format: 'pem'
+        },
+        privateKeyEncoding: {
+          type: 'pkcs8',
+          format: 'pem'
+        }
+      });
+
+      // create token pair
+      const tokens = await createTokenPair(
+        { userId: foundUser._id, email: userEmail },
+        publicKey,
+        privateKey
+      );
+
+      const keyStore = await KeyTokenClass.createKeyToken({
+        userId: foundUser._id,
+        publicKey,
+        privateKey,
+        refreshToken: tokens.refreshToken
+      });
+
+      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+
+      return {
+        user: getInfoData({
+          fields: ['_id', 'name', 'email'],
+          object: foundUser
+        }),
+        tokens,
+        accessTokenGitHub: accessTokenGitHub
+      };
+    }
+
+    const newUser = await UserClass.createUser({
+      name: user.name,
+      email: userEmail,
+      user_image: user.avatar_url
+    });
+
+    if (newUser) {
+      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 4096,
+        publicKeyEncoding: {
+          type: 'spki',
+          format: 'pem'
+        },
+        privateKeyEncoding: {
+          type: 'pkcs8',
+          format: 'pem'
+        }
+      });
+
+      // create token pair
+      const tokens = await createTokenPair({ userId: newUser._id, email: userEmail }, publicKey, privateKey);
+
+      const keyStore = await KeyTokenClass.createKeyToken({
+        userId: newUser._id,
+        publicKey,
+        privateKey,
+        refreshToken: tokens.refreshToken
+      });
+
+      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+
+      return {
+        user: getInfoData({
+          fields: ['_id', 'name', 'email'],
+          object: newUser
+        }),
+        tokens,
+        accessTokenGitHub: accessTokenGitHub
       };
     }
     return {
