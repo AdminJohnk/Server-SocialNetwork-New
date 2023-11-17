@@ -6,8 +6,9 @@ const ObjectId = Types.ObjectId;
 const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
-const { pp_UserDefault } = require('../utils/constants');
+const { pp_UserDefault, se_UserDefaultForPost } = require('../utils/constants');
 const { MessageModel } = require('./message.model');
+const { getSelectData } = require('../utils/functions');
 
 const ConversationSchema = new Schema(
   {
@@ -37,6 +38,33 @@ ConversationSchema.index({ members: 1, updatedAt: -1 });
 const ConversationModel = model(DOCUMENT_NAME, ConversationSchema);
 
 class ConversationClass {
+  static async getAllUsersUsedToChatWith({ user_id, sort }) {
+    const conversations = await ConversationModel.find({
+      members: { $in: [user_id] }
+    });
+
+    const users = await ConversationModel.aggregate([
+      { $match: { _id: { $in: conversations.map((item) => item._id) } } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'members',
+          foreignField: '_id',
+          as: 'members',
+          pipeline: [
+            { $match: { _id: { $ne: user_id } } },
+            { $project: getSelectData(se_UserDefaultForPost) }
+          ]
+        }
+      },
+      { $unwind: '$members' },
+      { $group: { _id: '$members._id', members: { $first: '$members' } } },
+      { $replaceRoot: { newRoot: '$members' } },
+      { $sort: sort }
+    ]);
+
+    return users || [];
+  }
   static async removeAdmin({ admins, conversation_id }) {
     return await ConversationModel.findByIdAndUpdate(
       conversation_id,
@@ -170,7 +198,7 @@ class ConversationClass {
         });
         return await result.populate('members', pp_UserDefault);
       } else {
-        return foundConversation;
+        return await foundConversation.populate('members', pp_UserDefault)
       }
     } else if (type === 'group') {
       const admins = [author];
@@ -186,7 +214,7 @@ class ConversationClass {
     }
   }
   static async checkExist(select) {
-    return await ConversationModel.findOne(select).lean();
+    return await ConversationModel.findOne(select);
   }
 }
 

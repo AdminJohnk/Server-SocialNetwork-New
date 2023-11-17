@@ -36,6 +36,41 @@ class AuthController {
     }).send(res);
   };
 
+  static forgotPassword = async (req, res, next) => {
+    new OK({
+      message: 'Forgot Password Successfully',
+      metadata: await AuthService.forgotPasswordService(req.body)
+    }).send(res);
+  };
+
+  static verifyCode = async (req, res, next) => {
+    new OK({
+      message: 'Verify Code Successfully',
+      metadata: await AuthService.verifyCodeService(req.body)
+    }).send(res);
+  };
+
+  static resetPassword = async (req, res, next) => {
+    new OK({
+      message: 'Reset Password Successfully',
+      metadata: await AuthService.resetPasswordService(req.body)
+    }).send(res);
+  };
+
+  static checkVerify = async (req, res, next) => {
+    new OK({
+      message: 'Check Verify Successfully',
+      metadata: await AuthService.checkVerifyService(req.body)
+    }).send(res);
+  };
+
+  static checkReset = async (req, res, next) => {
+    new OK({
+      message: 'Check Reset Successfully',
+      metadata: await AuthService.checkResetService(req.body)
+    }).send(res);
+  };
+
   static callbackGithub = async (req, res, next) => {
     new OK({
       message: 'Get Repository Github Successfully',

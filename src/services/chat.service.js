@@ -235,7 +235,12 @@ class ChatService {
       sort
     });
   };
-
+  static getAllUsersUsedToChatWith = async ({ user_id, sort = { createdAt: -1 } }) => {
+    return await ConversationClass.getAllUsersUsedToChatWith({
+      user_id,
+      sort
+    });
+  };
   static getConversationsByMessageTypes = async ({
     user_id,
     limit = 7,
