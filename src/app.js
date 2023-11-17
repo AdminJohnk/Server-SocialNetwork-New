@@ -6,6 +6,7 @@ const cors = require('cors');
 const compression = require('compression');
 const { checkOverLoad } = require('./helpers/check.connect');
 const router = require('./routes/root.router');
+const { SenderMailServer } = require('./configs/mailTransport');
 
 // init middleware
 app.use(morgan('dev'));
@@ -17,6 +18,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // init db
 require('./database/init.mongodb');
+
+// init mail service
+SenderMailServer();
 
 // init redis
 // const { redisClient } = require('./database/init.redis');

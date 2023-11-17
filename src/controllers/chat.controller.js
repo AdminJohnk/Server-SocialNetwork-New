@@ -161,6 +161,18 @@ class CommentController {
     }).send(res);
   };
 
+  /*
+    Get All Users Used To Chat With
+  */
+  static getAllUsersUsedToChatWith = async (req, res, next) => {
+    new OK({
+      message: 'Get All Users Successfully',
+      metadata: await ChatService.getAllUsersUsedToChatWith({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+
   /* 
     Get Messages By Conversation ID
     Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/messages

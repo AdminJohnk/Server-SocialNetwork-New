@@ -76,13 +76,6 @@ class UserService {
       user_id: user
     });
 
-    PostClass.changeToArrayPost({
-      post_id: post,
-      type: 'like',
-      user_id: user,
-      number: numLike
-    });
-
     if (user !== owner_post && numLike === 1) {
       const msg = NotificationService.createMsgToPublish({
         type: LIKEPOST_001,

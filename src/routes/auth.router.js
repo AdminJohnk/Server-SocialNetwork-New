@@ -12,6 +12,21 @@ router.post('/signup', asyncHandler(AuthController.signUp));
 // Login
 router.post('/login', asyncHandler(AuthController.login));
 
+// Forgot Password
+router.post('/forgot', asyncHandler(AuthController.forgotPassword));
+
+// Verify code 
+router.post('/verify', asyncHandler(AuthController.verifyCode));
+
+// Reset password
+router.post('/reset', asyncHandler(AuthController.resetPassword));
+
+// Check verify
+router.post('/checkVerify', asyncHandler(AuthController.checkVerify));
+
+// Check reset
+router.post('/checkReset', asyncHandler(AuthController.checkReset));
+
 // Get Repository Github
 router.get('/github', asyncHandler(AuthController.callbackGithub));
 
