@@ -16,7 +16,7 @@ const MessageSchema = new Schema(
       default: 'text'
     },
     sender: { type: ObjectId, ref: 'User', required: true },
-    image: { type: String, default: null },
+    images: { type: [String], default: null },
     content: { type: String, required: true },
     createdAt: { type: Date, required: true }
   },
@@ -46,7 +46,7 @@ class MessageClass {
   }
   static async getImageMessageByConversationId({ conversation_id, limit, page, sort, extend }) {
     const skip = (page - 1) * limit + extend;
-    const result = await MessageModel.find({ conversation_id, image: { $ne: null } })
+    const result = await MessageModel.find({ conversation_id, images: { $ne: null } })
       .populate('sender', pp_UserDefault)
       .skip(skip)
       .limit(limit)
