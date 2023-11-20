@@ -12,12 +12,12 @@ const MessageSchema = new Schema(
     conversation_id: { type: ObjectId, ref: 'Conversation', required: true },
     type: {
       type: String,
-      enum: ['text', 'notification', 'audio', 'file', 'voice', 'video'],
+      enum: ['text', 'image', 'notification', 'audio', 'file', 'voice', 'video'],
       default: 'text'
     },
+    images: { type: [String], default: null },
     sender: { type: ObjectId, ref: 'User', required: true },
-    image: { type: String, default: null },
-    content: { type: String, required: true },
+    content: { type: String, default: null },
     createdAt: { type: Date, required: true }
   },
   {
@@ -46,7 +46,7 @@ class MessageClass {
   }
   static async getImageMessageByConversationId({ conversation_id, limit, page, sort, extend }) {
     const skip = (page - 1) * limit + extend;
-    const result = await MessageModel.find({ conversation_id, image: { $ne: null } })
+    const result = await MessageModel.find({ conversation_id, images: { $ne: null } })
       .populate('sender', pp_UserDefault)
       .skip(skip)
       .limit(limit)

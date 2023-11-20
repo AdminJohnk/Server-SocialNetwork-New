@@ -15,7 +15,7 @@ router.post('/login', asyncHandler(AuthController.login));
 // Forgot Password
 router.post('/forgot', asyncHandler(AuthController.forgotPassword));
 
-// Verify code 
+// Verify code
 router.post('/verify', asyncHandler(AuthController.verifyCode));
 
 // Reset password
