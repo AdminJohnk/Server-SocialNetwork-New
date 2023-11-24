@@ -53,11 +53,11 @@ class PostService {
   static async getAllPostForNewsFeed({
     user_id,
     limit = 5,
-    page = 0,
+    page = 1,
     sort = { createdAt: -1 },
     scope = 'Normal'
   }) {
-    const skip = page * limit;
+    const skip = (parseInt(page) - 1) * limit;
 
     return await PostClass.getAllPostForNewsFeed({
       user_id,
@@ -67,13 +67,7 @@ class PostService {
       scope
     });
   }
-  static async getAllUserSavePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserSavePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -90,13 +84,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserSharePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserSharePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -113,13 +101,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserLikePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserLikePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -173,18 +155,11 @@ class PostService {
       user_id,
       type: 'post',
       number: -1
-    }).catch(err => console.log(err));
+    }).catch((err) => console.log(err));
 
     return result;
   }
-  static async updatePost({
-    post_id,
-    user_id,
-    content,
-    title,
-    scope,
-    community
-  }) {
+  static async updatePost({ post_id, user_id, content, title, scope, community }) {
     let post_attributes = { content, title };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
@@ -285,18 +260,8 @@ class PostService {
 
     return true;
   }
-  static async createPost({
-    type = 'Post',
-    user,
-    title,
-    content,
-    images,
-    link,
-    scope,
-    community
-  }) {
-    if (!title || !content)
-      throw new BadRequestError('Post must have title or content');
+  static async createPost({ type = 'Post', user, title, content, images, link, scope, community }) {
+    if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
       user,

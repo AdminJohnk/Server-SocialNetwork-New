@@ -86,11 +86,11 @@ class AuthService {
   static loginService = async ({ email, password, refreshToken = null }) => {
     // 1 - Check email exist
     const foundUser = await UserClass.findByEmail({ email });
-    if (!foundUser) throw new BadRequestError('User not registered');
+    if (!foundUser) throw new BadRequestError('Email not exists!');
 
     // 2 - Match password
     const match = await bcrypt.compare(password, foundUser.password);
-    if (!match) throw new AuthFailureError('Authentication error');
+    if (!match) throw new AuthFailureError('Wrong password!');
 
     // 3 - Create privateKey vs publicKey
 
@@ -119,7 +119,7 @@ class AuthService {
       refreshToken: tokens.refreshToken
     });
 
-    if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+    if (!keyStore) throw new BadRequestError('Can\'t create keyStore!');
 
     // 5 - Get data return login
     return {
@@ -134,7 +134,7 @@ class AuthService {
   static signUpService = async ({ name, email, password }) => {
     // check Email exist
     const foundUser = await UserClass.findByEmail({ email });
-    if (foundUser) throw new BadRequestError('Error: Email already exists');
+    if (foundUser) throw new BadRequestError('Email already exists');
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -172,7 +172,7 @@ class AuthService {
         refreshToken: tokens.refreshToken
       });
 
-      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+      if (!keyStore) throw new BadRequestError('Can\'t create keyStore!');
 
       return {
         user: getInfoData({
@@ -188,7 +188,7 @@ class AuthService {
   static forgotPasswordService = async ({ email }) => {
     const foundUser = await UserClass.checkExist({ email });
 
-    if (!foundUser) throw new BadRequestError('Error: Email not exists');
+    if (!foundUser) throw new BadRequestError('Email not exists');
 
     const code = storeCache(email);
 
@@ -200,13 +200,13 @@ class AuthService {
   static verifyCodeService = async ({ email, code }) => {
     const foundCode = cache.get(email);
 
-    if (!foundCode) throw new BadRequestError('Error: Code not exists');
+    if (!foundCode) throw new BadRequestError('Code not exists');
 
-    if (foundCode.verified) throw new BadRequestError('Error: Code already verified');
+    if (foundCode.verified) throw new BadRequestError('Code already verified');
 
-    if (foundCode.code !== code) throw new BadRequestError('Error: Code not match');
+    if (foundCode.code !== code) throw new BadRequestError('Code not match');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Error: Code expired');
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
 
     cache.set(email, { ...foundCode, verified: true });
 
@@ -216,14 +216,14 @@ class AuthService {
   static resetPasswordService = async ({ email, password }) => {
     const foundCode = cache.get(email);
 
-    if (!foundCode) throw new BadRequestError('Error: Code not exists');
+    if (!foundCode) throw new BadRequestError('Code not exists');
 
-    if (!foundCode.verified) throw new BadRequestError('Error: Code already verified');
+    if (!foundCode.verified) throw new BadRequestError('Code already verified');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Error: Code expired');
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
 
     const foundUser = await UserClass.findByEmail({ email });
-    if (!foundUser) throw new BadRequestError('Error: Email not exists');
+    if (!foundUser) throw new BadRequestError('Email not exists');
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -237,11 +237,11 @@ class AuthService {
   static async checkVerifyService({ email }) {
     const foundCode = cache.get(email);
 
-    if (!foundCode) throw new BadRequestError('Error: Code not exists');
+    if (!foundCode) throw new BadRequestError('Code not exists');
 
-    if (foundCode.verified) throw new BadRequestError('Error: Code already verified');
+    if (foundCode.verified) throw new BadRequestError('Code already verified');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Error: Code expired');
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
 
     return { verified: true };
   }
@@ -249,11 +249,11 @@ class AuthService {
   static async checkResetService({ email }) {
     const foundCode = cache.get(email);
 
-    if (!foundCode) throw new BadRequestError('Error: Code not exists');
+    if (!foundCode) throw new BadRequestError('Code not exists');
 
-    if (!foundCode.verified) throw new BadRequestError('Error: Code not verified');
+    if (!foundCode.verified) throw new BadRequestError('Code not verified');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Error: Code expired');
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
 
     return { verified: true };
   }
@@ -312,7 +312,7 @@ class AuthService {
         refreshToken: tokens.refreshToken
       });
 
-      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+      if (!keyStore) throw new BadRequestError('Cant create keyStore!');
 
       return {
         user: getInfoData({
@@ -353,7 +353,7 @@ class AuthService {
         refreshToken: tokens.refreshToken
       });
 
-      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+      if (!keyStore) throw new BadRequestError('Cant create keyStore!');
 
       return {
         user: getInfoData({
