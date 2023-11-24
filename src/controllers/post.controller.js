@@ -36,7 +36,8 @@ class PostController {
     new OK({
       message: 'Get All Post For NewsFeed Successfully',
       metadata: await PostService.getAllPostForNewsFeed({
-        user_id: req.user.userId
+        user_id: req.user.userId,
+        page: req.query.page,
       })
     }).send(res);
   };
@@ -126,7 +127,8 @@ class PostController {
     new OK({
       message: 'Get All Post Successfully',
       metadata: await PostService.getAllPost({
-        user_id: req.user.userId
+        user_id: req.user.userId,
+        page: req.query.page,
       })
     }).send(res);
   };

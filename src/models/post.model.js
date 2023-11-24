@@ -25,7 +25,7 @@ const PostSchema = new Schema(
       title: String,
       content: String,
       link: String,
-      images: { type: [ObjectId], ref: 'Image', default: [] },
+      images: { type: [String], default: [] },
 
       // type = Share
       user: { type: ObjectId, ref: 'User' }, // me_id
