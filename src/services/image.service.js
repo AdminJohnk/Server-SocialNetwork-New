@@ -28,7 +28,7 @@ class ImageService {
   };
   static uploadImage = async ({ image, user }) => {
     const { key } = image;
-    return key;
+    return { key };
   };
 }
 
