@@ -205,7 +205,7 @@ class PostService {
   static async getAllPostByUserId({
     user_id,
     me_id,
-    limit = 4,
+    limit = 5,
     page = 1,
     sort = { createdAt: -1 },
     scope = 'Normal'
@@ -213,7 +213,7 @@ class PostService {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
-    const skip = (page - 1) * limit;
+    const skip = (parseInt(page) - 1) * limit;
 
     return PostClass.getAllPostByUserId({
       user_id,
