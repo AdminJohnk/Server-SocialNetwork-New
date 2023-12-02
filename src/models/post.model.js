@@ -18,6 +18,11 @@ const PostSchema = new Schema(
     type: { type: String, enum: ['Post', 'Share'], required: true },
     scope: { type: String, enum: ['Normal', 'Community'], default: 'Normal' },
     community: { type: ObjectId, ref: 'Community' },
+    visibility: {
+      type: String,
+      enum: ['public', 'private', 'member', 'friend'],
+      default: 'public'
+    },
 
     post_attributes: {
       // type = Post
@@ -232,8 +237,8 @@ class PostClass {
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
-  static async updatePost({ post_id, user_id, post_attributes }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(post_id, post_attributes, {
+  static async updatePost({ post_id, user_id, payload }) {
+    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload, {
       new: true
     }).lean();
 
@@ -375,12 +380,13 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content, images, link, scope, community }) {
+  static async createPost({ type, user, title, content, images, link, scope, community, visibility }) {
     const post_attributes = { user, title, content, images, link };
     const newPost = await PostModel.create({
       type,
       scope,
       community,
+      visibility,
       post_attributes
     });
 

@@ -34,10 +34,10 @@ require('./database/init.mongodb');
 SenderMailServer();
 
 // init redis
-const RedisInit = require('./database/init.redis');
-RedisInit.getInstanceRedis().then(redisClient => {
-  global.__redisClient = redisClient;
-});
+// const RedisInit = require('./database/init.redis');
+// RedisInit.getInstanceRedis().then(redisClient => {
+//   global.__redisClient = redisClient;
+// });
 
 // checkOverLoad();
 

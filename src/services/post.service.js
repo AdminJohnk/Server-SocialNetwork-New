@@ -159,7 +159,7 @@ class PostService {
 
     return result;
   }
-  static async updatePost({ post_id, user_id, content, title, scope, community }) {
+  static async updatePost({ post_id, user_id, content, title, scope, community, visibility }) {
     let post_attributes = { content, title };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
@@ -189,7 +189,8 @@ class PostService {
     return await PostClass.updatePost({
       post_id,
       user_id,
-      post_attributes: updateNestedObjectParser({
+      payload: updateNestedObjectParser({
+        visibility,
         post_attributes: post_attributes
       })
     });
@@ -260,7 +261,17 @@ class PostService {
 
     return true;
   }
-  static async createPost({ type = 'Post', user, title, content, images, link, scope, community }) {
+  static async createPost({
+    type = 'Post',
+    user,
+    title,
+    content,
+    images,
+    link,
+    scope,
+    community,
+    visibility
+  }) {
     if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
@@ -270,7 +281,8 @@ class PostService {
       images,
       link,
       scope,
-      community
+      community,
+      visibility
     });
 
     UserClass.changeNumberUser({
