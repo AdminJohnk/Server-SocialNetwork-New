@@ -43,9 +43,6 @@ router.get('/me', asyncHandler(UserController.getMyInfo));
 // Update user
 router.put('/update', asyncHandler(UserController.updateUserById));
 
-// Update Tags
-router.put('/tags/:user_id', asyncHandler(UserController.updateTags));
-
 // Add Follow Or Unfollow User
 router.put('/follow/:user_id', asyncHandler(UserController.followUser));
 

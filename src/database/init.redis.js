@@ -1,7 +1,7 @@
 const redis = require('redis');
 const redis_link = process.env.REDIS_LINK_DEV || process.env.REDIS_LINK_PRO;
 
-class RedisService {
+class RedisInit {
   redisClient;
   static async connect() {
     this.redisClient.on('connect', () => {
@@ -21,11 +21,8 @@ class RedisService {
         throw new Error(err);
       });
     }
-
     return this.redisClient;
   }
 }
 
-module.exports = {
-  redisClient: RedisService.getInstanceRedis()
-};
+module.exports = RedisInit
