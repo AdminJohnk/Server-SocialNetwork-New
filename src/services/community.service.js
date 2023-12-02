@@ -36,9 +36,7 @@ class CommunityService {
     if (!community) throw new NotFoundError('Community not found');
 
     // Check is Admin?
-    if (
-      community.admins.findIndex(admin => admin.toString() === admin_id) === -1
-    )
+    if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
     // Check Post
@@ -46,28 +44,18 @@ class CommunityService {
     if (!post) throw new NotFoundError('Post not found');
 
     // Check Post in wait list?
-    if (
-      community.waitlist_posts.findIndex(
-        post => post.toString() === post_id
-      ) === -1
-    )
+    if (community.waitlist_posts.findIndex((post) => post.toString() === post_id) === -1)
       throw new NotFoundError('Post not found in wait list');
 
     return await CommunityClass.acceptPost({ community_id, post_id });
   }
-  static deleteMemberFromCommunity = async ({
-    community_id,
-    admin_id,
-    user_id
-  }) => {
+  static deleteMemberFromCommunity = async ({ community_id, admin_id, user_id }) => {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
 
     // Check is Admin?
-    if (
-      community.admins.findIndex(admin => admin.toString() === admin_id) === -1
-    )
+    if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
     const result = await CommunityClass.deleteMemberFromCommunity({
@@ -84,19 +72,13 @@ class CommunityService {
 
     return result;
   };
-  static addMemberToCommunity = async ({
-    community_id,
-    admin_id,
-    member_id
-  }) => {
+  static addMemberToCommunity = async ({ community_id, admin_id, member_id }) => {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
 
     // Check is Admin?
-    if (
-      community.admins.findIndex(admin => admin.toString() === admin_id) === -1
-    )
+    if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
     const result = await CommunityClass.addMemberToCommunity({
@@ -119,15 +101,11 @@ class CommunityService {
     if (!community) throw new NotFoundError('Community not found');
 
     // Check is Admin?
-    if (
-      community.admins.findIndex(admin => admin.toString() === admin_id) === -1
-    )
+    if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
     // Check User in wait list?
-    if (
-      community.wait_list.findIndex(user => user.toString() === user_id) === -1
-    )
+    if (community.wait_list.findIndex((user) => user.toString() === user_id) === -1)
       throw new NotFoundError('User not found in wait list');
 
     const result = await CommunityClass.acceptJoinRequest({
@@ -178,26 +156,16 @@ class CommunityService {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
 
-    if (community.admins.findIndex(admin => admin.toString() === author) === -1)
+    if (community.admins.findIndex((admin) => admin.toString() === author) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
     const payload = { name, description, about, tags, members, admins, rules };
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };
-  static createCommunity = async ({
-    author,
-    name,
-    description,
-    about,
-    tags,
-    members,
-    admins,
-    rules
-  }) => {
+  static createCommunity = async ({ author, name, description, about, tags, members, admins, rules }) => {
     if (name === '') throw new BadRequestError('Name is required');
-    if (description === '')
-      throw new BadRequestError('Description is required');
+    if (description === '') throw new BadRequestError('Description is required');
     if (about === '') throw new BadRequestError('About is required');
     if (!members.includes(author)) members.push(author);
     if (!admins.includes(author)) admins.push(author);
@@ -206,6 +174,9 @@ class CommunityService {
 
     return await CommunityClass.createCommunity(payload);
   };
+  static async getCommunityByID(community_id) {
+    return await CommunityClass.getCommunityByID(community_id);
+  }
 }
 
 module.exports = CommunityService;
