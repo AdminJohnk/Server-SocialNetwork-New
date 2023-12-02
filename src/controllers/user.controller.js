@@ -59,22 +59,6 @@ class UserController {
     }).send(res);
   };
   /* 
-    Update Tags
-    Link: http://localhost:4052/api/v1/users/tags/:user_id
-    [
-      "Database", "MongoDB", "NodeJS", "ReactJS", "Data Analyst", "DeOps"
-    ]
-  */
-  static updateTags = async (req, res, next) => {
-    new OK({
-      message: 'Update Tags Successfully',
-      metadata: await UserService.updateTags({
-        user_id: req.params.user_id,
-        tags: [...req.body]
-      })
-    }).send(res);
-  };
-  /* 
     Follow User
     Link: http://localhost:4052/api/v1/users/follow/:user_id
   */
