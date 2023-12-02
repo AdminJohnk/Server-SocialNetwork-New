@@ -206,6 +206,9 @@ class UserClass {
     };
   }
   static async getShouldFollow({ user_id }) {}
+  static async updateUser({ email, payload }) {
+    return await UserModel.findOneAndUpdate({ email }, { $set: { payload } }, { new: true }).lean();
+  }
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
       new: true
@@ -228,7 +231,7 @@ class UserClass {
     return result[0];
   }
   static async findByEmail({ email }) {
-    return await UserModel.findOne({ email }).select({ password: 1 }).lean();
+    return await UserModel.findOne({ email }).select({ password: 1 });
   }
   static async deleteUser({ user_id }) {
     const user = await UserModel.findByIdAndDelete(user_id).lean();

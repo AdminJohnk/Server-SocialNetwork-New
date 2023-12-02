@@ -31,6 +31,9 @@ router.get(
   asyncHandler(ChatController.getImageMessageByConversationId)
 );
 
+// Get all users used to chat with
+router.get('/users', asyncHandler(ChatController.getAllUsersUsedToChatWith));
+
 // Get token for call
 router.get('/token', asyncHandler(ChatController.getTokenForCall));
 

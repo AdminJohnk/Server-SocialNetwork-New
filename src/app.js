@@ -6,6 +6,7 @@ const cors = require('cors');
 const compression = require('compression');
 const { checkOverLoad } = require('./helpers/check.connect');
 const router = require('./routes/root.router');
+const { SenderMailServer } = require('./configs/mailTransport');
 
 // init middleware
 app.use(morgan('dev'));
@@ -29,6 +30,9 @@ app.use(
 // init db
 require('./database/init.mongodb');
 
+// init mail service
+SenderMailServer();
+
 // init redis
 const RedisInit = require('./database/init.redis');
 RedisInit.getInstanceRedis().then(redisClient => {
@@ -49,9 +53,9 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
   console.log(`error::`, error);
-  const statusCode = error.status || 500;
-  return res.status(statusCode).json({
-    status: statusCode,
+  const status = error.status || 500;
+  return res.status(status).json({
+    status: status,
     stack: error.stack,
     message: error.message || 'Internal Server Error'
   });

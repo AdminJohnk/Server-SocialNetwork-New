@@ -8,6 +8,41 @@ const { getInfoData } = require('../utils/functions');
 const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response');
 const { default: axios } = require('axios');
 const qs = require('qs');
+const { sendMailForgotPassword } = require('../configs/mailTransport');
+
+/**
+ * @type {{get: (function(string): {email: string, code: string, expireAt: number, timestamp: number, verified:boolean}), set: (function(string, {email: string, code: string, expireAt: number, timestamp: number}): void), del: (function(string): void)}}
+ */
+const cache = {
+  get: (key) => cache[key],
+  set: (key, value) => (cache[key] = value),
+  del: (key) => delete cache[key]
+};
+
+/**
+ *
+ * @param {string} email - email of user
+ * @returns {{email: string, code: string, expireAt: number, timestamp: number}}
+ */
+const generateCode = (email) => {
+  const code = crypto.randomBytes(4).toString('hex');
+  const timestamp = Date.now();
+  const expireAt = Date.now() + 10 * 60 * 1000; // 10 minutes in milliseconds
+  return { email, code, expireAt, timestamp };
+};
+
+/**
+ * @param {string} email - email of user
+ * @returns {string}
+ * @description Generate a code and store it in cache
+ * @example
+ */
+const storeCache = (email) => {
+  const setCode = generateCode(email);
+  cache.set(email, setCode);
+  setTimeout(() => cache.del(email), 10 * 60 * 1000); // 10 minutes in milliseconds
+  return setCode.code;
+};
 
 class AuthService {
   static handleRefreshToken = async ({ refreshToken, keyStore, user }) => {
@@ -51,11 +86,11 @@ class AuthService {
   static loginService = async ({ email, password, refreshToken = null }) => {
     // 1 - Check email exist
     const foundUser = await UserClass.findByEmail({ email });
-    if (!foundUser) throw new BadRequestError('User not registered');
+    if (!foundUser) throw new BadRequestError('Email not exists!');
 
     // 2 - Match password
     const match = await bcrypt.compare(password, foundUser.password);
-    if (!match) throw new AuthFailureError('Authentication error');
+    if (!match) throw new AuthFailureError('Wrong password!');
 
     // 3 - Create privateKey vs publicKey
 
@@ -84,7 +119,7 @@ class AuthService {
       refreshToken: tokens.refreshToken
     });
 
-    if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+    if (!keyStore) throw new BadRequestError('Can\'t create keyStore!');
 
     // 5 - Get data return login
     return {
@@ -99,7 +134,7 @@ class AuthService {
   static signUpService = async ({ name, email, password }) => {
     // check Email exist
     const foundUser = await UserClass.findByEmail({ email });
-    if (foundUser) throw new BadRequestError('Error: Email already exists');
+    if (foundUser) throw new BadRequestError('Email already exists');
 
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -137,7 +172,7 @@ class AuthService {
         refreshToken: tokens.refreshToken
       });
 
-      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+      if (!keyStore) throw new BadRequestError('Can\'t create keyStore!');
 
       return {
         user: getInfoData({
@@ -147,11 +182,81 @@ class AuthService {
         tokens
       };
     }
-    return {
-      code: 200,
-      metadata: null
-    };
+    return {};
   };
+
+  static forgotPasswordService = async ({ email }) => {
+    const foundUser = await UserClass.checkExist({ email });
+
+    if (!foundUser) throw new BadRequestError('Email not exists');
+
+    const code = storeCache(email);
+
+    sendMailForgotPassword(email, code);
+
+    return { codeSent: true };
+  };
+
+  static verifyCodeService = async ({ email, code }) => {
+    const foundCode = cache.get(email);
+
+    if (!foundCode) throw new BadRequestError('Code not exists');
+
+    if (foundCode.verified) throw new BadRequestError('Code already verified');
+
+    if (foundCode.code !== code) throw new BadRequestError('Code not match');
+
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+
+    cache.set(email, { ...foundCode, verified: true });
+
+    return { verified: true };
+  };
+
+  static resetPasswordService = async ({ email, password }) => {
+    const foundCode = cache.get(email);
+
+    if (!foundCode) throw new BadRequestError('Code not exists');
+
+    if (!foundCode.verified) throw new BadRequestError('Code already verified');
+
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+
+    const foundUser = await UserClass.findByEmail({ email });
+    if (!foundUser) throw new BadRequestError('Email not exists');
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await foundUser.updateOne({ $set: { password: passwordHash } });
+
+    cache.del(email);
+
+    return { resetPassword: true };
+  };
+
+  static async checkVerifyService({ email }) {
+    const foundCode = cache.get(email);
+
+    if (!foundCode) throw new BadRequestError('Code not exists');
+
+    if (foundCode.verified) throw new BadRequestError('Code already verified');
+
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+
+    return { verified: true };
+  }
+
+  static async checkResetService({ email }) {
+    const foundCode = cache.get(email);
+
+    if (!foundCode) throw new BadRequestError('Code not exists');
+
+    if (!foundCode.verified) throw new BadRequestError('Code not verified');
+
+    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+
+    return { verified: true };
+  }
 
   static callbackGithub = async ({ code }) => {
     const URL = 'https://github.com/login/oauth/access_token';
@@ -207,7 +312,7 @@ class AuthService {
         refreshToken: tokens.refreshToken
       });
 
-      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+      if (!keyStore) throw new BadRequestError('Cant create keyStore!');
 
       return {
         user: getInfoData({
@@ -248,7 +353,7 @@ class AuthService {
         refreshToken: tokens.refreshToken
       });
 
-      if (!keyStore) throw new BadRequestError('Error: Cant create keyStore!');
+      if (!keyStore) throw new BadRequestError('Cant create keyStore!');
 
       return {
         user: getInfoData({
@@ -259,10 +364,7 @@ class AuthService {
         accessTokenGitHub: accessTokenGitHub
       };
     }
-    return {
-      code: 200,
-      metadata: null
-    };
+    return {};
   };
 }
 
