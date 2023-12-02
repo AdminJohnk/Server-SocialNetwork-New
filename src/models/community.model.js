@@ -40,7 +40,7 @@ const CommunitySchema = new Schema(
     },
     visibility: {
       type: String,
-      enum: ['public', 'private', 'followed', 'member'],
+      enum: ['public', 'private', 'member', 'friend'],
       default: 'public'
     },
 
