@@ -59,10 +59,6 @@ const PostSchema = new Schema(
       comments: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
-      },
-      views: {
-        type: [{ type: ObjectId, ref: 'User' }],
-        select: false
       }
     }
   },
@@ -309,6 +305,9 @@ class PostClass {
   }) {
     let foundPost = await PostModel.aggregate([
       { $match: condition },
+      { $skip: skip },
+      { $limit: limit },
+
       { $addFields: { ...addFieldsObject(me_id) } },
       // ================== user ==================
       choosePopulateAttr({
@@ -344,8 +343,6 @@ class PostClass {
 
       { $project: { ...unGetSelectData(unSe_PostDefault) } },
       { $sort: sort },
-      { $skip: skip },
-      { $limit: limit }
     ]);
 
     foundPost.map((post) => {
