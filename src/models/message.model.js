@@ -46,7 +46,7 @@ class MessageClass {
   }
   static async getImageMessageByConversationId({ conversation_id, limit, page, sort, extend }) {
     const skip = (page - 1) * limit + extend;
-    const result = await MessageModel.find({ conversation_id, images: { $ne: null } })
+    const result = await MessageModel.find({ conversation_id, images: { $gt: [] } })
       .populate('sender', pp_UserDefault)
       .skip(skip)
       .limit(limit)

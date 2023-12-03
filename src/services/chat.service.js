@@ -279,7 +279,7 @@ class ChatService {
     limit = 30,
     page = 1,
     extend = 0,
-    sort = { createdAt: -1 }
+    sort = { createdAt: 1 }
   }) => {
     const foundConversation = await ConversationClass.checkExist({ _id: conversation_id });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
