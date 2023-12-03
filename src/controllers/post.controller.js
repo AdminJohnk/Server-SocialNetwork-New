@@ -142,7 +142,8 @@ class PostController {
       message: 'Get Post Successfully',
       metadata: await PostService.getAllPostByUserId({
         user_id: req.params.user_id,
-        me_id: req.user.userId
+        me_id: req.user.userId,
+        page: req.query.page,
       })
     }).send(res);
   };

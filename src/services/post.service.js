@@ -214,6 +214,12 @@ class PostService {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
+    let isFullSearch = false;
+
+    if (user_id === me_id) {
+      isFullSearch = true;
+    }
+
     const skip = (parseInt(page) - 1) * limit;
 
     return PostClass.getAllPostByUserId({
@@ -222,14 +228,21 @@ class PostService {
       limit,
       skip,
       sort,
-      scope
+      scope,
+      isFullSearch
     });
   }
   static async getPostById({ post_id, user, scope = 'Normal' }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await PostClass.findByID({ post_id, user, scope });
+    let isFullSearch = false;
+
+    if (user === foundPost.post_attributes.user.toString()) {
+      isFullSearch = true;
+    }
+
+    return await PostClass.findByID({ post_id, user, scope, isFullSearch });
   }
 
   static async sharePost({ user, post, owner_post }) {
