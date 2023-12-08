@@ -144,6 +144,18 @@ const trueFalseFollowed = (attribute) => {
 };
 
 class PostClass {
+  static async getSavedPosts({ user_id, limit, skip, sort }) {
+    let condition = { 'post_attributes.saves': new ObjectId(user_id) };
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id: user_id,
+      limit,
+      skip,
+      isFullSearch: true,
+      sort
+    });
+    return foundPost;
+  }
   static async viewPost({ post_id, user_id, cookies, res }) {
     // Check if the post has already been viewed
     let viewedPosts = cookies?.viewedPosts || [];
