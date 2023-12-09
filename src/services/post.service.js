@@ -326,6 +326,11 @@ class PostService {
 
     return result;
   }
+  static async getSavedPosts({ user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    const skip = (page - 1) * limit;
+
+    return await PostClass.getSavedPosts({ user_id, limit, skip, sort });
+  }
 }
 
 module.exports = PostService;
