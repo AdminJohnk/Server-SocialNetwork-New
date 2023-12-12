@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const router = express.Router();
-const Communitytroller = require('../controllers/community.controller');
+const CommunityController = require('../controllers/community.controller');
 const { asyncHandler } = require('../helpers/asyncHandler');
 const { authentication } = require('../auth/authUtils');
 
@@ -10,59 +10,41 @@ router.use(authentication);
 
 /// GET //
 // Search member by keySearch (name, email)
-router.get(
-  '/members/search/:community_id',
-  asyncHandler(Communitytroller.searchMember)
-);
+router.get('/members/search/:community_id', asyncHandler(CommunityController.searchMember));
+
+// Get community by id
+router.get('/:community_id', asyncHandler(CommunityController.getCommunityByID));
 
 // =========================================================
 
 /// POST //
 // Create new community
-router.post('/create', asyncHandler(Communitytroller.createCommunity));
+router.post('/create', asyncHandler(CommunityController.createCommunity));
 
 // =========================================================
 
 /// PUT //
 // Join community
-router.put('/join/:community_id', asyncHandler(Communitytroller.joinCommunity));
+router.put('/join/:community_id', asyncHandler(CommunityController.joinCommunity));
 
 // Follow community
-router.put(
-  '/follow/:community_id',
-  asyncHandler(Communitytroller.followCommunity)
-);
+router.put('/follow/:community_id', asyncHandler(CommunityController.followCommunity));
 
 // Update community --> ADMIN_COMMUNITY
 // Chỉ có thể update các trường: name, description, about, tags, rules
-router.put(
-  '/update/:community_id',
-  asyncHandler(Communitytroller.updateCommunity)
-);
+router.put('/update/:community_id', asyncHandler(CommunityController.updateCommunity));
 
 // Accept join request  --> ADMIN_COMMUNITY
-router.put(
-  '/accept/:community_id',
-  asyncHandler(Communitytroller.acceptJoinRequest)
-);
+router.put('/accept/:community_id', asyncHandler(CommunityController.acceptJoinRequest));
 
 // Accept post --> ADMIN_COMMUNITY
-router.put(
-  '/accept-post/:community_id',
-  asyncHandler(Communitytroller.acceptPost)
-);
+router.put('/accept-post/:community_id', asyncHandler(CommunityController.acceptPost));
 
 // Add member to community --> ADMIN_COMMUNITY
-router.put(
-  '/add-members/:community_id',
-  asyncHandler(Communitytroller.addMemberToCommunity)
-);
+router.put('/add-members/:community_id', asyncHandler(CommunityController.addMemberToCommunity));
 
 // Delete member from community --> ADMIN_COMMUNITY
-router.put(
-  '/delete-members/:community_id',
-  asyncHandler(Communitytroller.deleteMemberFromCommunity)
-);
+router.put('/delete-members/:community_id', asyncHandler(CommunityController.deleteMemberFromCommunity));
 
 // =========================================================
 

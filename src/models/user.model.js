@@ -128,10 +128,7 @@ const checkIsFollowed = (me_id, attribute) => {
         {
           $match: {
             $expr: {
-              $and: [
-                { $eq: ['$user', new ObjectId(me_id)] },
-                { $in: ['$$temp', '$followings'] }
-              ]
+              $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
             }
           }
         }
@@ -156,7 +153,7 @@ const trueFalseFollowed = () => {
   };
 };
 
-const getFirstElement = attribute => {
+const getFirstElement = (attribute) => {
   return {
     $addFields: {
       [attribute]: {
@@ -184,27 +181,21 @@ class UserClass {
     return result;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id })
-      .select(getSelectData(select))
-      .lean();
+    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
     const isSaved = await this.checkExist({
       _id: user,
-      favorites: { $elemMatch: { $eq: post } }
+      favorites: { $in: new ObjectId(post) }
     });
 
-    const operant = isSaved ? '$pull' : '$addToSet';
-    const numSave = isSaved ? -1 : 1;
+    const operant = isSaved.length !== 0 ? '$pull' : '$push';
+    const numSave = isSaved.length !== 0 ? -1 : 1;
 
-    await UserModel.findByIdAndUpdate(
-      user,
-      {
-        [operant]: { favorites: post }
-      },
-      { new: true }
-    );
+    await UserModel.findByIdAndUpdate(user, {
+      [operant]: { favorites: post }
+    });
 
     return {
       numSave

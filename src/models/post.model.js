@@ -18,6 +18,11 @@ const PostSchema = new Schema(
     type: { type: String, enum: ['Post', 'Share'], required: true },
     scope: { type: String, enum: ['Normal', 'Community'], default: 'Normal' },
     community: { type: ObjectId, ref: 'Community' },
+    visibility: {
+      type: String,
+      enum: ['public', 'private', 'member', 'friend'],
+      default: 'public'
+    },
 
     post_attributes: {
       // type = Post
@@ -145,6 +150,18 @@ const trueFalseFollowed = attribute => {
 };
 
 class PostClass {
+  static async getSavedPosts({ user_id, limit, skip, sort }) {
+    let condition = { 'post_attributes.saves': new ObjectId(user_id) };
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id: user_id,
+      limit,
+      skip,
+      isFullSearch: true,
+      sort
+    });
+    return foundPost;
+  }
   static async viewPost({ post_id, user_id, cookies, res }) {
     // Check if the post has already been viewed
     let viewedPosts = cookies?.viewedPosts || [];
@@ -256,7 +273,8 @@ class PostClass {
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
-      me_id: user_id
+      me_id: user_id,
+      isFullSearch: true
     });
 
     return result[0];
@@ -292,30 +310,24 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({
-    user_id,
-    me_id,
-    limit,
-    skip,
-    sort,
-    scope
-  }) {
+  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort, scope, isFullSearch = false }) {
     let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
       me_id,
       limit,
       skip,
+      isFullSearch,
       sort
     });
     return foundPost;
   }
-  static async findByID({ post_id, user, scope }) {
+  static async findByID({ post_id, user, scope, isFullSearch = false }) {
     let condition = {
       _id: new ObjectId(post_id),
       scope
     };
-    let foundPost = await this.findPostByAggregate({ condition, me_id: user });
+    let foundPost = await this.findPostByAggregate({ condition, me_id: user, isFullSearch });
     return foundPost[0];
   }
   static async findPostByAggregate({
@@ -324,10 +336,46 @@ class PostClass {
     limit = 1,
     skip = 0,
     sort = { createdAt: -1 },
+    isFullSearch = false,
     sortBy
   }) {
-    let foundPost = await PostModel.aggregate([
+    const additionalCondition1 = {
+      $lookup: {
+        from: 'follows',
+        let: { temp: '$post_attributes.user' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
+              }
+            }
+          }
+        ],
+        as: 'lookup'
+      }
+    };
+
+    const additionalCondition2 = {
+      $match: {
+        $or: [
+          { visibility: 'public' },
+          {
+            visibility: 'friend',
+            $expr: {
+              $or: [
+                { $gt: [{ $size: '$lookup' }, 0] },
+                { $eq: ['$post_attributes.user', new ObjectId(me_id)] }
+              ]
+            }
+          }
+        ]
+      }
+    };
+
+    const aggregatePipeline = [
       { $match: condition },
+      { $sort: sort },
       { $skip: skip },
       { $limit: limit },
 
@@ -364,9 +412,14 @@ class PostClass {
       checkIsFollowed(me_id, 'owner_post'),
       trueFalseFollowed('owner_post'),
 
-      { $project: { ...unGetSelectData(unSe_PostDefault) } },
-      { $sort: sort }
-    ]);
+      { $project: { ...unGetSelectData(unSe_PostDefault) } }
+    ];
+
+    if (!isFullSearch) {
+      aggregatePipeline.unshift(additionalCondition1, additionalCondition2);
+    }
+
+    let foundPost = await PostModel.aggregate(aggregatePipeline);
 
     foundPost.map(post => {
       if (post.type === 'Post') {
@@ -400,27 +453,20 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({
-    type,
-    user,
-    title,
-    content,
-    images,
-    link,
-    scope,
-    community
-  }) {
+  static async createPost({ type, user, title, content, images, link, scope, community, visibility }) {
     const post_attributes = { user, title, content, images, link };
     const newPost = await PostModel.create({
       type,
       scope,
       community,
+      visibility,
       post_attributes
     });
 
     const result = await this.findPostByAggregate({
       condition: { _id: newPost._id },
-      me_id: user
+      me_id: user,
+      isFullSearch: true
     });
 
     return result[0];

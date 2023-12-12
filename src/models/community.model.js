@@ -1,8 +1,8 @@
 const { model, Schema, Types } = require('mongoose');
-const { se_UserDefault } = require('../utils/constants');
+const { se_UserDefault, pp_UserDefault } = require('../utils/constants');
 const { getSelectData } = require('../utils/functions');
 
-const ObjectId = Types.ObjectId;
+const ObjectId = Schema.Types.ObjectId;
 
 const DOCUMENT_NAME = 'Community';
 const COLLECTION_NAME = 'communities';
@@ -17,16 +17,31 @@ const CommunitySchema = new Schema(
       type: String,
       required: true
     },
+    creator: {
+      type: ObjectId,
+      ref: 'User',
+      required: true
+    },
+    image: {
+      type: String,
+      required: true
+    },
+    cover_image: String,
     about: {
       type: String,
       required: true
     },
     tags: {
-      type: [{ type: String }],
+      type: [String],
       default: []
     },
     rules: {
       type: [{ title: String, content: String }]
+    },
+    visibility: {
+      type: String,
+      enum: ['public', 'private', 'member', 'friend'],
+      default: 'public'
     },
 
     // =========================================
@@ -35,13 +50,13 @@ const CommunitySchema = new Schema(
       type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
-    follows: {
-      type: [{ type: ObjectId, ref: 'User' }],
-      default: []
-    },
     members: {
       type: [{ type: ObjectId, ref: 'User' }],
       required: true
+    },
+    recently_joined: {
+      type: [{ type: ObjectId, ref: 'User' }],
+      default: []
     },
     admins: {
       type: [{ type: ObjectId, ref: 'User' }],
@@ -61,7 +76,6 @@ const CommunitySchema = new Schema(
 
     // Number
     post_number: { type: Number, default: 0 },
-    follow_number: { type: Number, default: 0 },
     member_number: { type: Number, default: 0 },
     admin_number: { type: Number, default: 0 },
     waitlist_user_number: { type: Number, default: 0 },
@@ -76,32 +90,6 @@ const CommunitySchema = new Schema(
 const CommunityModel = model(DOCUMENT_NAME, CommunitySchema);
 
 class CommunityClass {
-  static async followCommunity({ community_id, user_id }) {
-    const isFollowed = await CommunityModel.findOne({
-      _id: community_id,
-      follows: { $in: [user_id] }
-    }).lean();
-
-    if (isFollowed) {
-      return await CommunityModel.findByIdAndUpdate(
-        community_id,
-        {
-          $pull: { follows: user_id },
-          $inc: { follow_number: -1 }
-        },
-        { new: true }
-      ).lean();
-    } else {
-      return await CommunityModel.findByIdAndUpdate(
-        community_id,
-        {
-          $addToSet: { follows: user_id },
-          $inc: { follow_number: 1 }
-        },
-        { new: true }
-      ).lean();
-    }
-  }
   static async acceptPost({ community_id, post_id }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
@@ -153,10 +141,7 @@ class CommunityClass {
     let join_number;
 
     // Member đã là thành viên của community thì xóa đi
-    if (
-      community.members.findIndex(member => member.toString() === user_id) !==
-      -1
-    ) {
+    if (community.members.findIndex((member) => member.toString() === user_id) !== -1) {
       join_number = -1;
       result = await CommunityModel.findByIdAndUpdate(
         community_id,
@@ -165,11 +150,7 @@ class CommunityClass {
       ).lean();
     }
     // Member đã là nằm trong waitlist của community thì xóa đi
-    if (
-      community.waitlist_users.findIndex(
-        member => member.toString() === user_id
-      ) !== -1
-    ) {
+    if (community.waitlist_users.findIndex((member) => member.toString() === user_id) !== -1) {
       result = await CommunityModel.findByIdAndUpdate(
         community_id,
         {
@@ -190,20 +171,13 @@ class CommunityClass {
       { new: true }
     ).lean();
 
-    // follow community
-    this.followCommunity({ community_id, user_id });
-
     return {
-        result,
-        join_number
+      result,
+      join_number
     };
   }
   static async updateCommunity({ community_id, ...payload }) {
-    return await CommunityModel.findByIdAndUpdate(
-      community_id,
-      { ...payload },
-      { new: true }
-    ).lean();
+    return await CommunityModel.findByIdAndUpdate(community_id, { ...payload }, { new: true }).lean();
   }
 
   // type = ['member', 'post', 'follow', 'admin', 'waitlist_user', 'waitlist_post']
@@ -228,8 +202,28 @@ class CommunityClass {
     return await CommunityModel.create(payload);
   }
   static async checkExist(select) {
-    return await CommunityModel.findOne(select)
+    return await CommunityModel.findOne(select).select('+admins +waitlist_users +waitlist_posts').lean();
+  }
+  static async getCommunityByID(community_id) {
+    return await CommunityModel.findById(community_id)
       .select('+admins +waitlist_users +waitlist_posts')
+      .populate('creator', getSelectData(se_UserDefault))
+      .populate({
+        path: 'posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
+      .populate('members')
+      .populate('recently_joined')
+      .populate('admins')
+      .populate('waitlist_users')
+      .populate('waitlist_posts')
       .lean();
   }
 }

@@ -159,7 +159,7 @@ class PostService {
 
     return result;
   }
-  static async updatePost({ post_id, user_id, content, title, scope, community }) {
+  static async updatePost({ post_id, user_id, content, title, scope, community, visibility }) {
     let post_attributes = { content, title };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
@@ -189,7 +189,8 @@ class PostService {
     return await PostClass.updatePost({
       post_id,
       user_id,
-      post_attributes: updateNestedObjectParser({
+      payload: updateNestedObjectParser({
+        visibility,
         post_attributes: post_attributes
       })
     });
@@ -213,6 +214,12 @@ class PostService {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
 
+    let isFullSearch = false;
+
+    if (user_id === me_id) {
+      isFullSearch = true;
+    }
+
     const skip = (parseInt(page) - 1) * limit;
 
     return PostClass.getAllPostByUserId({
@@ -221,14 +228,21 @@ class PostService {
       limit,
       skip,
       sort,
-      scope
+      scope,
+      isFullSearch
     });
   }
   static async getPostById({ post_id, user, scope = 'Normal' }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await PostClass.findByID({ post_id, user, scope });
+    let isFullSearch = false;
+
+    if (user === foundPost.post_attributes.user.toString()) {
+      isFullSearch = true;
+    }
+
+    return await PostClass.findByID({ post_id, user, scope, isFullSearch });
   }
 
   static async sharePost({ user, post, owner_post }) {
@@ -260,7 +274,17 @@ class PostService {
 
     return true;
   }
-  static async createPost({ type = 'Post', user, title, content, images, link, scope, community }) {
+  static async createPost({
+    type = 'Post',
+    user,
+    title,
+    content,
+    images,
+    link,
+    scope,
+    community,
+    visibility
+  }) {
     if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
@@ -270,7 +294,8 @@ class PostService {
       images,
       link,
       scope,
-      community
+      community,
+      visibility
     });
 
     UserClass.changeNumberUser({
@@ -300,6 +325,11 @@ class PostService {
     }
 
     return result;
+  }
+  static async getSavedPosts({ user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    const skip = (page - 1) * limit;
+
+    return await PostClass.getSavedPosts({ user_id, limit, skip, sort });
   }
 }
 

@@ -279,7 +279,7 @@ class ChatService {
     limit = 30,
     page = 1,
     extend = 0,
-    sort = { createdAt: -1 }
+    sort = { createdAt: 1 }
   }) => {
     const foundConversation = await ConversationClass.checkExist({ _id: conversation_id });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
@@ -318,6 +318,10 @@ class ChatService {
 
     const foundConversation = await ConversationClass.checkExist({ _id: conversation_id });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    // Check is member
+    const isMember = foundConversation.members.find((member) => member.toString() === user_id);
+    if (!isMember) throw new ForbiddenError('You are not member of this conversation');
 
     let first_call = false;
     const roomName = conversation_id + '-' + type;

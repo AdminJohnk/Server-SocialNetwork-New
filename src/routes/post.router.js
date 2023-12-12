@@ -33,6 +33,9 @@ router.get('/share/:post_id', asyncHandler(PostController.getAllUserSharePost));
 // Get All User Save Post
 router.get('/save/:post_id', asyncHandler(PostController.getAllUserSavePost));
 
+//Get all saved posts
+router.get('/saved', asyncHandler(PostController.getSavedPosts));
+
 
 
 // =========================================================

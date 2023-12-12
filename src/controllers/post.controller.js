@@ -4,6 +4,15 @@ const PostService = require('../services/post.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class PostController {
+  static async getSavedPosts(req, res, next) {
+    new OK({
+      message: 'Get Saved Posts Successfully',
+      metadata: await PostService.getSavedPosts({
+        user_id: req.user.userId,
+        page: req.query.page
+      })
+    }).send(res);
+  }
   static viewPost = async (req, res, next) => {
     new OK({
       message: 'View Post Successfully',
@@ -24,7 +33,7 @@ class PostController {
       message: 'Get All Popular Post Successfully',
       metadata: await PostService.getAllPopularPost({
         user_id: req.user.userId,
-        sortBy: req.query.sortBy,
+        sortBy: req.query.sortBy
       })
     }).send(res);
   };
@@ -37,7 +46,7 @@ class PostController {
       message: 'Get All Post For NewsFeed Successfully',
       metadata: await PostService.getAllPostForNewsFeed({
         user_id: req.user.userId,
-        page: req.query.page,
+        page: req.query.page
       })
     }).send(res);
   };
@@ -128,7 +137,7 @@ class PostController {
       message: 'Get All Post Successfully',
       metadata: await PostService.getAllPost({
         user_id: req.user.userId,
-        page: req.query.page,
+        page: req.query.page
       })
     }).send(res);
   };
@@ -142,7 +151,8 @@ class PostController {
       message: 'Get Post Successfully',
       metadata: await PostService.getAllPostByUserId({
         user_id: req.params.user_id,
-        me_id: req.user.userId
+        me_id: req.user.userId,
+        page: req.query.page
       })
     }).send(res);
   };
