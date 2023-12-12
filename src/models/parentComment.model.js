@@ -32,7 +32,7 @@ const ParentCommentModel = model(DOCUMENT_NAME, ParentCommentSchema);
 
 class ParentCommentClass {
   // type = ['child']
-  static async changeNumberComment({comment_id, type, number}) {
+  static async changeNumberComment({ comment_id, type, number }) {
     let stringUpdate = type + '_number';
     return await ParentCommentModel.findByIdAndUpdate(
       comment_id,
@@ -180,6 +180,31 @@ class ParentCommentClass {
   }
   static async checkExist(select) {
     return await ParentCommentModel.findOne(select).lean();
+  }
+  // ================= ADMIN =================
+  static async getAllParentComments_admin({ post, limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    return await ParentCommentModel.find({ post })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', pp_UserDefault)
+      .sort(sort)
+      .lean();
+  }
+  static async getAllChildByParentID_admin({
+    post,
+    parent,
+    limit,
+    page,
+    sort
+  }) {
+    const skip = (page - 1) * limit;
+    return await ParentCommentModel.find({ post, parent })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', pp_UserDefault)
+      .sort(sort)
+      .lean();
   }
 }
 

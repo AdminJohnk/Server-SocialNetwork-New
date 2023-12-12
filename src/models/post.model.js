@@ -73,7 +73,7 @@ PostSchema.index({ 'post_attributes.view_number': 1, createdAt: -1 });
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
-const addFieldsObject = (user) => {
+const addFieldsObject = user => {
   return {
     is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
     is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
@@ -87,12 +87,15 @@ const choosePopulateAttr = ({ from, attribute, select }) => {
     $lookup: {
       from: from,
       let: { temp: '$post_attributes.' + attribute },
-      pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$temp'] } } }, { $project: select }],
+      pipeline: [
+        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
+        { $project: select }
+      ],
       as: 'post_attributes.' + attribute
     }
   };
 };
-const getFirstElement = (attribute) => {
+const getFirstElement = attribute => {
   return {
     $addFields: {
       [`post_attributes.${attribute}`]: {
@@ -112,7 +115,10 @@ const checkIsFollowed = (me_id, attribute) => {
         {
           $match: {
             $expr: {
-              $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
+              $and: [
+                { $eq: ['$user', new ObjectId(me_id)] },
+                { $in: ['$$temp', '$followings'] }
+              ]
             }
           }
         }
@@ -122,7 +128,7 @@ const checkIsFollowed = (me_id, attribute) => {
   };
 };
 
-const trueFalseFollowed = (attribute) => {
+const trueFalseFollowed = attribute => {
   return {
     $addFields: {
       [`post_attributes.${attribute}.is_followed`]: {
@@ -161,7 +167,14 @@ class PostClass {
 
     return await this.findByID({ post_id });
   }
-  static async getAllPopularPost({ user_id, limit, skip, sort, scope, sortBy }) {
+  static async getAllPopularPost({
+    user_id,
+    limit,
+    skip,
+    sort,
+    scope,
+    sortBy
+  }) {
     let condition = { scope, type: 'Post' };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -233,9 +246,13 @@ class PostClass {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
   static async updatePost({ post_id, user_id, post_attributes }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(post_id, post_attributes, {
-      new: true
-    }).lean();
+    const postUpdate = await PostModel.findByIdAndUpdate(
+      post_id,
+      post_attributes,
+      {
+        new: true
+      }
+    ).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
@@ -275,7 +292,14 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort, scope }) {
+  static async getAllPostByUserId({
+    user_id,
+    me_id,
+    limit,
+    skip,
+    sort,
+    scope
+  }) {
     let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -304,6 +328,9 @@ class PostClass {
   }) {
     let foundPost = await PostModel.aggregate([
       { $match: condition },
+      { $skip: skip },
+      { $limit: limit },
+
       { $addFields: { ...addFieldsObject(me_id) } },
       // ================== user ==================
       choosePopulateAttr({
@@ -338,19 +365,17 @@ class PostClass {
       trueFalseFollowed('owner_post'),
 
       { $project: { ...unGetSelectData(unSe_PostDefault) } },
-      { $sort: sort },
-      { $skip: skip },
-      { $limit: limit }
+      { $sort: sort }
     ]);
 
-    foundPost.map((post) => {
+    foundPost.map(post => {
       if (post.type === 'Post') {
         delete post.post_attributes.post;
         delete post.post_attributes.owner_post;
       }
     });
 
-    foundPost = foundPost.filter((item) => {
+    foundPost = foundPost.filter(item => {
       const date = new Date(item.createdAt);
       const dateNow = new Date();
       const diffTime = Math.abs(dateNow.getTime() - date.getTime());
@@ -375,7 +400,16 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content, images, link, scope, community }) {
+  static async createPost({
+    type,
+    user,
+    title,
+    content,
+    images,
+    link,
+    scope,
+    community
+  }) {
     const post_attributes = { user, title, content, images, link };
     const newPost = await PostModel.create({
       type,
@@ -429,6 +463,29 @@ class PostClass {
   }
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();
+  }
+  // ================= ADMIN =================
+  static async getAllPosts_admin({ limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    return await PostModel.find({
+      type: 'Post'
+    })
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .populate('post_attributes.user', pp_UserDefault)
+      .lean();
+  }
+  static async findPostById_admin({ post_id }) {
+    return await PostModel.findById(post_id);
+  }
+  static async updatePost_admin({ post_id, post_attributes }) {
+    return await PostModel.findByIdAndUpdate(post_id, post_attributes, {
+      new: true
+    }).lean();
+  }
+  static async deletePost_admin({ post_id }) {
+    return await PostModel.findByIdAndDelete(post_id).lean();
   }
 }
 

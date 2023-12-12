@@ -176,6 +176,22 @@ class ChildCommentClass {
   static async checkExist(select) {
     return await ChildCommentModel.findOne(select).lean();
   }
+  // ================= ADMIN =================
+  static async getAllChildByParentID_admin({
+    post,
+    parent,
+    limit,
+    page,
+    sort
+  }) {
+    const skip = (page - 1) * limit;
+    return await ChildCommentModel.find({ post, parent })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', pp_UserDefault)
+      .sort(sort)
+      .lean();
+  }
 }
 
 module.exports = {
