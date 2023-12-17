@@ -25,10 +25,10 @@ router.get('/find_friend', asyncHandler(UserController.findFriend));
 router.get('/friend_list', asyncHandler(UserController.getAllFriends));
 
 // Get request sent list
-router.get('/request_sent', asyncHandler(UserController.getRequestSent));
+router.get('/request_sent', asyncHandler(UserController.getRequestsSent));
 
 // Get request received list
-router.get('/request_received', asyncHandler(UserController.getRequestReceived));
+router.get('/request_received', asyncHandler(UserController.getRequestsReceived));
 
 // =========================================================
 
