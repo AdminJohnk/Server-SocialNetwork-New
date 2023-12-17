@@ -200,7 +200,7 @@ class UserClass {
       }
     ]);
 
-    return result;
+    return result[0];
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).select({ password: 1 });
