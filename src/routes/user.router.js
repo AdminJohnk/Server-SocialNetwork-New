@@ -33,6 +33,9 @@ router.get('/repositories', asyncHandler(UserController.getRepositoryGithub));
 // Get My Info
 router.get('/me', asyncHandler(UserController.getMyInfo));
 
+// Check Exist Email
+router.put('/checkemail/:email', asyncHandler(UserController.checkExistEmail));
+
 // =========================================================
 
 /// POST //

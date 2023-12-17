@@ -310,7 +310,15 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort, scope, isFullSearch = false }) {
+  static async getAllPostByUserId({
+    user_id,
+    me_id,
+    limit,
+    skip,
+    sort,
+    scope,
+    isFullSearch = false
+  }) {
     let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -327,7 +335,11 @@ class PostClass {
       _id: new ObjectId(post_id),
       scope
     };
-    let foundPost = await this.findPostByAggregate({ condition, me_id: user, isFullSearch });
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id: user,
+      isFullSearch
+    });
     return foundPost[0];
   }
   static async findPostByAggregate({
@@ -347,7 +359,10 @@ class PostClass {
           {
             $match: {
               $expr: {
-                $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
+                $and: [
+                  { $eq: ['$user', new ObjectId(me_id)] },
+                  { $in: ['$$temp', '$followings'] }
+                ]
               }
             }
           }
@@ -453,8 +468,17 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content, images, link, scope, community, visibility }) {
-    const post_attributes = { user, title, content, images, link };
+  static async createPost({
+    type,
+    user,
+    title,
+    content,
+    images,
+    scope,
+    community,
+    visibility
+  }) {
+    const post_attributes = { user, title, content, images };
     const newPost = await PostModel.create({
       type,
       scope,
@@ -525,10 +549,15 @@ class PostClass {
   static async findPostById_admin({ post_id }) {
     return await PostModel.findById(post_id);
   }
-  static async updatePost_admin({ post_id, post_attributes }) {
-    return await PostModel.findByIdAndUpdate(post_id, post_attributes, {
-      new: true
-    }).lean();
+  static async updatePost_admin({ post_id, visibility, post_attributes }) {
+    console.log('post_attributes:: ', post_attributes);
+    return await PostModel.findByIdAndUpdate(
+      post_id,
+      { visibility, ...post_attributes },
+      {
+        new: true
+      }
+    ).lean();
   }
   static async deletePost_admin({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();

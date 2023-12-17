@@ -16,6 +16,11 @@ const {
 } = require('../utils/functions');
 const { ParentCommentClass } = require('../models/parentComment.model');
 const { ChildCommentClass } = require('../models/childComment.model');
+const NotificationService = require('./notification.service');
+const { Notification } = require('../utils/notificationType');
+const PublisherService = require('./publisher.service');
+const { CommunityClass } = require('../models/community.model');
+const { CREATEPOST_001 } = Notification;
 
 class AdminService {
   // ======================== Comment ========================
@@ -60,21 +65,84 @@ class AdminService {
     });
   };
   // ======================== Post ========================
+  static async createPost({
+    type = 'Post',
+    email,
+    title,
+    content,
+    images,
+    scope,
+    community,
+    visibility
+  }) {
+    const foundUser = await UserClass.checkExist({ email });
+    if (!foundUser) throw new NotFoundError('User not found');
+
+    const user = foundUser._id.toString();
+
+    if (!title || !content)
+      throw new BadRequestError('Post must have title or content');
+    const result = await PostClass.createPost({
+      type,
+      user,
+      title,
+      content,
+      images,
+      scope,
+      community,
+      visibility
+    });
+
+    UserClass.changeNumberUser({
+      user_id: user,
+      type: 'post',
+      number: 1
+    });
+
+    const msg = NotificationService.createMsgToPublish({
+      type: CREATEPOST_001,
+      sender: user,
+      post: result._id
+    });
+
+    PublisherService.publishNotify(msg);
+
+    // Thêm post trong community
+    if (scope === 'Community') {
+      await CommunityClass.changeToArrayCommunity({
+        community_id: community,
+        type: 'waitlist_post',
+        itemID: result._id,
+        number: 1
+      });
+
+      // Add notification for all member in community
+    }
+
+    return result;
+  }
   static deletePost = async ({ post_id }) => {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
     return await PostClass.deletePost_admin({ post_id });
   };
-  static updatePost = async ({ post_id, content, title }) => {
+  static updatePost = async ({
+    post_id,
+    content,
+    title,
+    images,
+    visibility
+  }) => {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    let post_attributes = { content, title };
+    let post_attributes = { content, title, images };
     post_attributes = removeUndefinedFields(post_attributes);
 
     return await PostClass.updatePost_admin({
       post_id,
+      visibility,
       post_attributes: updateNestedObjectParser({
         post_attributes: post_attributes
       })

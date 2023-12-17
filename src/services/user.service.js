@@ -19,6 +19,12 @@ const { Notification } = require('../utils/notificationType');
 const { LIKEPOST_001, FOLLOWUSER_001 } = Notification;
 
 class UserService {
+  static checkExistEmail = async ({ email }) => {
+    const check = await UserClass.checkExist({
+      email
+    });
+    return check ? true : false;
+  };
   static deleteUser = async ({ user_id }) => {
     return await UserClass.deleteUser({
       user_id

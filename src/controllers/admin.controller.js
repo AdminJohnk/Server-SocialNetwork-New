@@ -4,6 +4,14 @@ const AdminService = require('../services/admin.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class AdminController {
+  static createPost = async (req, res, next) => {
+    new CREATED({
+      message: 'Create Post Successfully',
+      metadata: await AdminService.createPost({
+        ...req.body
+      })
+    }).send(res);
+  }
   static createUser = async (req, res, next) => {
     new CREATED({
       message: 'Create User Successfully',
@@ -11,7 +19,7 @@ class AdminController {
         ...req.body
       })
     }).send(res);
-  }
+  };
   /* 
         Get All Child Comments By Parent ID
         Link: http://localhost:4052/api/v1/admin/comments/children
@@ -53,6 +61,7 @@ class AdminController {
         Link: http://localhost:4052/api/v1/admin/posts/update/:post_id
     */
   static updatePost = async (req, res, next) => {
+    console.log('req.body', req.body);
     new OK({
       message: 'Update Post Successfully',
       metadata: await AdminService.updatePost({

@@ -35,6 +35,9 @@ router.get('/comments/children',asyncHandler(AdminController.getAllChildByParent
 // Create user
 router.post('/users/create',asyncHandler(AdminController.createUser));
 
+// Create post
+router.post('/posts/create',asyncHandler(AdminController.createPost));
+
 // =========================================================
 
 /// PUT //
