@@ -22,12 +22,12 @@ const FriendSchema = new Schema(
       index: true,
       default: []
     },
-    pendingFriends: {
+    requestsSent: {
       type: [ObjectId],
       ref: 'User',
       default: []
     },
-    requestedFriends: {
+    requestsReceived: {
       type: [ObjectId],
       ref: 'User',
       default: []
@@ -75,32 +75,62 @@ class FriendClass {
     return user.friends;
   }
   static async sendFriendRequest({ user_id, friend_id }) {
-    const user = await FriendModel.findOne({ user: user_id });
+    let [user, friend] = await Promise.all([
+      FriendModel.findOne({ user: user_id }),
+      FriendModel.findOne({ user: friend_id })
+    ]);
+
+    if (!friend) {
+      friend = new FriendModel({
+        user: friend_id,
+        friends: [],
+        requestsSent: [],
+        requestsReceived: []
+      });
+      await friend.save();
+    }
+
     if (!user) {
-      const newUser = new FriendModel({
+      user = new FriendModel({
         user: user_id,
         friends: [],
-        pendingFriends: [friend_id],
-        requestedFriends: []
+        requestsSent: [],
+        requestsReceived: []
       });
-      newUser.pendingFriends.push(friend_id);
-      await newUser.save();
-      return newUser;
+      await user.save();
     }
-    if (user.friends.includes(friend_id)) return null;
-    if (user.pendingFriends.includes(friend_id)) return null;
-    if (user.requestedFriends.includes(friend_id)) return null;
-    user.pendingFriends.push(friend_id);
-    await user.save();
+
+    if (
+      user.friends.includes(friend_id) ||
+      user.requestsSent.includes(friend_id) ||
+      user.requestsReceived.includes(friend_id)
+    ) {
+      return null;
+    }
+
+    user.requestsSent.push(friend_id);
+    friend.requestsReceived.push(user_id);
+
+    await Promise.all([user.save(), friend.save()]);
+
     return user;
   }
   static async acceptFriendRequest({ user_id, friend_id }) {
-    const user = await FriendModel.findOne({ user: user_id });
-    if (!user) return null;
-    if (!user.pendingFriends.includes(friend_id)) return null;
-    user.pendingFriends.pull(friend_id);
+    const [user, friend] = await Promise.all([
+      FriendModel.findOne({ user: user_id }),
+      FriendModel.findOne({ user: friend_id })
+    ]);
+
+    if (!user || !friend) return null;
+    if (!friend.requestsSent.includes(user_id) || !user.requestsReceived.includes(friend_id)) return null;
+
+    friend.requestsSent.pull(user_id);
+    friend.friends.push(user_id);
+    user.requestsReceived.pull(friend_id);
     user.friends.push(friend_id);
-    await user.save();
+
+    await Promise.all([friend.save(), user.save()]);
+
     return user;
   }
 }
