@@ -40,7 +40,7 @@ const UserSchema = new Schema(
     cover_image: String,
     verified: { type: Boolean, default: false },
     tags: [{ type: String }],
-    alias: { type: String, unique: true, trim: true, default: '' },
+    alias: { type: String, trim: true, default: '' },
     about: String,
     experiences: { type: Array, default: [] },
     /* 
@@ -80,8 +80,6 @@ const UserSchema = new Schema(
     },
 
     // Number
-    follower_number: { type: Number, default: 0 },
-    following_number: { type: Number, default: 0 },
     post_number: { type: Number, default: 0 },
     community_number: { type: Number, default: 0 }
   },
@@ -117,41 +115,6 @@ UserSchema.pre('save', async function (next) {
 UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
-
-// attribute = ['_id'] --> check me_id is followed user_id
-const checkIsFollowed = (me_id, attribute) => {
-  return {
-    $lookup: {
-      from: 'follows',
-      let: { temp: `$${attribute}` },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
-            }
-          }
-        }
-      ],
-      as: 'is_followed'
-    }
-  };
-};
-const trueFalseFollowed = () => {
-  return {
-    $addFields: {
-      is_followed: {
-        $cond: {
-          if: {
-            $eq: [{ $size: `$is_followed` }, 0]
-          },
-          then: false, // Nếu mảng rỗng, tức là không theo dõi, set thành false
-          else: true // Ngược lại, tức là đang theo dõi, set thành true
-        }
-      }
-    }
-  };
-};
 
 const getFirstElement = (attribute) => {
   return {
@@ -201,26 +164,47 @@ class UserClass {
       numSave
     };
   }
-  static async getShouldFollow({ user_id }) {}
+  static async updateUser({ email, payload }) {
+    return await UserModel.findOneAndUpdate({ email }, { $set: { payload } }, { new: true }).lean();
+  }
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
       new: true
     }).lean();
   }
   static async findById({ user_id, me_id, unselect = ['password'] }) {
-    // check if me_id followed user_id
     const result = await UserModel.aggregate([
       {
         $match: {
           _id: new ObjectId(user_id)
         }
       },
-      checkIsFollowed(me_id, '_id'),
-      trueFalseFollowed(),
       {
-        $project: unGetSelectData(unselect)
+        $lookup: {
+          from: 'friends',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+        }
+      },
+      {
+        $project: { ...unGetSelectData(unselect), friend: 0 }
       }
     ]);
+
     return result[0];
   }
   static async findByEmail({ email }) {

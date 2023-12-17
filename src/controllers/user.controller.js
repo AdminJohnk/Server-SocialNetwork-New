@@ -67,43 +67,6 @@ class UserController {
     }).send(res);
   };
   /* 
-    Follow User
-    Link: http://localhost:4052/api/v1/users/follow/:user_id
-  */
-  static followUser = async (req, res, next) => {
-    new OK({
-      message: 'Follow User Successfully',
-      metadata: await UserService.followUser({
-        me_id: req.user.userId,
-        user: req.params.user_id
-      })
-    }).send(res);
-  };
-  /* 
-      Get List Followers By User ID
-      Link: http://localhost:4052/api/v1/users/followers/:user_id
-    */
-  static getListFollowersByUserId = async (req, res, next) => {
-    new OK({
-      message: 'Get List Followers Successfully',
-      metadata: await UserService.getListFollowersByUserId({
-        user: req.params.user_id
-      })
-    }).send(res);
-  };
-  /* 
-      Get List Following By User ID
-      Link: http://localhost:4052/api/v1/users/following/:user_id
-    */
-  static getListFollowingByUserId = async (req, res, next) => {
-    new OK({
-      message: 'Get List Followers Successfully',
-      metadata: await UserService.getListFollowingByUserId({
-        user: req.params.user_id
-      })
-    }).send(res);
-  };
-  /* 
     Get Repository Github
     Link: http://localhost:4052/api/v1/users/repositories
   */
@@ -112,14 +75,6 @@ class UserController {
       message: 'Get Repository Github Successfully',
       metadata: await UserService.getRepositoryGithub({
         access_token_github: req.headers[HEADER.GITHUB_TOKEN]
-      })
-    }).send(res);
-  };
-  static getShouldFollow = async (req, res, next) => {
-    new OK({
-      message: 'Get Should Follow Successfully',
-      metadata: await UserService.getShouldFollow({
-        user_id: req.user.userId
       })
     }).send(res);
   };
@@ -157,6 +112,77 @@ class UserController {
       metadata: await UserService.updateUserById({
         user_id: req.user.userId,
         payload: { ...req.body }
+      })
+    }).send(res);
+  };
+  /**
+   * Send Friend Request
+   */
+  static sendFriendRequest = async (req, res, next) => {
+    new CREATED({
+      message: 'Send Friend Request Successfully',
+      metadata: await UserService.sendFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  };
+  /**
+   * Accept Friend Request
+   */
+  static acceptFriendRequest = async (req, res, next) => {
+    new OK({
+      message: 'Accept Friend Request Successfully',
+      metadata: await UserService.acceptFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  };
+  /**
+   * Find Friend
+   */
+  static findFriend = async (req, res, next) => {
+    new OK({
+      message: 'Find Friend Successfully',
+      metadata: await UserService.findFriend({
+        user_id: req.user.userId,
+        key_search: req.query.key_search,
+        page: req.query.page
+      })
+    }).send(res);
+  };
+  /**
+   * Get Friend List
+   */
+  static getAllFriends = async (req, res, next) => {
+    new OK({
+      message: 'Get All Friends Successfully',
+      metadata: await UserService.getAllFriends({
+        user_id: req.params.userId
+      })
+    }).send(res);
+  };
+  /**
+   * Get Request Sent
+   */
+  static getRequestsSent = async (req, res, next) => {
+    new OK({
+      message: 'Get Request Sent Successfully',
+      metadata: await UserService.getRequestsSent({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+
+  /**
+   * Get Request Received
+   */
+  static getRequestsReceived = async (req, res, next) => {
+    new OK({
+      message: 'Get Request Received Successfully',
+      metadata: await UserService.getRequestsReceived({
+        user_id: req.user.userId
       })
     }).send(res);
   };

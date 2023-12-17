@@ -10,10 +10,15 @@ const Notification = {
     kind: 'one_to_one',
     content: 'shared your post'
   },
-  FOLLOWUSER_001: {
-    type: 'FOLLOWUSER_001',
+  SENDFRIENDREQUEST_001: {
+    type: 'SENDFRIENDREQUEST_001',
     kind: 'one_to_one',
-    content: 'followed you'
+    content: 'send you a friend request'
+  },
+  ACCEPTFRIENDREQUEST_001: {
+    type: 'ACCEPTFRIENDREQUEST_001',
+    kind: 'one_to_one',
+    content: 'accepted your friend request'
   },
   COMMENTPOST_001: {
     type: 'COMMENTPOST_001',

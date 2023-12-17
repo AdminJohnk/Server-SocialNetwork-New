@@ -10,13 +10,13 @@ const {
 const { getInfoData, limitData } = require('../utils/functions');
 const axios = require('axios');
 const { UserClass } = require('../models/user.model');
-const { FollowClass } = require('../models/follow.model');
 const { PostClass } = require('../models/post.model');
 const { LikeClass } = require('../models/like.model');
+const { FriendClass } = require('../models/friend.model');
 const PublisherService = require('./publisher.service');
 const NotificationService = require('./notification.service');
 const { Notification } = require('../utils/notificationType');
-const { LIKEPOST_001, FOLLOWUSER_001 } = Notification;
+const { LIKEPOST_001, SENDFRIENDREQUEST_001, ACCEPTFRIENDREQUEST_001 } = Notification;
 
 class UserService {
   static checkExistEmail = async ({ email }) => {
@@ -82,19 +82,16 @@ class UserService {
     return true;
   };
   static getRepositoryGithub = async ({ access_token_github }) => {
-    const { data: result } = await axios.get(
-      'https://api.github.com/user/repos',
-      {
-        headers: {
-          Authorization: `Bearer ${access_token_github}`,
-          Accept: 'application/vnd.github.v3+json'
-        }
+    const { data: result } = await axios.get('https://api.github.com/user/repos', {
+      headers: {
+        Authorization: `Bearer ${access_token_github}`,
+        Accept: 'application/vnd.github.v3+json'
       }
-    );
+    });
     if (!result) throw new BadRequestError('Cannot get repository github');
 
     const repos = await Promise.all(
-      result.map(async repository => {
+      result.map(async (repository) => {
         const { data } = await axios.get(repository.languages_url, {
           headers: {
             Authorization: `Bearer ${access_token_github}`,
@@ -103,15 +100,7 @@ class UserService {
         });
 
         const result = getInfoData({
-          fields: [
-            'id',
-            'name',
-            'private',
-            'html_url',
-            'watchers_count',
-            'forks_count',
-            'stargazers_count'
-          ],
+          fields: ['id', 'name', 'private', 'html_url', 'watchers_count', 'forks_count', 'stargazers_count'],
           object: repository
         });
 
@@ -122,67 +111,6 @@ class UserService {
     );
     return limitData({ data: repos, limit: 1000, page: 1 });
   };
-  static async followUser({ me_id, user }) {
-    const foundUser = await UserClass.checkExist({ _id: user });
-    if (!foundUser) throw new NotFoundError('User not found');
-
-    const { numFollow } = await FollowClass.followUser({ me_id, user });
-
-    UserClass.changeNumberUser({
-      user_id: me_id,
-      type: 'following',
-      number: numFollow
-    }).catch(err => console.log(err));
-
-    UserClass.changeNumberUser({
-      user_id: user,
-      type: 'follower',
-      number: numFollow
-    }).catch(err => console.log(err));
-
-    if (me_id !== user && numFollow === 1) {
-      const msg = NotificationService.createMsgToPublish({
-        type: FOLLOWUSER_001,
-        sender: me_id,
-        receiver: user
-      });
-
-      PublisherService.publishNotify(msg);
-    }
-    return true;
-  }
-  static async getListFollowersByUserId({
-    user,
-    limit = 30,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
-    const foundUser = await UserClass.checkExist({ _id: user });
-    if (!foundUser) throw new NotFoundError('User not found');
-    const skip = (page - 1) * limit;
-    return await FollowClass.getListFollowersByUserId({
-      user,
-      limit,
-      skip,
-      sort
-    });
-  }
-  static async getListFollowingByUserId({
-    user,
-    limit = 30,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
-    const foundUser = await UserClass.checkExist({ _id: user });
-    if (!foundUser) throw new NotFoundError('User not found');
-    const skip = (page - 1) * limit;
-    return await FollowClass.getListFollowingByUserId({
-      user,
-      limit,
-      skip,
-      sort
-    });
-  }
   static getShouldFollow = async ({ user_id }) => {
     return await UserClass.getShouldFollow({
       user_id
@@ -205,6 +133,65 @@ class UserService {
       payload
     });
   };
+  static sendFriendRequest = async ({ user_id, friend_id }) => {
+    const result = await FriendClass.sendFriendRequest({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new ConflictRequestError('Friend request already sent');
+
+    const msg = NotificationService.createMsgToPublish({
+      type: SENDFRIENDREQUEST_001,
+      sender: user_id,
+      receiver: friend_id
+    });
+
+    PublisherService.publishNotify(msg);
+
+    return result;
+  };
+  static acceptFriendRequest = async ({ user_id, friend_id }) => {
+    const result = await FriendClass.acceptFriendRequest({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new NotFoundError('Friend request not found');
+
+    const msg = NotificationService.createMsgToPublish({
+      type: ACCEPTFRIENDREQUEST_001,
+      sender: user_id,
+      receiver: friend_id
+    });
+
+    PublisherService.publishNotify(msg);
+
+    return result;
+  };
+  static findFriend = async ({ user_id, key_search, limit, skip }) => {
+    return await FriendClass.findFriend({
+      user_id,
+      key_search,
+      limit,
+      skip
+    });
+  };
+  static async getAllFriends({ user_id }) {
+    return await FriendClass.getAllFriends({
+      user_id
+    });
+  }
+  static async getRequestsSent({ user_id }) {
+    return await FriendClass.getRequestsSent({
+      user_id
+    });
+  }
+  static async getRequestsReceived({ user_id }) {
+    return await FriendClass.getRequestsReceived({
+      user_id
+    });
+  }
 }
 
 module.exports = UserService;

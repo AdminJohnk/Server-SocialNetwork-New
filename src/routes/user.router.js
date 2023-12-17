@@ -12,42 +12,39 @@ router.use(authentication);
 // Find user by ID
 router.get('/find/:user_id', asyncHandler(UserController.findUserById));
 
-// Get Should Follow User (***)
-router.get('/shouldfollow', asyncHandler(UserController.getShouldFollow));
-
-// Get List Following By User ID
-router.get(
-  '/following/:user_id',
-  asyncHandler(UserController.getListFollowingByUserId)
-);
-
-// Get List Followers By User ID
-router.get(
-  '/followers/:user_id',
-  asyncHandler(UserController.getListFollowersByUserId)
-);
-
 // Get Repository Github
 router.get('/repositories', asyncHandler(UserController.getRepositoryGithub));
 
 // Get My Info
 router.get('/me', asyncHandler(UserController.getMyInfo));
 
-// Check Exist Email
-router.put('/checkemail/:email', asyncHandler(UserController.checkExistEmail));
+// Find friend
+router.get('/find_friend', asyncHandler(UserController.findFriend));
+
+// Get friend list
+router.get('/friend_list/:userId', asyncHandler(UserController.getAllFriends));
+
+// Get request sent list
+router.get('/request_sent', asyncHandler(UserController.getRequestsSent));
+
+// Get request received list
+router.get('/request_received', asyncHandler(UserController.getRequestsReceived));
 
 // =========================================================
 
 /// POST //
+
+// Send Friend Request
+router.post('/send_friend_request/:friend_id', asyncHandler(UserController.sendFriendRequest));
+
+// Accept Friend Request
+router.post('/accept_friend_request/:friend_id', asyncHandler(UserController.acceptFriendRequest));
 
 // =========================================================
 
 /// PUT //
 // Update user
 router.put('/update', asyncHandler(UserController.updateUserById));
-
-// Add Follow Or Unfollow User
-router.put('/follow/:user_id', asyncHandler(UserController.followUser));
 
 // Like Post Or Unlike Post
 router.put('/likepost', asyncHandler(UserController.likePost));
