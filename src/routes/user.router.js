@@ -18,9 +18,21 @@ router.get('/repositories', asyncHandler(UserController.getRepositoryGithub));
 // Get My Info
 router.get('/me', asyncHandler(UserController.getMyInfo));
 
+// Find friend
+router.get('/find_friend', asyncHandler(UserController.findFriend));
+
+// Get friend list
+router.get('/friend_list', asyncHandler(UserController.getAllFriends));
+
 // =========================================================
 
 /// POST //
+
+// Send Friend Request
+router.post('/send_friend_request/:friend_id', asyncHandler(UserController.sendFriendRequest));
+
+// Accept Friend Request
+router.post('/accept_friend_request/:friend_id', asyncHandler(UserController.acceptFriendRequest));
 
 // =========================================================
 
