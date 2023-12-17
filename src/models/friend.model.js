@@ -133,6 +133,26 @@ class FriendClass {
 
     return user;
   }
+  static async getRequestsSent({ user_id }) {
+    const user = await FriendModel.findOne({ user: user_id })
+      .select('requestsSent')
+      .populate({
+        path: 'requestsSent',
+        select: getSelectData(se_UserDefault)
+      });
+    if (!user) return [];
+    return user.requestsSent;
+  }
+  static async getRequestsReceived({ user_id }) {
+    const user = await FriendModel.findOne({ user: user_id })
+      .select('requestsReceived')
+      .populate({
+        path: 'requestsReceived',
+        select: getSelectData(se_UserDefault)
+      });
+    if (!user) return [];
+    return user.requestsReceived;
+  }
 }
 
 module.exports = {
