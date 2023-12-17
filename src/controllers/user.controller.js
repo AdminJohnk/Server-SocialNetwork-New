@@ -151,7 +151,7 @@ class UserController {
     new OK({
       message: 'Get All Friends Successfully',
       metadata: await UserService.getAllFriends({
-        user_id: req.user.userId
+        user_id: req.params.userId
       })
     }).send(res);
   };

@@ -22,7 +22,7 @@ router.get('/me', asyncHandler(UserController.getMyInfo));
 router.get('/find_friend', asyncHandler(UserController.findFriend));
 
 // Get friend list
-router.get('/friend_list', asyncHandler(UserController.getAllFriends));
+router.get('/friend_list/:userId', asyncHandler(UserController.getAllFriends));
 
 // Get request sent list
 router.get('/request_sent', asyncHandler(UserController.getRequestsSent));
