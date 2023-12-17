@@ -12,21 +12,6 @@ router.use(authentication);
 // Find user by ID
 router.get('/find/:user_id', asyncHandler(UserController.findUserById));
 
-// Get Should Follow User (***)
-router.get('/shouldfollow', asyncHandler(UserController.getShouldFollow));
-
-// Get List Following By User ID
-router.get(
-  '/following/:user_id',
-  asyncHandler(UserController.getListFollowingByUserId)
-);
-
-// Get List Followers By User ID
-router.get(
-  '/followers/:user_id',
-  asyncHandler(UserController.getListFollowersByUserId)
-);
-
 // Get Repository Github
 router.get('/repositories', asyncHandler(UserController.getRepositoryGithub));
 
@@ -42,9 +27,6 @@ router.get('/me', asyncHandler(UserController.getMyInfo));
 /// PUT //
 // Update user
 router.put('/update', asyncHandler(UserController.updateUserById));
-
-// Add Follow Or Unfollow User
-router.put('/follow/:user_id', asyncHandler(UserController.followUser));
 
 // Like Post Or Unlike Post
 router.put('/likepost', asyncHandler(UserController.likePost));

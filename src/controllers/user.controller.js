@@ -59,43 +59,6 @@ class UserController {
     }).send(res);
   };
   /* 
-    Follow User
-    Link: http://localhost:4052/api/v1/users/follow/:user_id
-  */
-  static followUser = async (req, res, next) => {
-    new OK({
-      message: 'Follow User Successfully',
-      metadata: await UserService.followUser({
-        me_id: req.user.userId,
-        user: req.params.user_id
-      })
-    }).send(res);
-  };
-  /* 
-      Get List Followers By User ID
-      Link: http://localhost:4052/api/v1/users/followers/:user_id
-    */
-  static getListFollowersByUserId = async (req, res, next) => {
-    new OK({
-      message: 'Get List Followers Successfully',
-      metadata: await UserService.getListFollowersByUserId({
-        user: req.params.user_id
-      })
-    }).send(res);
-  };
-  /* 
-      Get List Following By User ID
-      Link: http://localhost:4052/api/v1/users/following/:user_id
-    */
-  static getListFollowingByUserId = async (req, res, next) => {
-    new OK({
-      message: 'Get List Followers Successfully',
-      metadata: await UserService.getListFollowingByUserId({
-        user: req.params.user_id
-      })
-    }).send(res);
-  };
-  /* 
     Get Repository Github
     Link: http://localhost:4052/api/v1/users/repositories
   */
@@ -104,14 +67,6 @@ class UserController {
       message: 'Get Repository Github Successfully',
       metadata: await UserService.getRepositoryGithub({
         access_token_github: req.headers[HEADER.GITHUB_TOKEN]
-      })
-    }).send(res);
-  };
-  static getShouldFollow = async (req, res, next) => {
-    new OK({
-      message: 'Get Should Follow Successfully',
-      metadata: await UserService.getShouldFollow({
-        user_id: req.user.userId
       })
     }).send(res);
   };

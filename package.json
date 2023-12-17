@@ -11,8 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.468.0",
-    "@aws-sdk/s3-request-presigner": "^3.468.0",
+    "@aws-sdk/client-s3": "^3.474.0",
+    "@aws-sdk/s3-request-presigner": "^3.474.0",
     "amqplib": "^0.10.3",
     "aspect.js": "^0.8.1",
     "axios": "^1.6.2",
