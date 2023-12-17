@@ -95,11 +95,11 @@ const UserSchema = new Schema(
 
 UserSchema.pre('save', async function (next) {
   const userIncr = await UserIncrClass.getIdCurrent();
-  if (userIncr.id_delete.length) {
+  if (userIncr?.id_delete?.length) {
     this.id_incr = userIncr.id_delete.at(-1);
     await UserIncrClass.pullIdDelete();
   } else {
-    this.id_incr = userIncr.id_current + 1;
+    this.id_incr = userIncr?.id_current || 0 + 1;
     await UserIncrClass.setIncrId(this.id_incr);
   }
 

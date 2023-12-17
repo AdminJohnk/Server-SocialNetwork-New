@@ -1,7 +1,9 @@
 'use strict';
 const { model, Schema, Types } = require('mongoose');
-const { getSelectData, unGetSelectData } = require('../utils/functions');
-const { pp_UserDefault, se_UserDefault } = require('../utils/constants');
+import { UserModel } from './user.model';
+import { getSelectData, unGetSelectData } from '../utils/functions';
+import { se_UserDefault, pp_UserDefault } from '../utils/constants';
+
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Friend';
@@ -9,20 +11,22 @@ const COLLECTION_NAME = 'friends';
 
 const FriendSchema = new Schema(
   {
-    user_id: {
+    user: {
       type: ObjectId,
       ref: 'User',
+      index: true,
       required: true
     },
-    friend_id: {
-      type: ObjectId,
+    friends: {
+      type: [ObjectId],
       ref: 'User',
-      required: true
+      index: true,
+      default: []
     },
-    status: {
-      type: String,
-      enum: ['pending', 'accepted'],
-      default: 'pending'
+    pendingFriends: {
+      type: [ObjectId],
+      ref: 'User',
+      default: []
     }
   },
   {
@@ -31,68 +35,48 @@ const FriendSchema = new Schema(
   }
 );
 
-FriendSchema.index({ user_id: 1, friend_id: 1 }, { unique: true });
+FriendSchema.index({ user: 1, friend: 1 }, { unique: true });
 
 const FriendModel = model(DOCUMENT_NAME, FriendSchema);
 
 class FriendClass {
-  static async checkExist({ user_id, friend_id }) {
-    return await FriendModel.findOne({
-      user_id,
-      friend_id
-    });
+  static async findFriend({ user_id, key_search, limit, skip }) {
+    const user = await FriendModel.findOne({ user: user_id })
+      .select('friends')
+      .populate({
+        path: 'friends',
+        select: getSelectData(se_UserDefault),
+        match: {
+          $or: [
+            { name: { $regex: key_search, $options: 'i' } },
+            { alias: { $regex: key_search, $options: 'i' } }
+          ]
+        },
+        options: {
+          limit: limit,
+          skip: skip
+        }
+      });
+    if (!user) return [];
+    return user.friends;
   }
   static async sendFriendRequest({ user_id, friend_id }) {
-    const friend = await FriendModel.create({
-      user_id,
-      friend_id
-    });
+    const ids = [user_id, friend_id];
 
-    return friend;
-  }
-  static async acceptFriend({ user_id, friend_id }) {
-    const friend = await FriendModel.findOneAndUpdate(
-      {
-        user_id,
-        friend_id
-      },
-      { status: 'accepted' },
-      { new: true }
-    );
+    for (const id of ids) {
+      let user = await FriendModel.findOne({ user: id });
 
-    return friend;
-  }
-  static async deleteFriend({ user_id, friend_id }) {
-    const friend = await FriendModel.findOneAndDelete({
-      user_id,
-      friend_id
-    });
+      if (!user) {
+        user = new FriendModel({ user: id, pendingFriends: [id === user_id ? friend_id : user_id] });
+        await user.save();
+      } else {
+        await FriendModel.findByIdAndUpdate(user._id, {
+          $addToSet: { pendingFriends: id === user_id ? friend_id : user_id }
+        });
+      }
+    }
 
-    return friend;
-  }
-  static async getFriend({ user_id, friend_id }) {
-    const friend = await FriendModel.findOne({
-      user_id,
-      friend_id
-    });
-
-    return friend;
-  }
-  static async getFriends({ user_id }) {
-    const friends = await FriendModel.find({
-      user_id,
-      status: 'accepted'
-    });
-
-    return friends;
-  }
-  static async getFriendRequests({ user_id }) {
-    const friends = await FriendModel.find({
-      friend_id: user_id,
-      status: 'pending'
-    });
-
-    return friends;
+    return true;
   }
 }
 
