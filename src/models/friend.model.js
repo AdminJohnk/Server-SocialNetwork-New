@@ -1,8 +1,7 @@
 'use strict';
 const { model, Schema, Types } = require('mongoose');
-import { UserModel } from './user.model';
-import { getSelectData, unGetSelectData } from '../utils/functions';
-import { se_UserDefault, pp_UserDefault } from '../utils/constants';
+const { getSelectData, unGetSelectData } = require('../utils/functions');
+const { se_UserDefault, pp_UserDefault } = require('../utils/constants');
 
 const ObjectId = Types.ObjectId;
 
@@ -24,6 +23,11 @@ const FriendSchema = new Schema(
       default: []
     },
     pendingFriends: {
+      type: [ObjectId],
+      ref: 'User',
+      default: []
+    },
+    requestedFriends: {
       type: [ObjectId],
       ref: 'User',
       default: []
@@ -60,41 +64,44 @@ class FriendClass {
     if (!user) return [];
     return user.friends;
   }
+  static async getAllFriends({ user_id }) {
+    const user = await FriendModel.findOne({ user: user_id })
+      .select('friends')
+      .populate({
+        path: 'friends',
+        select: getSelectData(se_UserDefault)
+      });
+    if (!user) return [];
+    return user.friends;
+  }
   static async sendFriendRequest({ user_id, friend_id }) {
-    const ids = [user_id, friend_id];
-
-    for (const id of ids) {
-      let user = await FriendModel.findOne({ user: id });
-
-      if (!user) {
-        user = new FriendModel({ user: id, pendingFriends: [id === user_id ? friend_id : user_id] });
-        await user.save();
-      } else {
-        await FriendModel.findByIdAndUpdate(user._id, {
-          $addToSet: { pendingFriends: id === user_id ? friend_id : user_id }
-        });
-      }
+    const user = await FriendModel.findOne({ user: user_id });
+    if (!user) {
+      const newUser = new FriendModel({
+        user: user_id,
+        friends: [],
+        pendingFriends: [friend_id],
+        requestedFriends: []
+      });
+      newUser.pendingFriends.push(friend_id);
+      await newUser.save();
+      return newUser;
     }
-
-    return true;
+    if (user.friends.includes(friend_id)) return null;
+    if (user.pendingFriends.includes(friend_id)) return null;
+    if (user.requestedFriends.includes(friend_id)) return null;
+    user.pendingFriends.push(friend_id);
+    await user.save();
+    return user;
   }
   static async acceptFriendRequest({ user_id, friend_id }) {
-    const ids = [user_id, friend_id];
-
-    for (const id of ids) {
-      let user = await FriendModel.findOne({ user: id });
-
-      if (!user) {
-        user = new FriendModel({ user: id, friends: [id === user_id ? friend_id : user_id] });
-        await user.save();
-      } else {
-        await FriendModel.findByIdAndUpdate(user._id, {
-          $addToSet: { friends: id === user_id ? friend_id : user_id }
-        });
-      }
-    }
-
-    return true;
+    const user = await FriendModel.findOne({ user: user_id });
+    if (!user) return null;
+    if (!user.pendingFriends.includes(friend_id)) return null;
+    user.pendingFriends.pull(friend_id);
+    user.friends.push(friend_id);
+    await user.save();
+    return user;
   }
 }
 

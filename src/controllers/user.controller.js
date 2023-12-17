@@ -107,6 +107,54 @@ class UserController {
       })
     }).send(res);
   };
+  /**
+   * Send Friend Request
+   */
+  static sendFriendRequest = async (req, res, next) => {
+    new CREATED({
+      message: 'Send Friend Request Successfully',
+      metadata: await UserService.sendFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  };
+  /**
+   * Accept Friend Request
+   */
+  static acceptFriendRequest = async (req, res, next) => {
+    new OK({
+      message: 'Accept Friend Request Successfully',
+      metadata: await UserService.acceptFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  };
+  /**
+   * Find Friend
+   */
+  static findFriend = async (req, res, next) => {
+    new OK({
+      message: 'Find Friend Successfully',
+      metadata: await UserService.findFriend({
+        user_id: req.user.userId,
+        key_search: req.query.key_search,
+        page: req.query.page
+      })
+    }).send(res);
+  };
+  /**
+   * Get Friend List
+   */
+  static getAllFriends = async (req, res, next) => {
+    new OK({
+      message: 'Get All Friends Successfully',
+      metadata: await UserService.getAllFriends({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
 }
 
 module.exports = UserController;

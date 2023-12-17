@@ -12,10 +12,11 @@ const axios = require('axios');
 const { UserClass } = require('../models/user.model');
 const { PostClass } = require('../models/post.model');
 const { LikeClass } = require('../models/like.model');
+const { FriendClass } = require('../models/friend.model');
 const PublisherService = require('./publisher.service');
 const NotificationService = require('./notification.service');
 const { Notification } = require('../utils/notificationType');
-const { LIKEPOST_001, FOLLOWUSER_001 } = Notification;
+const { LIKEPOST_001, SENDFRIENDREQUEST_001, ACCEPTFRIENDREQUEST_001 } = Notification;
 
 class UserService {
   static deleteUser = async ({ user_id }) => {
@@ -75,19 +76,16 @@ class UserService {
     return true;
   };
   static getRepositoryGithub = async ({ access_token_github }) => {
-    const { data: result } = await axios.get(
-      'https://api.github.com/user/repos',
-      {
-        headers: {
-          Authorization: `Bearer ${access_token_github}`,
-          Accept: 'application/vnd.github.v3+json'
-        }
+    const { data: result } = await axios.get('https://api.github.com/user/repos', {
+      headers: {
+        Authorization: `Bearer ${access_token_github}`,
+        Accept: 'application/vnd.github.v3+json'
       }
-    );
+    });
     if (!result) throw new BadRequestError('Cannot get repository github');
 
     const repos = await Promise.all(
-      result.map(async repository => {
+      result.map(async (repository) => {
         const { data } = await axios.get(repository.languages_url, {
           headers: {
             Authorization: `Bearer ${access_token_github}`,
@@ -96,15 +94,7 @@ class UserService {
         });
 
         const result = getInfoData({
-          fields: [
-            'id',
-            'name',
-            'private',
-            'html_url',
-            'watchers_count',
-            'forks_count',
-            'stargazers_count'
-          ],
+          fields: ['id', 'name', 'private', 'html_url', 'watchers_count', 'forks_count', 'stargazers_count'],
           object: repository
         });
 
@@ -137,6 +127,55 @@ class UserService {
       payload
     });
   };
+  static sendFriendRequest = async ({ user_id, friend_id }) => {
+    const result = await FriendClass.sendFriendRequest({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new ConflictRequestError('Friend request already sent');
+
+    const msg = NotificationService.createMsgToPublish({
+      type: SENDFRIENDREQUEST_001,
+      sender: user_id,
+      receiver: friend_id
+    });
+
+    PublisherService.publishNotify(msg);
+
+    return result;
+  };
+  static acceptFriendRequest = async ({ user_id, friend_id }) => {
+    const result = await FriendClass.acceptFriendRequest({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new NotFoundError('Friend request not found');
+
+    const msg = NotificationService.createMsgToPublish({
+      type: ACCEPTFRIENDREQUEST_001,
+      sender: user_id,
+      receiver: friend_id
+    });
+
+    PublisherService.publishNotify(msg);
+
+    return result;
+  };
+  static findFriend = async ({ user_id, key_search, limit, skip }) => {
+    return await FriendClass.findFriend({
+      user_id,
+      key_search,
+      limit,
+      skip
+    });
+  };
+  static async getAllFriends({ user_id }) {
+    return await FriendClass.getAllFriends({
+      user_id
+    });
+  }
 }
 
 module.exports = UserService;
