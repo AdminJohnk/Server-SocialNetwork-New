@@ -22,8 +22,6 @@ const se_UserDefaultForPost = [
   'email',
   'user_image',
   'experiences',
-  'follower_number',
-  'following_number',
   'post_number',
   'last_online'
 ];

@@ -10,7 +10,6 @@ const {
 const { getInfoData, limitData } = require('../utils/functions');
 const axios = require('axios');
 const { UserClass } = require('../models/user.model');
-const { FollowClass } = require('../models/follow.model');
 const { PostClass } = require('../models/post.model');
 const { LikeClass } = require('../models/like.model');
 const PublisherService = require('./publisher.service');
@@ -116,67 +115,6 @@ class UserService {
     );
     return limitData({ data: repos, limit: 1000, page: 1 });
   };
-  static async followUser({ me_id, user }) {
-    const foundUser = await UserClass.checkExist({ _id: user });
-    if (!foundUser) throw new NotFoundError('User not found');
-
-    const { numFollow } = await FollowClass.followUser({ me_id, user });
-
-    UserClass.changeNumberUser({
-      user_id: me_id,
-      type: 'following',
-      number: numFollow
-    }).catch(err => console.log(err));
-
-    UserClass.changeNumberUser({
-      user_id: user,
-      type: 'follower',
-      number: numFollow
-    }).catch(err => console.log(err));
-
-    if (me_id !== user && numFollow === 1) {
-      const msg = NotificationService.createMsgToPublish({
-        type: FOLLOWUSER_001,
-        sender: me_id,
-        receiver: user
-      });
-
-      PublisherService.publishNotify(msg);
-    }
-    return true;
-  }
-  static async getListFollowersByUserId({
-    user,
-    limit = 30,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
-    const foundUser = await UserClass.checkExist({ _id: user });
-    if (!foundUser) throw new NotFoundError('User not found');
-    const skip = (page - 1) * limit;
-    return await FollowClass.getListFollowersByUserId({
-      user,
-      limit,
-      skip,
-      sort
-    });
-  }
-  static async getListFollowingByUserId({
-    user,
-    limit = 30,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
-    const foundUser = await UserClass.checkExist({ _id: user });
-    if (!foundUser) throw new NotFoundError('User not found');
-    const skip = (page - 1) * limit;
-    return await FollowClass.getListFollowingByUserId({
-      user,
-      limit,
-      skip,
-      sort
-    });
-  }
   static getShouldFollow = async ({ user_id }) => {
     return await UserClass.getShouldFollow({
       user_id
