@@ -175,10 +175,32 @@ class UserClass {
         }
       },
       {
-        $project: unGetSelectData(unselect)
+        $lookup: {
+          from: 'friends',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+        }
+      },
+      {
+        $project: { ...unGetSelectData(unselect), friend: 0 }
       }
     ]);
-    return result[0];
+
+    return result;
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).select({ password: 1 });
