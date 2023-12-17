@@ -78,6 +78,24 @@ class FriendClass {
 
     return true;
   }
+  static async acceptFriendRequest({ user_id, friend_id }) {
+    const ids = [user_id, friend_id];
+
+    for (const id of ids) {
+      let user = await FriendModel.findOne({ user: id });
+
+      if (!user) {
+        user = new FriendModel({ user: id, friends: [id === user_id ? friend_id : user_id] });
+        await user.save();
+      } else {
+        await FriendModel.findByIdAndUpdate(user._id, {
+          $addToSet: { friends: id === user_id ? friend_id : user_id }
+        });
+      }
+    }
+
+    return true;
+  }
 }
 
 module.exports = {

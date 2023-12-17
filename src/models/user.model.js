@@ -35,7 +35,7 @@ const UserSchema = new Schema(
     cover_image: String,
     verified: { type: Boolean, default: false },
     tags: [{ type: String }],
-    alias: { type: String, unique: true, trim: true, default: '' },
+    alias: { type: String, trim: true, default: '' },
     about: String,
     experiences: { type: Array, default: [] },
     /* 
