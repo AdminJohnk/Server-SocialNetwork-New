@@ -176,13 +176,13 @@ class UserService {
       user_id
     });
   }
-  static async getRequestSent({ user_id }) {
-    return await FriendClass.getRequestSent({
+  static async getRequestsSent({ user_id }) {
+    return await FriendClass.getRequestsSent({
       user_id
     });
   }
-  static async getRequestReceived({ user_id }) {
-    return await FriendClass.getRequestReceived({
+  static async getRequestsReceived({ user_id }) {
+    return await FriendClass.getRequestsReceived({
       user_id
     });
   }

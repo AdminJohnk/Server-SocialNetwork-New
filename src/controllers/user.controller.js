@@ -158,10 +158,10 @@ class UserController {
   /**
    * Get Request Sent
    */
-  static getRequestSent = async (req, res, next) => {
+  static getRequestsSent = async (req, res, next) => {
     new OK({
       message: 'Get Request Sent Successfully',
-      metadata: await UserService.getRequestSent({
+      metadata: await UserService.getRequestsSent({
         user_id: req.user.userId
       })
     }).send(res);
@@ -170,10 +170,10 @@ class UserController {
   /**
    * Get Request Received
    */
-  static getRequestReceived = async (req, res, next) => {
+  static getRequestsReceived = async (req, res, next) => {
     new OK({
       message: 'Get Request Received Successfully',
-      metadata: await UserService.getRequestReceived({
+      metadata: await UserService.getRequestsReceived({
         user_id: req.user.userId
       })
     }).send(res);
