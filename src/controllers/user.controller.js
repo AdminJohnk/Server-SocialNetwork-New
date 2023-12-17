@@ -155,6 +155,29 @@ class UserController {
       })
     }).send(res);
   };
+  /**
+   * Get Request Sent
+   */
+  static getRequestSent = async (req, res, next) => {
+    new OK({
+      message: 'Get Request Sent Successfully',
+      metadata: await UserService.getRequestSent({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
+
+  /**
+   * Get Request Received
+   */
+  static getRequestReceived = async (req, res, next) => {
+    new OK({
+      message: 'Get Request Received Successfully',
+      metadata: await UserService.getRequestReceived({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
 }
 
 module.exports = UserController;

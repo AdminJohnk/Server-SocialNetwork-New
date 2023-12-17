@@ -176,6 +176,16 @@ class UserService {
       user_id
     });
   }
+  static async getRequestSent({ user_id }) {
+    return await FriendClass.getRequestSent({
+      user_id
+    });
+  }
+  static async getRequestReceived({ user_id }) {
+    return await FriendClass.getRequestReceived({
+      user_id
+    });
+  }
 }
 
 module.exports = UserService;

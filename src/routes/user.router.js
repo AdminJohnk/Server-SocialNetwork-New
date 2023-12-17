@@ -24,6 +24,12 @@ router.get('/find_friend', asyncHandler(UserController.findFriend));
 // Get friend list
 router.get('/friend_list', asyncHandler(UserController.getAllFriends));
 
+// Get request sent list
+router.get('/request_sent', asyncHandler(UserController.getAllRequestSent));
+
+// Get request received list
+router.get('/request_received', asyncHandler(UserController.getAllRequestReceived));
+
 // =========================================================
 
 /// POST //
