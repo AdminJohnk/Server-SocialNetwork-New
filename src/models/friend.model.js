@@ -124,8 +124,8 @@ class FriendClass {
     if (!user || !friend) return null;
     if (!user.requestsSent.includes(friend_id) || !friend.requestsReceived.includes(user_id)) return null;
 
-    friend.requestsSent.pull(user_id);
-    user.requestsReceived.pull(friend_id);
+    friend.requestsReceived.pull(user_id);
+    user.requestsSent.pull(friend_id);
 
     await Promise.all([friend.save(), user.save()]);
 
