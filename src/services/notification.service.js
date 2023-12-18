@@ -38,12 +38,12 @@ class NotificationService {
       async msg => {
         const message = JSON.parse(msg.content.toString());
         if (message.receiver === user_id) {
-        // if (message.receiver === user_id && message.id_incr === id_incr) {
-        // if (
-        //   message.id_incr === 5 ||
-        //   message.id_incr === 6 ||
-        //   message.id_incr === 9
-        // ) {
+          // if (message.receiver === user_id && message.id_incr === id_incr) {
+          // if (
+          //   message.id_incr === 5 ||
+          //   message.id_incr === 6 ||
+          //   message.id_incr === 9
+          // ) {
           await NotiClass.createNotify(message);
           console.log('message: ', message);
           channel.cancel(queueName);

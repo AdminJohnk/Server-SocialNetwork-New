@@ -59,10 +59,6 @@ const PostSchema = new Schema(
       comments: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
-      },
-      views: {
-        type: [{ type: ObjectId, ref: 'User' }],
-        select: false
       }
     }
   },

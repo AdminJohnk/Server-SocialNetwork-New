@@ -33,6 +33,13 @@ require('./database/init.mongodb');
 // init mail service
 SenderMailServer();
 
+// init rabbitmq
+const RabbitInit = require('./database/init.rabbit');
+RabbitInit.connectToRabbitMQ().then(({ channel, connection }) => {
+  global.__channel = channel;
+  global.__connection = connection;
+});
+
 // init redis
 // const RedisInit = require('./database/init.redis');
 // RedisInit.getInstanceRedis().then(redisClient => {

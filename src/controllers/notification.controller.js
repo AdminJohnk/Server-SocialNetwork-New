@@ -6,6 +6,7 @@ const { HEADER } = require('../utils/constants');
 
 class NotiController {
   static getNewNotification = async (req, res, next) => {
+    console.log('req.body', req.body);
     new OK({
       message: 'Get New Notification Successfully',
       metadata: await NotiService.getNewNotification({

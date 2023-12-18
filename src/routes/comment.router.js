@@ -16,7 +16,7 @@ router.get(
 );
 // Get All Child Comments By Parent ID
 router.get(
-  '/children',
+  '/:parent_id/children/:post_id',
   asyncHandler(CommentController.getAllChildByParentID)
 );
 

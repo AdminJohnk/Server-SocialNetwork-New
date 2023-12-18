@@ -9,6 +9,7 @@ const connectToRabbitMQ = async () => {
 
     const channel = await connection.createChannel();
 
+    console.log(channel)
     return { channel, connection };
   } catch (error) {
     console.log(error);

@@ -23,7 +23,7 @@ const s3 = new S3Client({
 });
 
 function sanitizeFile(file, cb) {
-  const fileExts = ['.png', '.jpg', '.jpeg', '.gif'];
+  const fileExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'];
 
   const isAllowedExt = fileExts.includes(
     path.extname(file.originalname.toLowerCase())
