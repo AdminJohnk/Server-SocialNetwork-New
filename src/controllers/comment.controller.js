@@ -91,7 +91,9 @@ class CommentController {
     new OK({
       message: 'Get All Child Comments Successfully',
       metadata: await CommentService.getAllChildByParentID({
-        ...req.body,
+        parent: req.params.parent_id,
+        post: req.params.post_id,
+        page: req.query.page,
         user: req.user.userId
       })
     }).send(res);
