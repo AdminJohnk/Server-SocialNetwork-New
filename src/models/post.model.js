@@ -226,7 +226,7 @@ class PostClass {
       {
         $lookup: {
           from: 'friends',
-          let: { id: '$post_attributes.user' },
+          let: { id: `post_attributes.${type}s._id` },
           pipeline: [
             {
               $match: {
@@ -241,7 +241,9 @@ class PostClass {
       },
       {
         $addFields: {
-          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+          'post_attributes.user.is_friend': {
+            $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false }
+          }
         }
       },
       {
@@ -372,27 +374,6 @@ class PostClass {
       { $limit: limit },
 
       { $addFields: { ...addFieldsObject(me_id) } },
-      {
-        $lookup: {
-          from: 'friends',
-          let: { id: '$post_attributes.user' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
-                }
-              }
-            }
-          ],
-          as: 'friend'
-        }
-      },
-      {
-        $addFields: {
-          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
-        }
-      },
       // ================== user ==================
       choosePopulateAttr({
         from: 'users',
@@ -416,6 +397,30 @@ class PostClass {
       getFirstElement('post'),
 
       // ===========================================
+
+      {
+        $lookup: {
+          from: 'friends',
+          let: { id: '$post_attributes.user._id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          'post_attributes.user.is_friend': {
+            $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false }
+          }
+        }
+      },
 
       { $project: { ...unGetSelectData(unSe_PostDefault), friend: 0, lookup: 0 } }
     ];
