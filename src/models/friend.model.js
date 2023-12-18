@@ -184,11 +184,13 @@ class FriendClass {
   static async getRequestsSent({ user_id }) {
     const user = await FriendModel.findOne({ user: user_id });
     if (!user) return [];
+    
     return user.requestsSent;
   }
   static async getRequestsReceived({ user_id }) {
     const user = await FriendModel.findOne({ user: user_id });
     if (!user) return [];
+
     return user.requestsReceived;
   }
 }
