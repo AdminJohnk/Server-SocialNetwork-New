@@ -10,7 +10,7 @@ router.use(authentication);
 
 /// GET //
 // Get New Notification
-router.get('/newnoti', asyncHandler(NotiController.getNewNotification));
+router.get('/newnoti/:id_incr', asyncHandler(NotiController.getNewNotification));
 
 // =========================================================
 
