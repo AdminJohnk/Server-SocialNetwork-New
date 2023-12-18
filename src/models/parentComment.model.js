@@ -32,7 +32,7 @@ const ParentCommentModel = model(DOCUMENT_NAME, ParentCommentSchema);
 
 class ParentCommentClass {
   // type = ['child']
-  static async changeNumberComment({comment_id, type, number}) {
+  static async changeNumberComment({ comment_id, type, number }) {
     let stringUpdate = type + '_number';
     return await ParentCommentModel.findByIdAndUpdate(
       comment_id,
@@ -73,6 +73,24 @@ class ParentCommentClass {
         )
       );
     }
+
+    // Nếu đã like thì bỏ like
+    const isLiked = await this.checkExist({
+      _id: comment_id,
+      post,
+      likes: { $elemMatch: { $eq: user } }
+    });
+
+    if (isLiked) {
+      Promise.resolve(
+        ParentCommentModel.findOneAndUpdate(
+          { _id: comment_id, post },
+          { $pull: { likes: user }, $inc: { like_number: -1 } },
+          { new: true }
+        )
+      );
+    }
+
     return {
       dislike_number
     };
@@ -106,6 +124,24 @@ class ParentCommentClass {
         )
       );
     }
+
+    // Nếu đã dislike thì bỏ dislike
+    const isDisliked = await this.checkExist({
+      _id: comment_id,
+      post,
+      dislikes: { $elemMatch: { $eq: user } }
+    });
+
+    if (isDisliked) {
+      Promise.resolve(
+        ParentCommentModel.findOneAndUpdate(
+          { _id: comment_id, post },
+          { $pull: { dislikes: user }, $inc: { dislike_number: -1 } },
+          { new: true }
+        )
+      );
+    }
+
     return {
       like_number
     };
@@ -124,14 +160,7 @@ class ParentCommentClass {
       user
     });
   }
-  static async getAllParentComments({
-    user,
-    post,
-    limit,
-    page,
-    sort,
-    unselect = ['likes', 'dislikes']
-  }) {
+  static async getAllParentComments({ user, post, limit, page, sort, unselect = ['likes', 'dislikes'] }) {
     const skip = (page - 1) * limit;
     // return await ParentCommentModel.find({ post })
     //   .populate('user', pp_UserDefault)
