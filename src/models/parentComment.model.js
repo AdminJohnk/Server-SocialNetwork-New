@@ -119,7 +119,14 @@ class ParentCommentClass {
       user
     });
   }
-  static async getAllParentComments({ user, post, limit, page, sort, unselect = ['likes', 'dislikes'] }) {
+  static async getAllParentComments({
+    user,
+    post,
+    limit,
+    page,
+    sort,
+    unselect = ['like_number', 'dislike_number']
+  }) {
     const skip = (page - 1) * limit;
     // return await ParentCommentModel.find({ post })
     //   .populate('user', pp_UserDefault)

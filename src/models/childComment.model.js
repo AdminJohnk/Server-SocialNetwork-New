@@ -124,7 +124,7 @@ class ChildCommentClass {
     limit,
     page,
     sort,
-    unselect = ['likes', 'dislikes']
+    unselect = ['like_number', 'dislike_number']
   }) {
     const skip = (page - 1) * limit;
     // return await ChildCommentModel.find({ post, parent })
