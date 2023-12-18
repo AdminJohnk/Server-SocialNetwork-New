@@ -9,11 +9,11 @@ class NotiController {
     new OK({
       message: 'Get New Notification Successfully',
       metadata: await NotiService.getNewNotification({
-        ...req.body,
+        id_incr: req.params.id_incr,
         user_id: req.user.userId
       })
     }).send(res);
-  }
+  };
 }
 
 module.exports = NotiController;
