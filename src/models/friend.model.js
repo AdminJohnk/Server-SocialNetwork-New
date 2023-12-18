@@ -122,7 +122,7 @@ class FriendClass {
     ]);
 
     if (!user || !friend) return null;
-    if (!user.requestsSent.includes(user_id) || !friend.requestsReceived.includes(friend_id)) return null;
+    if (!user.requestsSent.includes(friend_id) || !friend.requestsReceived.includes(user_id)) return null;
 
     friend.requestsSent.pull(user_id);
     user.requestsReceived.pull(friend_id);
