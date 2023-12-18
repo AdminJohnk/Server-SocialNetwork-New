@@ -120,12 +120,48 @@ class UserController {
     }).send(res);
   };
   /**
+   * Cancel Friend Request
+   */
+  static cancelFriendRequest = async (req, res, next) => {
+    new OK({
+      message: 'Cancel Friend Request Successfully',
+      metadata: await UserService.cancelFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  };
+  /**
    * Accept Friend Request
    */
   static acceptFriendRequest = async (req, res, next) => {
     new OK({
       message: 'Accept Friend Request Successfully',
       metadata: await UserService.acceptFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  };
+  /**
+   * Decline Friend Request
+   */
+  static async declineFriendRequest(req, res, next) {
+    new OK({
+      message: 'Decline Friend Request Successfully',
+      metadata: await UserService.declineFriendRequest({
+        user_id: req.user.userId,
+        friend_id: req.params.friend_id
+      })
+    }).send(res);
+  }
+  /**
+   * Delete Friend
+   */
+  static deleteFriend = async (req, res, next) => {
+    new OK({
+      message: 'Delete Friend Successfully',
+      metadata: await UserService.deleteFriend({
         user_id: req.user.userId,
         friend_id: req.params.friend_id
       })

@@ -288,13 +288,13 @@ class PostClass {
   }) {
     const additionalCondition1 = {
       $lookup: {
-        from: 'follows',
+        from: 'friends',
         let: { temp: '$post_attributes.user' },
         pipeline: [
           {
             $match: {
               $expr: {
-                $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$followings'] }]
+                $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$friends'] }]
               }
             }
           }

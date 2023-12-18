@@ -37,8 +37,17 @@ router.get('/request_received', asyncHandler(UserController.getRequestsReceived)
 // Send Friend Request
 router.post('/send_friend_request/:friend_id', asyncHandler(UserController.sendFriendRequest));
 
+// Cancel Friend Request
+router.post('/cancel_friend_request/:friend_id', asyncHandler(UserController.cancelFriendRequest));
+
 // Accept Friend Request
 router.post('/accept_friend_request/:friend_id', asyncHandler(UserController.acceptFriendRequest));
+
+// Decline Friend Request
+router.post('/decline_friend_request/:friend_id', asyncHandler(UserController.declineFriendRequest));
+
+// Delete Friend
+router.post('/delete_friend/:friend_id', asyncHandler(UserController.deleteFriend));
 
 // =========================================================
 
