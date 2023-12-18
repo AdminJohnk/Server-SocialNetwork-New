@@ -191,20 +191,65 @@ class PostClass {
       sort
     });
   }
-  // type = ['like', 'share', ', 'save']
   static async getAllUserByPost({ type, post, owner_post, limit, skip, sort }) {
-    const result = await PostModel.findOne({
-      _id: post,
-      'post_attributes.user': owner_post
-    })
-      .populate(`post_attributes.${type}s`, pp_UserDefault)
-      .select(`post_attributes.${type}s`)
-      .skip(skip)
-      .limit(limit)
-      .sort(sort)
-      .lean();
+    const result = await PostModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(post),
+          'post_attributes.user': new ObjectId(owner_post)
+        }
+      },
+      {
+        $sort: sort
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: limit
+      },
+      {
+        $unwind: `$post_attributes.${type}s`
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: `post_attributes.${type}s`,
+          foreignField: '_id',
+          as: `post_attributes.${type}s`
+        }
+      },
+      {
+        $lookup: {
+          from: 'friends',
+          let: { id: '$post_attributes.user' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          friend: 0,
+          [`post_attributes.${type}s`]: 1
+        }
+      }
+    ]);
 
-    return result.post_attributes[`${type}s`];
+    return result.map((doc) => doc.post_attributes[`${type}s`]);
   }
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
@@ -323,6 +368,27 @@ class PostClass {
       { $limit: limit },
 
       { $addFields: { ...addFieldsObject(me_id) } },
+      {
+        $lookup: {
+          from: 'friends',
+          let: { id: '$post_attributes.user' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+        }
+      },
       // ================== user ==================
       choosePopulateAttr({
         from: 'users',
@@ -347,7 +413,7 @@ class PostClass {
 
       // ===========================================
 
-      { $project: { ...unGetSelectData(unSe_PostDefault) } }
+      { $project: { ...unGetSelectData(unSe_PostDefault), friend: 0, lookup: 0 } }
     ];
 
     if (!isFullSearch) {
