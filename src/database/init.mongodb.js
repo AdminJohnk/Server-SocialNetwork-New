@@ -20,7 +20,7 @@ class Database {
       // const connectString = `mongodb://${host}:${port}/${name}`;
 
       const connectString =
-        'mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/SocialProDEV';
+        'mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/SocialProTest';
 
       mongoose
         .connect(connectString, {
