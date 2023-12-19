@@ -4,6 +4,24 @@ const AdminService = require('../services/admin.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class AdminController {
+  static deleteComment = async (req, res, next) => {
+    new OK({
+      message: 'Delete Comment Successfully',
+      metadata: await AdminService.deleteComment({
+        comment_id: req.params.comment_id,
+        ...req.body
+      })
+    }).send(res);
+  }
+  static updateComment = async (req, res, next) => {
+    new OK({
+      message: 'Update Comment Successfully',
+      metadata: await AdminService.updateComment({
+        comment_id: req.params.comment_id,
+        ...req.body
+      })
+    }).send(res);
+  };
   static createPost = async (req, res, next) => {
     new CREATED({
       message: 'Create Post Successfully',
@@ -11,7 +29,7 @@ class AdminController {
         ...req.body
       })
     }).send(res);
-  }
+  };
   static createUser = async (req, res, next) => {
     new CREATED({
       message: 'Create User Successfully',
@@ -21,26 +39,26 @@ class AdminController {
     }).send(res);
   };
   /* 
-        Get All Child Comments By Parent ID
-        Link: http://localhost:4052/api/v1/admin/comments/children
-    */
-  static getAllChildByParentID = async (req, res, next) => {
-    new OK({
-      message: 'Get All Child Comments Successfully',
-      metadata: await AdminService.getAllChildByParentID({
-        ...req.body
-      })
-    }).send(res);
-  };
-  /* 
         Get All Parent Comments
-        Link: http://localhost:4052/api/v1/admin/comments
+        Link: http://localhost:4052/api/v1/admin/comments/parents/:post_id
     */
   static getAllParentComments = async (req, res, next) => {
     new OK({
       message: 'Get All Parent Comments Successfully',
       metadata: await AdminService.getAllParentComments({
         post: req.params.post_id
+      })
+    }).send(res);
+  };
+  /* 
+        Get All Child Comments
+        Link: http://localhost:4052/api/v1/admin/comments/children/:post_id/:parent_id
+    */
+  static getAllChildComments = async (req, res, next) => {
+    new OK({
+      message: 'Get All Child Comments Successfully',
+      metadata: await AdminService.getAllChildComments({
+        parent: req.params.parent_id
       })
     }).send(res);
   };

@@ -26,8 +26,9 @@ router.get('/posts/find/:post_id',asyncHandler(AdminController.findPostById));
 // Get all parent comment
 router.get('/comments/parents/:post_id',asyncHandler(AdminController.getAllParentComments));
 
-// Get All Child Comments By Parent ID
-router.get('/comments/children',asyncHandler(AdminController.getAllChildByParentID));
+// Get all child comment
+router.get('/comments/children/:parent_id',asyncHandler(AdminController.getAllChildComments));
+
 
 // =========================================================
 
@@ -47,6 +48,9 @@ router.put('/users/update/:user_id',asyncHandler(AdminController.updateUser));
 // Update post
 router.put('/posts/update/:post_id',asyncHandler(AdminController.updatePost));
 
+// Update comment
+router.put('/comments/update/:comment_id',asyncHandler(AdminController.updateComment));
+
 // =========================================================
 
 /// DELETE //
@@ -55,6 +59,9 @@ router.delete('/users/delete/:user_id',asyncHandler(AdminController.deleteUser))
 
 // Delete post
 router.delete('/posts/delete/:post_id',asyncHandler(AdminController.deletePost));
+
+// Delete Comment
+router.delete('/comments/delete/:comment_id',asyncHandler(AdminController.deleteComment));
 
 // =========================================================
 

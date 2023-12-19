@@ -24,29 +24,39 @@ const { CREATEPOST_001 } = Notification;
 
 class AdminService {
   // ======================== Comment ========================
-  static getAllChildByParentID = async ({
-    post,
-    parent,
-    limit = 20,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) => {
-    const foundPost = await PostClass.checkExist({ _id: post });
-    if (!foundPost) throw new NotFoundError('Post not found');
-
-    const foundParentComment = await ParentCommentClass.checkExist({
-      _id: parent
+  static deleteComment = async ({ comment_id, type }) => {
+    const foundComment = await ParentCommentClass.checkExist({
+      _id: comment_id
     });
-    if (!foundParentComment)
-      throw new NotFoundError('Parent comment not found');
+    if (!foundComment) throw new NotFoundError('Comment not found');
 
-    return await ChildCommentClass.getAllChildByParentID_admin({
-      post,
-      parent,
-      limit,
-      page,
-      sort
+    if (type === 'parent') {
+      return await ParentCommentClass.deleteComment_admin({ comment_id });
+    } else if (type === 'child') {
+      return await ChildCommentClass.deleteComment_admin({ comment_id });
+    } else {
+      throw new BadRequestError('Type of comment is invalid');
+    }
+  }
+  static updateComment = async ({ comment_id, content, type }) => {
+    const foundComment = await ParentCommentClass.checkExist({
+      _id: comment_id
     });
+    if (!foundComment) throw new NotFoundError('Comment not found');
+
+    if (type === 'parent') {
+      return await ParentCommentClass.updateComment_admin({
+        comment_id,
+        content
+      });
+    } else if (type === 'child') {
+      return await ChildCommentClass.updateComment_admin({
+        comment_id,
+        content
+      });
+    } else {
+      throw new BadRequestError('Type of comment is invalid');
+    }
   };
   static getAllParentComments = async ({
     post,
@@ -64,6 +74,17 @@ class AdminService {
       sort
     });
   };
+  static getAllChildComments = async ({ parent, limit, page, sort }) => {
+    const foundComment = await ParentCommentClass.checkExist({ _id: parent });
+    if (!foundComment) throw new NotFoundError('Comment not found');
+
+    return await ChildCommentClass.getAllChildComments_admin({
+      parent,
+      limit,
+      page,
+      sort
+    });
+  }
   // ======================== Post ========================
   static async createPost({
     type = 'Post',
