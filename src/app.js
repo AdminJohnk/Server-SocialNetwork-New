@@ -51,6 +51,11 @@ RabbitInit.connectToRabbitMQ().then(({ channel, connection }) => {
 // init routes
 app.use('/api/v1', router);
 
+// Hello world
+app.get('/', (req, res) => {
+  res.send('Hello world');
+});
+
 // handling error
 app.use((req, res, next) => {
   const error = new Error('Not found');
