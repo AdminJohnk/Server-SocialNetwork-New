@@ -45,67 +45,62 @@ class ParentCommentClass {
     ).lean();
   }
   static async dislikeComment({ comment_id, post, user }) {
-    const isDisliked = await this.checkExist({
-      _id: comment_id,
-      post,
-      dislikes: { $elemMatch: { $eq: user } }
-    });
+    const [isDisliked, isLiked] = await Promise.all([
+      this.checkExist({
+        _id: comment_id,
+        post,
+        dislikes: { $elemMatch: { $eq: user } }
+      }),
+      this.checkExist({
+        _id: comment_id,
+        post,
+        likes: { $elemMatch: { $eq: user } }
+      })
+    ]);
 
-    let dislike_number = 1;
+    let dislike_number = isDisliked ? -1 : 1;
+    let like_number = isLiked ? -1 : 0;
 
-    // Nếu đã dislike rồi thì bỏ dislike
-    if (isDisliked) {
-      dislike_number = -1;
-      Promise.resolve(
-        ParentCommentModel.findOneAndUpdate(
-          { _id: comment_id, post },
-          { $pull: { dislikes: user }, $inc: { dislike_number: -1 } },
-          { new: true }
-        )
-      );
-    } else {
-      // Nếu chưa dislike thì dislike
-      Promise.resolve(
-        ParentCommentModel.findOneAndUpdate(
-          { _id: comment_id, post },
-          { $addToSet: { dislikes: user }, $inc: { dislike_number: 1 } },
-          { new: true }
-        )
-      );
-    }
+    await ParentCommentModel.findOneAndUpdate(
+      { _id: comment_id, post },
+      {
+        ...(isDisliked ? { $pull: { dislikes: user } } : { $addToSet: { dislikes: user } }),
+        ...(isLiked ? { $pull: { likes: user } } : {}),
+        $inc: { dislike_number, like_number }
+      }
+    );
+
     return {
       dislike_number
     };
   }
+
   static async likeComment({ comment_id, post, user }) {
-    const isLiked = await this.checkExist({
-      _id: comment_id,
-      post,
-      likes: { $elemMatch: { $eq: user } }
-    });
+    const [isDisliked, isLiked] = await Promise.all([
+      this.checkExist({
+        _id: comment_id,
+        post,
+        dislikes: { $elemMatch: { $eq: user } }
+      }),
+      this.checkExist({
+        _id: comment_id,
+        post,
+        likes: { $elemMatch: { $eq: user } }
+      })
+    ]);
 
-    let like_number = 1;
+    let like_number = isLiked ? -1 : 1;
+    let dislike_number = isDisliked ? -1 : 0;
 
-    // Nếu đã like rồi thì bỏ like
-    if (isLiked) {
-      like_number = -1;
-      Promise.resolve(
-        ParentCommentModel.findOneAndUpdate(
-          { _id: comment_id, post },
-          { $pull: { likes: user }, $inc: { like_number: -1 } },
-          { new: true }
-        )
-      );
-    } else {
-      // Nếu chưa like thì like
-      Promise.resolve(
-        ParentCommentModel.findOneAndUpdate(
-          { _id: comment_id, post },
-          { $addToSet: { likes: user }, $inc: { like_number: 1 } },
-          { new: true }
-        )
-      );
-    }
+    await ParentCommentModel.findOneAndUpdate(
+      { _id: comment_id, post },
+      {
+        ...(isLiked ? { $pull: { likes: user } } : { $addToSet: { likes: user } }),
+        ...(isDisliked ? { $pull: { dislikes: user } } : {}),
+        $inc: { like_number, dislike_number }
+      }
+    );
+
     return {
       like_number
     };
@@ -130,7 +125,7 @@ class ParentCommentClass {
     limit,
     page,
     sort,
-    unselect = ['likes', 'dislikes']
+    unselect = ['like_number', 'dislike_number']
   }) {
     const skip = (page - 1) * limit;
     // return await ParentCommentModel.find({ post })

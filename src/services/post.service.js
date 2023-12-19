@@ -22,7 +22,7 @@ const { CommunityClass } = require('../models/community.model');
 const NotificationService = require('./notification.service');
 const PublisherService = require('./publisher.service');
 const { Notification } = require('../utils/notificationType');
-const { CREATEPOST_001 } = Notification;
+const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
   static async viewPost({ post_id, user_id, cookies, res }) {
@@ -280,13 +280,6 @@ class PostService {
     if (!foundPost) throw new NotFoundError('Post not found');
 
     const { numShare } = await PostClass.sharePost({ user, post, owner_post });
-
-    PostClass.changeToArrayPost({
-      post_id: post,
-      type: 'share',
-      user_id: user,
-      number: numShare
-    });
 
     if (user !== owner_post && numShare === 1) {
       const msg = NotificationService.createMsgToPublish({

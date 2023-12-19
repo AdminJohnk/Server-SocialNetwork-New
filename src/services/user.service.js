@@ -151,6 +151,16 @@ class UserService {
 
     return result;
   };
+  static cancelFriendRequest = async ({ user_id, friend_id }) => {
+    const result = await FriendClass.cancelFriendRequest({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new NotFoundError('Friend request not found');
+
+    return result;
+  };
   static acceptFriendRequest = async ({ user_id, friend_id }) => {
     const result = await FriendClass.acceptFriendRequest({
       user_id,
@@ -169,6 +179,26 @@ class UserService {
 
     return result;
   };
+  static async deleteFriend({ user_id, friend_id }) {
+    const result = await FriendClass.deleteFriend({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new NotFoundError('Friend not found');
+
+    return result;
+  }
+  static async declineFriendRequest({ user_id, friend_id }) {
+    const result = await FriendClass.declineFriendRequest({
+      user_id,
+      friend_id
+    });
+
+    if (!result) throw new NotFoundError('Friend request not found');
+
+    return result;
+  }
   static findFriend = async ({ user_id, key_search, limit, skip }) => {
     return await FriendClass.findFriend({
       user_id,

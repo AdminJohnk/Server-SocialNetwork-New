@@ -8,7 +8,7 @@ const connectToRabbitMQ = async () => {
     if (!connection) throw new Error('Connection RabbitMQ not established');
 
     const channel = await connection.createChannel();
-
+    
     return { channel, connection };
   } catch (error) {
     console.log(error);
