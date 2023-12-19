@@ -281,9 +281,9 @@ class PostClass {
     let numShare = 1;
 
     if (sharedPost) {
-      Promise.resolve(PostModel.deleteOne(sharedPost._id));
+     await Promise.resolve(PostModel.deleteOne(sharedPost._id));
       numShare = -1;
-    } else PostModel.create({ type, post_attributes });
+    } else await PostModel.create({ type, post_attributes });
 
     this.changeToArrayPost({
       post_id: post,

@@ -40,9 +40,9 @@ class LikeClass {
     });
     let numLike = 1;
     if (foundLike) {
-      Promise.resolve(LikeModel.deleteOne(foundLike));
+      await Promise.resolve(LikeModel.deleteOne(foundLike));
       numLike = -1;
-    } else LikeModel.create({ user, post, owner_post });
+    } else await LikeModel.create({ user, post, owner_post });
 
     return {
       numLike

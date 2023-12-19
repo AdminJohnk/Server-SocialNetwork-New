@@ -43,7 +43,7 @@ class ChildCommentClass {
     // Nếu đã dislike rồi thì bỏ dislike
     if (isDisliked) {
       dislike_number = -1;
-      Promise.resolve(
+      await Promise.resolve(
         ChildCommentModel.findOneAndUpdate(
           { _id: comment_id, post },
           { $pull: { dislikes: user }, $inc: { dislike_number: -1 } },
@@ -52,7 +52,7 @@ class ChildCommentClass {
       );
     } else {
       // Nếu chưa dislike thì dislike
-      Promise.resolve(
+      await Promise.resolve(
         ChildCommentModel.findOneAndUpdate(
           { _id: comment_id, post },
           { $addToSet: { dislikes: user }, $inc: { dislike_number: 1 } },
@@ -76,7 +76,7 @@ class ChildCommentClass {
     // Nếu đã like rồi thì bỏ like
     if (isLiked) {
       like_number = -1;
-      Promise.resolve(
+      await Promise.resolve(
         ChildCommentModel.findOneAndUpdate(
           { _id: comment_id, post },
           { $pull: { likes: user }, $inc: { like_number: -1 } },
@@ -85,7 +85,7 @@ class ChildCommentClass {
       );
     } else {
       // Nếu chưa like thì like
-      Promise.resolve(
+      await Promise.resolve(
         ChildCommentModel.findOneAndUpdate(
           { _id: comment_id, post },
           { $addToSet: { likes: user }, $inc: { like_number: 1 } },

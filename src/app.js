@@ -4,9 +4,7 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
-const { checkOverLoad } = require('./helpers/check.connect');
 const router = require('./routes/root.router');
-const { SenderMailServer } = require('./configs/mailTransport');
 
 // init middleware
 app.use(morgan('dev'));
@@ -26,27 +24,6 @@ app.use(
     extended: true
   })
 );
-
-// init db
-require('./database/init.mongodb');
-
-// init mail service
-SenderMailServer();
-
-// init rabbitmq
-const RabbitInit = require('./database/init.rabbit');
-RabbitInit.connectToRabbitMQ().then(({ channel, connection }) => {
-  global.__channel = channel;
-  global.__connection = connection;
-});
-
-// init redis
-// const RedisInit = require('./database/init.redis');
-// RedisInit.getInstanceRedis().then(redisClient => {
-//   global.__redisClient = redisClient;
-// });
-
-// checkOverLoad();
 
 // init routes
 app.use('/api/v1', router);

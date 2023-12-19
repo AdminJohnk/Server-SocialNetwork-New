@@ -211,7 +211,7 @@ class UserClass {
     return true;
   }
   static async createUser({ name, email, password, user_image }) {
-    const user = UserModel.create({
+    const user = await UserModel.create({
       name,
       email,
       password,
