@@ -167,7 +167,7 @@ class ChildCommentClass {
       { $project: { ...unGetSelectData(unselect) } },
       { $sort: sort },
       { $skip: skip },
-      { $limit: limit }
+      // { $limit: limit }
     ]);
   }
   static async createComment(payload) {
