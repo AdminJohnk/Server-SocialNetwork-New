@@ -39,7 +39,7 @@ class UserService {
       post
     });
 
-    PostClass.changeToArrayPost({
+    await PostClass.changeToArrayPost({
       post_id: post,
       type: 'save',
       user_id: user,
@@ -61,7 +61,7 @@ class UserService {
       owner_post
     });
 
-    PostClass.changeToArrayPost({
+    await PostClass.changeToArrayPost({
       post_id: post,
       type: 'like',
       user_id: user,

@@ -12,12 +12,7 @@ const { ChildCommentClass } = require('../models/childComment.model');
 const { PostClass } = require('../models/post.model');
 const NotificationService = require('../services/notification.service');
 const { Notification } = require('../utils/notificationType');
-const {
-  COMMENTPOST_001,
-  REPLYCOMMENT_001,
-  LIKECOMMENT_001,
-  DISLIKECOMMENT_001
-} = Notification;
+const { COMMENTPOST_001, REPLYCOMMENT_001, LIKECOMMENT_001, DISLIKECOMMENT_001 } = Notification;
 const PublisherService = require('../services/publisher.service');
 
 class CommentService {
@@ -31,8 +26,7 @@ class CommentService {
       const foundParentComment = await ParentCommentClass.checkExist({
         _id: comment_id
       });
-      if (!foundParentComment)
-        throw new NotFoundError('Parent comment not found');
+      if (!foundParentComment) throw new NotFoundError('Parent comment not found');
 
       const { dislike_number } = await ParentCommentClass.dislikeComment({
         comment_id,
@@ -44,8 +38,7 @@ class CommentService {
       const foundChildComment = await ChildCommentClass.checkExist({
         _id: comment_id
       });
-      if (!foundChildComment)
-        throw new NotFoundError('Child comment not found');
+      if (!foundChildComment) throw new NotFoundError('Child comment not found');
 
       const { dislike_number } = await ChildCommentClass.dislikeComment({
         comment_id,
@@ -82,8 +75,7 @@ class CommentService {
         _id: comment_id,
         user: owner_comment
       });
-      if (!foundParentComment)
-        throw new NotFoundError('Parent comment not found');
+      if (!foundParentComment) throw new NotFoundError('Parent comment not found');
 
       const { like_number } = await ParentCommentClass.likeComment({
         comment_id,
@@ -97,8 +89,7 @@ class CommentService {
         _id: comment_id,
         user: owner_comment
       });
-      if (!foundChildComment)
-        throw new NotFoundError('Child comment not found');
+      if (!foundChildComment) throw new NotFoundError('Child comment not found');
 
       const { like_number } = await ChildCommentClass.likeComment({
         comment_id,
@@ -132,8 +123,7 @@ class CommentService {
       const foundParentComment = await ParentCommentClass.checkExist({
         _id: comment_id
       });
-      if (!foundParentComment)
-        throw new NotFoundError('Parent comment not found');
+      if (!foundParentComment) throw new NotFoundError('Parent comment not found');
 
       return await ParentCommentClass.updateComment({
         comment_id,
@@ -145,8 +135,7 @@ class CommentService {
       const foundChildComment = await ChildCommentClass.checkExist({
         _id: comment_id
       });
-      if (!foundChildComment)
-        throw new NotFoundError('Child comment not found');
+      if (!foundChildComment) throw new NotFoundError('Child comment not found');
 
       return await ChildCommentClass.updateComment({
         comment_id,
@@ -164,8 +153,7 @@ class CommentService {
       const foundParentComment = await ParentCommentClass.checkExist({
         _id: comment_id
       });
-      if (!foundParentComment)
-        throw new NotFoundError('Parent comment not found');
+      if (!foundParentComment) throw new NotFoundError('Parent comment not found');
 
       // Xóa comment cha
       const result = await ParentCommentClass.deleteByID({
@@ -182,7 +170,7 @@ class CommentService {
       deletedCount++;
 
       // Cập nhật số comment của post
-      PostClass.changeToArrayPost({
+      await PostClass.changeToArrayPost({
         post_id: post,
         type: 'comment',
         number: -deletedCount,
@@ -193,8 +181,7 @@ class CommentService {
       const foundChildComment = await ChildCommentClass.checkExist({
         _id: comment_id
       });
-      if (!foundChildComment)
-        throw new NotFoundError('Child comment not found');
+      if (!foundChildComment) throw new NotFoundError('Child comment not found');
 
       const result = await ChildCommentClass.deleteByID({
         comment_id,
@@ -203,14 +190,14 @@ class CommentService {
       });
 
       // Cập nhật số lượng comment con của comment cha
-      ParentCommentClass.changeNumberComment({
+      await ParentCommentClass.changeNumberComment({
         comment_id: foundChildComment.parent,
         type: 'child',
         number: -1
       });
 
       // Cập nhật số comment của post
-      PostClass.changeToArrayPost({
+      await PostClass.changeToArrayPost({
         post_id: post,
         type: 'comment',
         number: -1,
@@ -220,22 +207,14 @@ class CommentService {
       return result;
     } else throw new BadRequestError('Type is not valid');
   }
-  static async getAllChildByParentID({
-    user,
-    post,
-    parent,
-    limit = 4,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllChildByParentID({ user, post, parent, limit = 4, page = 1, sort = { createdAt: -1 } }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
     const foundParentComment = await ParentCommentClass.checkExist({
       _id: parent
     });
-    if (!foundParentComment)
-      throw new NotFoundError('Parent comment not found');
+    if (!foundParentComment) throw new NotFoundError('Parent comment not found');
 
     return await ChildCommentClass.getAllChildByParentID({
       user,
@@ -246,13 +225,7 @@ class CommentService {
       sort
     });
   }
-  static async getAllParentComments({
-    user,
-    post,
-    limit = 4,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllParentComments({ user, post, limit = 4, page = 1, sort = { createdAt: -1 } }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -264,15 +237,7 @@ class CommentService {
       sort
     });
   }
-  static async commentPost({
-    type,
-    user,
-    parentUser,
-    post,
-    owner_post,
-    content,
-    parent
-  }) {
+  static async commentPost({ type, user, parentUser, post, owner_post, content, parent }) {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -290,8 +255,7 @@ class CommentService {
       const foundParentComment = await ParentCommentClass.checkExist({
         _id: parent
       });
-      if (!foundParentComment)
-        throw new NotFoundError('Parent comment not found');
+      if (!foundParentComment) throw new NotFoundError('Parent comment not found');
 
       result = await ChildCommentClass.createComment({
         post,
@@ -301,7 +265,7 @@ class CommentService {
       });
 
       // Cập nhật số lượng comment con của comment cha
-      ParentCommentClass.changeNumberComment({
+      await ParentCommentClass.changeNumberComment({
         comment_id: parent,
         type: 'child',
         number: 1
@@ -321,7 +285,7 @@ class CommentService {
     } else throw new BadRequestError('Type is not valid');
 
     // Cập nhật số comment của post
-    PostClass.changeToArrayPost({
+    await PostClass.changeToArrayPost({
       post_id: post,
       type: 'comment',
       number: 1,

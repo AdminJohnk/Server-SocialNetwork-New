@@ -5,13 +5,9 @@ const router = express.Router();
 const path = require('path');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const {
-  S3Client,
-  GetObjectCommand,
-  DeleteObjectCommand
-} = require('@aws-sdk/client-s3');
+const { S3Client, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { MessageModel } = require('../models/message.model');
+const { MessageModel } = require('../../models/message.model');
 const { default: mongoose } = require('mongoose');
 
 // var MessageSchema = new Schema(

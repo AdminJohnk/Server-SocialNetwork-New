@@ -21,9 +21,16 @@ const UserIncrModel = model(DOCUMENT_NAME, UserIncrSchema);
 class UserIncrClass {
   // get id_current
   static async getIdCurrent() {
-    return await UserIncrModel.findOne({
+    const result = await UserIncrModel.findOne({
       id: 'userIncr'
     }).lean();
+    if (!result) {
+      await UserIncrModel.create({});
+      return await UserIncrModel.findOne({
+        id: 'userIncr'
+      }).lean();
+    }
+    return result;
   }
   // set id_current
   static async setIncrId(newId) {

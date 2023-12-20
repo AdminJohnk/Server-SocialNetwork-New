@@ -1,0 +1,8 @@
+﻿email,password,description,return
+,,Test with no email and password,should return error
+,123456,Test with no email,should return error
+ln26805@gmai.com,,Test with no password,should return error
+ln26805,123456,Test with invalid email,should return error
+ln268056@gmail.com,123456,Test with wrong email,should return error
+ln26805@gmai.com,1234567,Test with wrong password,should return error
+ln26805@gmai.com,123456,Test with right email and password,should return user data and accessToken

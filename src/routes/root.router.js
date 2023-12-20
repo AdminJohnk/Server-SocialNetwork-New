@@ -2,6 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
+const limiter = require('../middlewares/preventSpam');
 const authRouter = require('./auth.router');
 const userRouter = require('./user.router');
 const postRouter = require('./post.router');
@@ -18,10 +19,10 @@ const { pushToLogDiscord } = require('../middlewares/logger.middleware');
 // add log to discord
 // router.use(pushToLogDiscord);
 
-// // check apiKey
+// check apiKey
 // router.use(checkApiKey);
 
-// // check permission
+// check permission
 // router.use(checkPermission('0000'));
 
 router.use('/auth', authRouter);
