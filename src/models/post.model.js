@@ -579,6 +579,9 @@ class PostClass {
   static async deletePost_admin({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
+  static async getPostNumber_admin() {
+    return await PostModel.countDocuments({ type: 'Post' });
+  }
 }
 
 //Export the model

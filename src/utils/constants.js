@@ -11,7 +11,7 @@ const HEADER = {
   GITHUB_TOKEN: 'x-github-token'
 };
 
-const avt_default = '1698572889773_fad78a0c51c688da37563828a1ffb880.png';
+const avt_default = 'default_avatar.png';
 
 const pp_UserDefault = '_id name email user_image last_online';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image', 'last_online'];

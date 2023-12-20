@@ -12,16 +12,22 @@ router.use(asyncHandler(checkIsAdmin));
 
 /// GET //
 // Get all users
-router.get('/users',asyncHandler(AdminController.getAllUsers));
+router.get('/users/:page/:pagesize',asyncHandler(AdminController.getAllUsers));
 
 // Find user by id
 router.get('/users/find/:user_id',asyncHandler(AdminController.findUserById));
 
+// Get user number
+router.get('/users/number',asyncHandler(AdminController.getUserNumber));
+
 // Get all posts
-router.get('/posts',asyncHandler(AdminController.getAllPosts));
+router.get('/posts/:page/:pagesize',asyncHandler(AdminController.getAllPosts));
 
 // Find post by id
 router.get('/posts/find/:post_id',asyncHandler(AdminController.findPostById));
+
+// Get post number
+router.get('/posts/number',asyncHandler(AdminController.getPostNumber));
 
 // Get all parent comment
 router.get('/comments/parents/:post_id',asyncHandler(AdminController.getAllParentComments));

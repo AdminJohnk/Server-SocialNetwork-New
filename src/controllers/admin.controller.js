@@ -4,6 +4,18 @@ const AdminService = require('../services/admin.service');
 const { OK, CREATED } = require('../core/success.response');
 
 class AdminController {
+  static getPostNumber = async (req, res, next) => {
+    new OK({
+      message: 'Get Post Number Successfully',
+      metadata: await AdminService.getPostNumber()
+    }).send(res);
+  }
+  static getUserNumber = async (req, res, next) => {
+    new OK({
+      message: 'Get User Number Successfully',
+      metadata: await AdminService.getUserNumber()
+    }).send(res);
+  }
   static deleteComment = async (req, res, next) => {
     new OK({
       message: 'Delete Comment Successfully',
@@ -107,7 +119,10 @@ class AdminController {
   static getAllPosts = async (req, res, next) => {
     new OK({
       message: 'Get All Posts Successfully',
-      metadata: await AdminService.getAllPosts({})
+      metadata: await AdminService.getAllPosts({
+        page: req.params.page,
+        limit: req.params.pagesize,
+      })
     }).send(res);
   };
   /* 
@@ -142,7 +157,10 @@ class AdminController {
   static getAllUsers = async (req, res, next) => {
     new OK({
       message: 'Get All Users Successfully',
-      metadata: await AdminService.getAllUsers({})
+      metadata: await AdminService.getAllUsers({
+        page: req.params.page,
+        limit: req.params.pagesize,
+      })
     }).send(res);
   };
   /* 

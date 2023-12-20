@@ -187,14 +187,14 @@ class ChildCommentClass {
       .lean();
   }
   static async updateComment_admin({ comment_id, content }) {
-    return await ParentCommentModel.findByIdAndUpdate(
+    return await ChildCommentModel.findByIdAndUpdate(
       comment_id,
       { content },
       { new: true }
     );
   }
   static async deleteComment_admin({ comment_id }) {
-    return await ParentCommentModel.findByIdAndDelete(comment_id);
+    return await ChildCommentModel.findByIdAndDelete(comment_id);
   }
   static async getAllChildComments_admin({ parent, limit, page, sort }) {
     const skip = (page - 1) * limit;

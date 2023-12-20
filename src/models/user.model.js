@@ -297,6 +297,9 @@ class UserClass {
   static createUser_admin = async ({ name, email, password }) => {
     return await UserModel.create({ name, email, password });
   };
+  static getUserNumber_admin = async () => {
+    return await UserModel.countDocuments();
+  };
 }
 
 //Export the model

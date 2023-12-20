@@ -24,32 +24,82 @@ const { CREATEPOST_001 } = Notification;
 
 class AdminService {
   // ======================== Comment ========================
-  static deleteComment = async ({ comment_id, type }) => {
-    const foundComment = await ParentCommentClass.checkExist({
-      _id: comment_id
-    });
-    if (!foundComment) throw new NotFoundError('Comment not found');
+  static deleteComment = async ({ comment_id, post, user, type }) => {
+    const foundPost = await PostClass.checkExist({ _id: post });
+    if (!foundPost) throw new NotFoundError('Post not found');
 
     if (type === 'parent') {
-      return await ParentCommentClass.deleteComment_admin({ comment_id });
+      const foundComment = await ParentCommentClass.checkExist({
+        _id: comment_id
+      });
+      if (!foundComment) throw new NotFoundError('Comment not found');
+
+      // Xóa comment cha
+      const result = await ParentCommentClass.deleteComment_admin({
+        comment_id
+      });
+
+      // Xóa tất cả comment con
+      let { deletedCount } = await ChildCommentClass.deleteByParentID({
+        parent: comment_id,
+        post
+      });
+      deletedCount++;
+
+      // Cập nhật số comment của post
+      PostClass.changeToArrayPost({
+        post_id: post,
+        type: 'comment',
+        number: -deletedCount,
+        user_id: user
+      });
+      return result;
     } else if (type === 'child') {
-      return await ChildCommentClass.deleteComment_admin({ comment_id });
+      const foundComment = await ChildCommentClass.checkExist({
+        _id: comment_id
+      });
+      if (!foundComment) throw new NotFoundError('Comment not found');
+
+      const result = await ChildCommentClass.deleteComment_admin({
+        comment_id
+      });
+
+      // Cập nhật số lượng comment con của comment cha
+      ParentCommentClass.changeNumberComment({
+        comment_id: foundComment.parent,
+        type: 'child',
+        number: -1
+      });
+
+      // Cập nhật số comment của post
+      PostClass.changeToArrayPost({
+        post_id: post,
+        type: 'comment',
+        number: -1,
+        user_id: user
+      });
+
+      return result;
     } else {
       throw new BadRequestError('Type of comment is invalid');
     }
-  }
+  };
   static updateComment = async ({ comment_id, content, type }) => {
-    const foundComment = await ParentCommentClass.checkExist({
-      _id: comment_id
-    });
-    if (!foundComment) throw new NotFoundError('Comment not found');
-
     if (type === 'parent') {
+      const foundComment = await ParentCommentClass.checkExist({
+        _id: comment_id
+      });
+      if (!foundComment) throw new NotFoundError('Comment not found');
+
       return await ParentCommentClass.updateComment_admin({
         comment_id,
         content
       });
     } else if (type === 'child') {
+      const foundComment = await ChildCommentClass.checkExist({
+        _id: comment_id
+      });
+      if (!foundComment) throw new NotFoundError('Comment not found');
       return await ChildCommentClass.updateComment_admin({
         comment_id,
         content
@@ -84,8 +134,11 @@ class AdminService {
       page,
       sort
     });
-  }
+  };
   // ======================== Post ========================
+  static async getPostNumber() {
+    return await PostClass.getPostNumber_admin();
+  }
   static async createPost({
     type = 'Post',
     email,
@@ -146,7 +199,25 @@ class AdminService {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    return await PostClass.deletePost_admin({ post_id });
+    const result = await PostClass.deletePost_admin({ post_id });
+
+    // Xóa post trong community
+    if (scope === 'Community') {
+      await CommunityClass.changeToArrayCommunity({
+        community_id: community,
+        type: 'post',
+        itemID: result._id,
+        number: -1
+      });
+    }
+
+    UserClass.changeNumberUser({
+      user_id,
+      type: 'post',
+      number: -1
+    }).catch(err => console.log(err));
+
+    return result;
   };
   static updatePost = async ({
     post_id,
@@ -181,6 +252,9 @@ class AdminService {
   };
 
   // ======================== User ========================
+  static getUserNumber = async () => {
+    return await UserClass.getUserNumber_admin();
+  };
   static createUser = async ({ name, email, password }) => {
     const foundUser = await UserClass.checkExist({ email });
     if (foundUser) throw new ConflictRequestError('Email already exist');
