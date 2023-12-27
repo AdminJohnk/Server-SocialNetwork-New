@@ -205,6 +205,21 @@ class PostController {
       })
     }).send(res);
   };
+
+  /* 
+    Get Posts By Title
+    Link: http://localhost:4052/api/v1/posts/search/top?search=con
+  */
+  static getPostsByTitle = async (req, res, next) => {
+    new OK({
+      message: 'Get Posts By Title Successfully',
+      metadata: await PostService.getPostsByTitle({
+        search: req.query.search,
+        page: req.query.page,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  };
 }
 
 module.exports = PostController;

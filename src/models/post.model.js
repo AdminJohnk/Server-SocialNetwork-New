@@ -8,6 +8,7 @@ const {
   unSe_PostDefault,
   se_UserDefaultForPost
 } = require('../utils/constants');
+const { FriendClass } = require('./friend.model');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Post';
@@ -281,7 +282,7 @@ class PostClass {
     let numShare = 1;
 
     if (sharedPost) {
-     await Promise.resolve(PostModel.deleteOne(sharedPost._id));
+      await Promise.resolve(PostModel.deleteOne(sharedPost._id));
       numShare = -1;
     } else await PostModel.create({ type, post_attributes });
 
@@ -312,6 +313,43 @@ class PostClass {
     });
     return foundPost;
   }
+
+  static async getPostsByTitle({ search, me_id, limit, skip, sort, isFullSearch = false }) {
+    const friends = await FriendClass.getAllFriends({ user_id: me_id });
+    let condition = {
+      $or: [
+        {
+          $and: [
+            { 'post_attributes.title': { $regex: search, $options: 'i' } },
+            { 'visibility': { $eq: 'public' } },
+          ]
+        },
+        {
+          $and: [
+            { 'post_attributes.user': new ObjectId(me_id) },
+            { 'post_attributes.title': { $regex: search, $options: 'i' } }
+          ]
+        },
+        {
+          $and: [
+            { 'post_attributes.user': { $in: friends } },
+            { 'visibility': { $ne: 'private' } },
+            { 'post_attributes.title': { $regex: search, $options: 'i' } }
+          ]
+        }
+      ]
+    };
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id,
+      limit,
+      skip,
+      isFullSearch,
+      sort
+    });
+    return foundPost;
+  }
+
   static async findByID({ post_id, user, scope, isFullSearch = false }) {
     let condition = {
       _id: new ObjectId(post_id),
@@ -329,35 +367,14 @@ class PostClass {
     isFullSearch = false,
     sortBy
   }) {
-    const additionalCondition1 = {
-      $lookup: {
-        from: 'friends',
-        let: { temp: '$post_attributes.user' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$friends'] }]
-              }
-            }
-          }
-        ],
-        as: 'lookup'
-      }
-    };
-
+    const friends = await FriendClass.getAllFriends({ user_id: me_id });
     const additionalCondition2 = {
       $match: {
         $or: [
           { visibility: 'public' },
           {
             visibility: 'friend',
-            $expr: {
-              $or: [
-                { $gt: [{ $size: '$lookup' }, 0] },
-                { $eq: ['$post_attributes.user', new ObjectId(me_id)] }
-              ]
-            }
+            'post_attributes.user': { $in: friends }
           }
         ]
       }
@@ -395,34 +412,18 @@ class PostClass {
       // ===========================================
 
       {
-        $lookup: {
-          from: 'friends',
-          let: { id: '$post_attributes.user._id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
-                }
-              }
-            }
-          ],
-          as: 'friend'
-        }
-      },
-      {
         $addFields: {
           'post_attributes.user.is_friend': {
-            $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false }
+            $cond: { if: { $in: ['$post_attributes.user', friends] }, then: true, else: false }
           }
         }
       },
 
-      { $project: { ...unGetSelectData(unSe_PostDefault), friend: 0, lookup: 0 } }
+      { $project: { ...unGetSelectData(unSe_PostDefault) } }
     ];
 
     if (!isFullSearch) {
-      aggregatePipeline.unshift(additionalCondition1, additionalCondition2);
+      aggregatePipeline.unshift(additionalCondition2);
     }
 
     let foundPost = await PostModel.aggregate(aggregatePipeline);
@@ -516,6 +517,7 @@ class PostClass {
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();
   }
+
 }
 
 //Export the model

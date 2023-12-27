@@ -30,6 +30,9 @@ router.get('/request_sent', asyncHandler(UserController.getRequestsSent));
 // Get request received list
 router.get('/request_received', asyncHandler(UserController.getRequestsReceived));
 
+// Get Users By Name
+router.get('/search/top', asyncHandler(UserController.getUsersByName));
+
 // =========================================================
 
 /// POST //

@@ -216,6 +216,13 @@ class UserService {
       user_id
     });
   }
+  static async getUsersByName({ search, limit, skip }) {
+    return await UserClass.searchUsersByName({
+      search,
+      limit,
+      skip
+    });
+  }
 }
 
 module.exports = UserService;
