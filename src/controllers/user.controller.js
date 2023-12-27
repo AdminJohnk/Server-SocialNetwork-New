@@ -214,6 +214,19 @@ class UserController {
       })
     }).send(res);
   };
+
+  /**
+   * Get Users By Name
+   */
+  static getUsersByName = async (req, res, next) => {
+    new OK({
+      message: 'Get Users By Name Successfully',
+      metadata: await UserService.getUsersByName({
+        search: req.query.search,
+        page: req.query.page
+      })
+    }).send(res);
+  }
 }
 
 module.exports = UserController;

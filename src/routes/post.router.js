@@ -36,6 +36,8 @@ router.get('/save/:post_id', asyncHandler(PostController.getAllUserSavePost));
 //Get all saved posts
 router.get('/saved', asyncHandler(PostController.getSavedPosts));
 
+// Get Posts By Title
+router.get('/search/top', asyncHandler(PostController.getPostsByTitle));
 
 
 // =========================================================
