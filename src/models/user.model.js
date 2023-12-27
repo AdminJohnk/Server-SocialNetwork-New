@@ -203,7 +203,7 @@ class UserClass {
     return result[0];
   }
   static async findByEmail({ email }) {
-    return await UserModel.findOne({ email }).select({ password: 1 });
+    return await UserModel.findOne({ email }).select({ password: 1, email: 1, name: 1 }).lean();
   }
   static async deleteUser({ user_id }) {
     const user = await UserModel.findByIdAndDelete(user_id).lean();

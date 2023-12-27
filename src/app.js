@@ -8,7 +8,7 @@ const router = require('./routes/root.router');
 
 // init middleware
 app.use(morgan('dev'));
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: { directives: { 'script-src': ["'self'", "'unsafe-inline'"] } } }));
 app.use(compression());
 app.use(express.json());
 app.use(

@@ -12,6 +12,12 @@ router.post('/signup', asyncHandler(AuthController.signUp));
 // Login
 router.post('/login', asyncHandler(AuthController.login));
 
+// Login Google
+router.post('/login-google', asyncHandler(AuthController.loginGoogle));
+
+// Login Github
+router.get('/login-github', asyncHandler(AuthController.loginGithub));
+
 // Forgot Password
 router.post('/forgot', asyncHandler(AuthController.forgotPassword));
 
