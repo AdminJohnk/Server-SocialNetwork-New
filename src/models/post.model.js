@@ -119,7 +119,7 @@ class PostClass {
   }
   static async viewPost({ post_id, user_id, cookies, res }) {
     // Check if the post has already been viewed
-    let viewedPosts = cookies?.viewedPosts || [];
+    let viewedPosts = cookies?.viewedPosts || '';
     if (viewedPosts.includes(post_id)) {
       return await this.findByID({ post_id });
     }
@@ -132,10 +132,7 @@ class PostClass {
     });
 
     // Add post to viewedPosts
-    viewedPosts.push(post_id);
-    res.cookie('viewedPosts', viewedPosts, {
-      maxAge: 12 * 60 * 60 * 1000 // 12 hours
-    });
+    viewedPosts += `${post_id},`;
 
     return { viewedPosts };
   }
