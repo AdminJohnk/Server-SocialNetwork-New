@@ -17,8 +17,8 @@ class PostController {
     new OK({
       message: 'View Post Successfully',
       metadata: await PostService.viewPost({
-        ...req,
         res,
+        cookies: req.cookies,
         post_id: req.params.post_id,
         user_id: req.user.userId
       })

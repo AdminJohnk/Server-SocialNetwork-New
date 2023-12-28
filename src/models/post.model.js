@@ -137,7 +137,7 @@ class PostClass {
       maxAge: 12 * 60 * 60 * 1000 // 12 hours
     });
 
-    return await this.findByID({ post_id });
+    return { viewedPosts };
   }
   static async getAllPopularPost({ user_id, limit, skip, sort, scope, sortBy }) {
     let condition = { scope, type: 'Post' };
@@ -321,7 +321,7 @@ class PostClass {
         {
           $and: [
             { 'post_attributes.title': { $regex: search, $options: 'i' } },
-            { 'visibility': { $eq: 'public' } },
+            { visibility: { $eq: 'public' } }
           ]
         },
         {
@@ -333,7 +333,7 @@ class PostClass {
         {
           $and: [
             { 'post_attributes.user': { $in: friends } },
-            { 'visibility': { $ne: 'private' } },
+            { visibility: { $ne: 'private' } },
             { 'post_attributes.title': { $regex: search, $options: 'i' } }
           ]
         }
@@ -517,7 +517,6 @@ class PostClass {
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();
   }
-
 }
 
 //Export the model
