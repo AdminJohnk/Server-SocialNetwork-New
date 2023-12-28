@@ -217,7 +217,6 @@ class UserService {
     });
   }
   static async getUsersByName({ search, me_id, page }) {
-    if (search === '') return null;
     return await UserClass.searchUsersByName({
       search,
       me_id,
