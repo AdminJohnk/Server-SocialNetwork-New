@@ -278,7 +278,6 @@ class AuthService {
       });
 
       if (!keyStore) throw new BadRequestError("Can't create keyStore!");
-      console.log('foundUser', foundUser);
       return {
         user: getInfoData({
           fields: ['_id', 'name', 'email'],

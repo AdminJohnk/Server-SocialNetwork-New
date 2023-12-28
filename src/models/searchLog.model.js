@@ -16,8 +16,9 @@ const SearchLogSchema = new Schema(
       type: [String],
       default: []
     },
-    recently_search: {
+    recently_search_list: {
       type: [ObjectId],
+      ref: 'User',
       default: []
     }
   },
@@ -36,24 +37,35 @@ class SearchLogClass {
     if (!foundSearchLog) {
       const newSearchLog = await SearchLogModel.create({
         user,
-        keywords: [keyword],
-        recently_search
+        keywords: keyword ? [keyword] : [],
+        recently_search_list: recently_search ? [recently_search] : []
       });
       return newSearchLog;
     }
     const { keywords } = foundSearchLog;
-    const newKeywords = new Set([...keywords, keyword]);
-    await SearchLogModel.updateOne({ user }, { keywords: [...newKeywords] });
+    const { recently_search_list } = foundSearchLog;
+    if (keyword && !keywords.includes(keyword)) {
+      keywords.push(keyword);
+    }
+    if (recently_search && !recently_search_list.includes(recently_search)) {
+      recently_search_list.push(recently_search);
+    }
+    await SearchLogModel.updateOne(
+      { user },
+      {
+        keywords,
+        recently_search_list
+      }
+    );
     return foundSearchLog;
   }
   static async getSearchLog({ user }) {
     const foundSearchLog = await SearchLogModel.findOne({ user }).populate({
-      path: 'recently_search',
+      path: 'recently_search_list',
       select: '_id name user_image'
     });
     if (!foundSearchLog) return [];
-    const { recently_search } = foundSearchLog;
-    return recently_search;
+    return foundSearchLog;
   }
 }
 
