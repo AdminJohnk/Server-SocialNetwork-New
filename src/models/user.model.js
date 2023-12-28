@@ -140,7 +140,7 @@ class UserClass {
   }
   static async searchUsersByName({ search, limit, skip }) {
     const regexSearch = new RegExp(search, 'i'); // 'i' makes it case insensitive
-    const users = await UserModel.find({ name: regexSearch })
+    const users = await UserModel.find({ $text: { $search: regexSearch } })
       .limit(limit)
       .skip(skip)
       .lean();
