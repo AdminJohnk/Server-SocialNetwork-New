@@ -11,6 +11,7 @@ const NotiRouter = require('./notification.router');
 const ChatRouter = require('./chat.router');
 const CommunityRouter = require('./community.router');
 const ImageRouter = require('./image.router');
+const SearchLogRouter = require('./searchLog.router');
 const TestRouter = require('../test/Nhap/tes');
 const { checkApiKey, checkPermission } = require('../auth/checkAuth');
 const { pushToLogDiscord } = require('../middlewares/logger.middleware');
@@ -33,6 +34,7 @@ router.use('/notifications', limiter, NotiRouter);
 router.use('/comments', limiter, CommentRouter);
 router.use('/posts', limiter, postRouter);
 router.use('/users', limiter, userRouter);
+router.use('/searchlog', limiter, SearchLogRouter);
 router.use('/test', limiter, TestRouter);
 
 module.exports = router;
