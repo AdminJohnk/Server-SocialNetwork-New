@@ -223,7 +223,8 @@ class UserController {
       message: 'Get Users By Name Successfully',
       metadata: await UserService.getUsersByName({
         search: req.query.search,
-        page: req.query.page
+        page: req.query.page,
+        me_id: req.user.userId,
       })
     }).send(res);
   }

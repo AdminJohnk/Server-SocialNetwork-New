@@ -326,6 +326,8 @@ class PostService {
   }
 
   static async getPostsByTitle({ search, me_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    if (search === '') return null;
+
     const skip = (page - 1) * limit;
 
     const isFullSearch = true;

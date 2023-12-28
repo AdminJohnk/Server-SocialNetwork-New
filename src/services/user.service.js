@@ -216,11 +216,12 @@ class UserService {
       user_id
     });
   }
-  static async getUsersByName({ search, limit, skip }) {
+  static async getUsersByName({ search, me_id, page }) {
+    if (search === '') return null;
     return await UserClass.searchUsersByName({
       search,
-      limit,
-      skip
+      me_id,
+      page
     });
   }
 }

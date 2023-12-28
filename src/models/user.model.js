@@ -138,12 +138,50 @@ class UserClass {
 
     return result;
   }
-  static async searchUsersByName({ search, limit, skip }) {
-    const regexSearch = new RegExp(search, 'i'); // 'i' makes it case insensitive
-    const users = await UserModel.find({ $text: { $search: regexSearch } })
-      .limit(limit)
-      .skip(skip)
-      .lean();
+  static async searchUsersByName({ search, me_id, page = 1 }) {
+    const limit = 10;
+    const skip = (Number.parseInt(page) - 1) * limit;
+    const unselect = ['password'];
+    const users = await UserModel.aggregate([
+      {
+        $match: {
+          $text: { $search: search }
+        }
+      },
+      {
+        $lookup: {
+          from: 'friends',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+        }
+      },
+      {
+        $project: { ...unGetSelectData(unselect), friend: 0 }
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: limit
+      },
+      {
+        $sort: { name: 1 }
+      }
+    ])
     return users;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
