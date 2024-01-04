@@ -64,7 +64,7 @@ class SearchLogClass {
       path: 'recently_search_list',
       select: '_id name user_image'
     });
-    if (!foundSearchLog) return [];
+    if (!foundSearchLog) return null;
     return foundSearchLog;
   }
 }
