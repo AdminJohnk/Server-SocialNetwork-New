@@ -10,6 +10,9 @@ class SearchLogService {
   static async getSearchLog({ user }) {
     return await SearchLogClass.getSearchLog({ user });
   }
+  static async deleteSearchLog({ user,keyword, recently_search }) {
+    return await SearchLogClass.deleteSearchLog({ user, keyword, recently_search });
+  }
 }
 
 module.exports = SearchLogService;

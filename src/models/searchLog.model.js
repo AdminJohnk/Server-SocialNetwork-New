@@ -81,6 +81,32 @@ class SearchLogClass {
     if (!foundSearchLog) return null;
     return foundSearchLog;
   }
+  static async deleteSearchLog({ user, keyword, recently_search }) {
+    const foundSearchLog = await SearchLogModel.findOne({ user });
+    if (!foundSearchLog) return null;
+    const { keywords } = foundSearchLog;
+    const { recently_search_list } = foundSearchLog;
+    if (keyword) {
+      const index = keywords.indexOf(keyword);
+      if (index > -1) {
+        keywords.splice(index, 1);
+      }
+    }
+    if (recently_search) {
+      const index = recently_search_list.indexOf(recently_search);
+      if (index > -1) {
+        recently_search_list.splice(index, 1);
+      }
+    }
+    await SearchLogModel.updateOne(
+      { user },
+      {
+        keywords,
+        recently_search_list
+      }
+    );
+    return foundSearchLog;
+  }
 }
 
 module.exports = {

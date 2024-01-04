@@ -21,6 +21,15 @@ class SearchLogController {
       })
     }).send(res);
   }
+  static async deleteSearchLog(req, res, next) {
+    new OK({
+      message: 'Delete Search Log Successfully',
+      metadata: await SearchLogService.deleteSearchLog({
+        user: req.user.userId,
+        ...req.body
+      })
+    }).send(res);
+  }
 }
 
 module.exports = SearchLogController;

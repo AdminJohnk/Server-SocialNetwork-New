@@ -15,4 +15,7 @@ router.get('/', asyncHandler(SearchLogController.getSearchLog));
 // Create Search Log
 router.post('/', asyncHandler(SearchLogController.createSearchLog));
 
+// Delete Search Log
+router.put('/', asyncHandler(SearchLogController.deleteSearchLog));
+
 module.exports = router;
