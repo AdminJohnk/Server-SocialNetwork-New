@@ -311,29 +311,23 @@ class PostClass {
     return foundPost;
   }
 
-  static async getPostsByTitle({ search, me_id, limit, skip, sort, isFullSearch = false }) {
+  static async searchPosts({ search, me_id, limit, skip, sort, isFullSearch = false }) {
     const friends = await FriendClass.getAllFriends({ user_id: me_id });
+    
+    const searchRegex = { $regex: search, $options: 'i' };
+    const userSearch = { 'post_attributes.user': new ObjectId(me_id) };
+    const friendSearch = { 'post_attributes.user': { $in: friends } };
+    const publicVisibility = { visibility: { $eq: 'public' } };
+    const nonPrivateVisibility = { visibility: { $ne: 'private' } };
+
     let condition = {
       $or: [
-        {
-          $and: [
-            { 'post_attributes.title': { $regex: search, $options: 'i' } },
-            { visibility: { $eq: 'public' } }
-          ]
-        },
-        {
-          $and: [
-            { 'post_attributes.user': new ObjectId(me_id) },
-            { 'post_attributes.title': { $regex: search, $options: 'i' } }
-          ]
-        },
-        {
-          $and: [
-            { 'post_attributes.user': { $in: friends } },
-            { visibility: { $ne: 'private' } },
-            { 'post_attributes.title': { $regex: search, $options: 'i' } }
-          ]
-        }
+        { $and: [{ 'post_attributes.title': searchRegex }, publicVisibility] },
+        { $and: [userSearch, { 'post_attributes.title': searchRegex }] },
+        { $and: [friendSearch, nonPrivateVisibility, { 'post_attributes.content': searchRegex }] },
+        { $and: [{ 'post_attributes.content': searchRegex }, publicVisibility] },
+        { $and: [userSearch, { 'post_attributes.content': searchRegex }] },
+        { $and: [friendSearch, nonPrivateVisibility, { 'post_attributes.content': searchRegex }] }
       ]
     };
     let foundPost = await this.findPostByAggregate({

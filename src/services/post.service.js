@@ -325,12 +325,12 @@ class PostService {
     return await PostClass.getSavedPosts({ user_id, limit, skip, sort });
   }
 
-  static async getPostsByTitle({ search, me_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async searchPosts({ search, me_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const isFullSearch = true;
 
-    return await PostClass.getPostsByTitle({ search, me_id, limit, skip, isFullSearch, sort });
+    return await PostClass.searchPosts({ search, me_id, limit, skip, isFullSearch, sort });
   }
 }
 
