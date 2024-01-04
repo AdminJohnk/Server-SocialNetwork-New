@@ -15,6 +15,15 @@ const avt_default = 'default_avatar.png';
 
 const pp_UserDefault = '_id name email user_image last_online';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image', 'last_online'];
+const se_UserAdmin = [
+  '_id',
+  'name',
+  'email',
+  'user_image',
+  'experiences',
+  'tags',
+  'post_number',
+];
 
 const se_UserDefaultForPost = [
   '_id',
@@ -51,6 +60,7 @@ module.exports = {
   RoleUser,
   avt_default,
   se_UserDefault,
+  se_UserAdmin,
   pp_UserDefault,
   se_UserDefaultForPost,
   objectConnectRedis,

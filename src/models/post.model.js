@@ -75,7 +75,7 @@ PostSchema.index({ 'post_attributes.view_number': 1, createdAt: -1 });
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
-const addFieldsObject = (user) => {
+const addFieldsObject = user => {
   return {
     is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
     is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
@@ -89,12 +89,15 @@ const choosePopulateAttr = ({ from, attribute, select }) => {
     $lookup: {
       from: from,
       let: { temp: '$post_attributes.' + attribute },
-      pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$temp'] } } }, { $project: select }],
+      pipeline: [
+        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
+        { $project: select }
+      ],
       as: 'post_attributes.' + attribute
     }
   };
 };
-const getFirstElement = (attribute) => {
+const getFirstElement = attribute => {
   return {
     $addFields: {
       [`post_attributes.${attribute}`]: {
@@ -136,7 +139,14 @@ class PostClass {
 
     return { viewedPosts };
   }
-  static async getAllPopularPost({ user_id, limit, skip, sort, scope, sortBy }) {
+  static async getAllPopularPost({
+    user_id,
+    limit,
+    skip,
+    sort,
+    scope,
+    sortBy
+  }) {
     let condition = { scope, type: 'Post' };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -254,10 +264,14 @@ class PostClass {
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
-  static async updatePost({ post_id, user_id, payload }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload, {
-      new: true
-    }).lean();
+  static async updatePost({ post_id, user_id, post_attributes }) {
+    const postUpdate = await PostModel.findByIdAndUpdate(
+      post_id,
+      post_attributes,
+      {
+        new: true
+      }
+    ).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
@@ -298,7 +312,15 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort, scope, isFullSearch = false }) {
+  static async getAllPostByUserId({
+    user_id,
+    me_id,
+    limit,
+    skip,
+    sort,
+    scope,
+    isFullSearch = false
+  }) {
     let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -346,7 +368,11 @@ class PostClass {
       _id: new ObjectId(post_id),
       scope
     };
-    let foundPost = await this.findPostByAggregate({ condition, me_id: user, isFullSearch });
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id: user,
+      isFullSearch
+    });
     return foundPost[0];
   }
   static async findPostByAggregate({
@@ -419,14 +445,14 @@ class PostClass {
 
     let foundPost = await PostModel.aggregate(aggregatePipeline);
 
-    foundPost.map((post) => {
+    foundPost.map(post => {
       if (post.type === 'Post') {
         delete post.post_attributes.post;
         delete post.post_attributes.owner_post;
       }
     });
 
-    foundPost = foundPost.filter((item) => {
+    foundPost = foundPost.filter(item => {
       const date = new Date(item.createdAt);
       const dateNow = new Date();
       const diffTime = Math.abs(dateNow.getTime() - date.getTime());
@@ -451,8 +477,17 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content, images, link, scope, community, visibility }) {
-    const post_attributes = { user, title, content, images, link };
+  static async createPost({
+    type,
+    user,
+    title,
+    content,
+    images,
+    scope,
+    community,
+    visibility
+  }) {
+    const post_attributes = { user, title, content, images };
     const newPost = await PostModel.create({
       type,
       scope,
@@ -507,6 +542,37 @@ class PostClass {
   }
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();
+  }
+  // ================= ADMIN =================
+  static async getAllPosts_admin({ limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    return await PostModel.find({
+      type: 'Post'
+    })
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .populate('post_attributes.user', pp_UserDefault)
+      .lean();
+  }
+  static async findPostById_admin({ post_id }) {
+    return await PostModel.findById(post_id);
+  }
+  static async updatePost_admin({ post_id, visibility, post_attributes }) {
+    console.log('post_attributes:: ', post_attributes);
+    return await PostModel.findByIdAndUpdate(
+      post_id,
+      { visibility, ...post_attributes },
+      {
+        new: true
+      }
+    ).lean();
+  }
+  static async deletePost_admin({ post_id }) {
+    return await PostModel.findByIdAndDelete(post_id).lean();
+  }
+  static async getPostNumber_admin() {
+    return await PostModel.countDocuments({ type: 'Post' });
   }
 }
 

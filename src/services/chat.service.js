@@ -42,7 +42,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all admins
-    const foundUsers = await UserClass.checkExist({ _id: { $in: admins } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: admins } });
     if (foundUsers.length !== admins.length) throw new NotFoundError('User not found');
 
     // Check is admins
@@ -68,7 +68,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     // Check is members
@@ -179,7 +179,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     return await ConversationClass.deleteMemberFromConversation({
@@ -201,7 +201,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     return await ConversationClass.addMemberToConversation({
@@ -302,7 +302,7 @@ class ChatService {
   };
   static createConverSation = async ({ type, name, members, user }) => {
     // check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     return await ConversationClass.createConverSation({
