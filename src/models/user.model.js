@@ -2,12 +2,7 @@
 
 const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData, getSelectData } = require('../utils/functions');
-const {
-  avt_default,
-  se_UserDefault,
-  RoleUser,
-  se_UserAdmin
-} = require('../utils/constants');
+const { avt_default, se_UserDefault, RoleUser, se_UserAdmin } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 const { UserIncrClass } = require('./user_incr.model');
 
@@ -186,7 +181,7 @@ class UserClass {
       {
         $sort: { name: 1 }
       }
-    ])
+    ]);
     return users;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
@@ -318,19 +313,9 @@ class UserClass {
   static findUserById_admin = async ({ user_id }) => {
     return await UserModel.findById(user_id).lean();
   };
-  static getAllUsers_admin = async ({
-    limit,
-    page,
-    sort,
-    select = se_UserAdmin
-  }) => {
+  static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
     const skip = (page - 1) * limit;
-    return await UserModel.find()
-      .limit(limit)
-      .skip(skip)
-      .select(getSelectData(select))
-      .sort(sort)
-      .lean();
+    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
   };
   static updateUser_admin = async ({ user_id, payload }) => {
     return await UserModel.findByIdAndUpdate(user_id, payload, {

@@ -12,7 +12,7 @@ class UserController {
         email: req.params.email
       })
     }).send(res);
-  }
+  };
   /* 
     Delete User
   */
