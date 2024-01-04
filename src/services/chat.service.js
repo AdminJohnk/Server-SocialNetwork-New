@@ -331,7 +331,7 @@ class ChatService {
       if (!foundRoom) {
         first_call = true;
         cache.set(roomName, foundUser[0]);
-        await roomService.createRoom({ name: roomName, emptyTimeout: 2 });
+        await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
       }
     });
 
