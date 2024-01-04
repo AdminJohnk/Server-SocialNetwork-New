@@ -224,10 +224,10 @@ class UserController {
       metadata: await UserService.getUsersByName({
         search: req.query.search,
         page: req.query.page,
-        me_id: req.user.userId,
+        me_id: req.user.userId
       })
     }).send(res);
-  }
+  };
 }
 
 module.exports = UserController;

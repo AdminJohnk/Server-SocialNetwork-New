@@ -45,10 +45,24 @@ class SearchLogClass {
     const { keywords } = foundSearchLog;
     const { recently_search_list } = foundSearchLog;
     if (keyword && !keywords.includes(keyword)) {
-      keywords.push(keyword);
+      keywords.unshift(keyword);
+      if (keywords.length > 3) keywords.pop();
+    } else {
+      const index = keywords.indexOf(keyword);
+      if (index > -1) {
+        keywords.splice(index, 1);
+        keywords.unshift(keyword);
+      }
     }
     if (recently_search && !recently_search_list.includes(recently_search)) {
-      recently_search_list.push(recently_search);
+      recently_search_list.unshift(recently_search);
+      if (recently_search_list.length > 3) recently_search_list.pop();
+    } else {
+      const index = recently_search_list.indexOf(recently_search);
+      if (index > -1) {
+        recently_search_list.splice(index, 1);
+        recently_search_list.unshift(recently_search);
+      }
     }
     await SearchLogModel.updateOne(
       { user },

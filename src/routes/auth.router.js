@@ -18,6 +18,9 @@ router.post('/login-google', asyncHandler(AuthController.loginGoogle));
 // Login Github
 router.get('/login-github', asyncHandler(AuthController.loginGithub));
 
+// Get Token Repo Github
+router.get('/repo-github', asyncHandler(AuthController.getTokenRepoGithub));
+
 // Forgot Password
 router.post('/forgot', asyncHandler(AuthController.forgotPassword));
 
@@ -32,9 +35,6 @@ router.post('/checkVerify', asyncHandler(AuthController.checkVerify));
 
 // Check reset
 router.post('/checkReset', asyncHandler(AuthController.checkReset));
-
-// Get Repository Github
-router.get('/github', asyncHandler(AuthController.callbackGithub));
 
 // Authentication
 router.use(authentication);

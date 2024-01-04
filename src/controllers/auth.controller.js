@@ -39,9 +39,9 @@ class AuthController {
   static loginGithub = async (req, res, next) => {
     const result = await AuthService.loginWithGithubService(req.query);
     return res.redirect(
-      `${process.env.CLIENT_URL}/login-callback?${qs.stringify(result.tokens)}&_id=${result.user._id}&${qs.stringify(
-        result.user
-      )}&accessTokenGitHub=${result.accessTokenGitHub}`
+      `${process.env.CLIENT_URL}/login-callback?${qs.stringify(result.tokens)}&_id=${
+        result.user._id
+      }&${qs.stringify(result.user)}&accessTokenGitHub=${result.accessTokenGitHub}`
     );
   };
 
@@ -87,13 +87,11 @@ class AuthController {
     }).send(res);
   };
 
-  static callbackGithub = async (req, res, next) => {
-    new OK({
-      message: 'Get Repository Github Successfully',
-      metadata: await AuthService.callbackGithub({
-        code: req.query.code
-      })
-    }).send(res);
+  static getTokenRepoGithub = async (req, res, next) => {
+    const result = await AuthService.getTokenRepoGithub(req.query);
+    return res.redirect(
+      `${process.env.CLIENT_URL}/repo-callback?accessTokenGitHub=${result.accessTokenGitHub}`
+    );
   };
 }
 
