@@ -330,17 +330,17 @@ class ChatService {
       const foundRoom = rooms.find((room) => room.name === roomName);
       if (!foundRoom) {
         first_call = true;
-        cache.set(roomName, foundUser[0]);
+        cache.set(roomName, foundUser);
         await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
       }
     });
 
-    const participantName = foundUser[0].name;
+    const participantName = foundUser.name;
 
     const at = new AccessToken(process.env.LK_API_KEY, process.env.LK_API_SECRET, {
-      identity: foundUser[0]._id.toString(),
+      identity: foundUser._id.toString(),
       name: participantName,
-      metadata: foundUser[0].user_image
+      metadata: foundUser.user_image
     });
     at.addGrant({
       room: roomName,
@@ -356,8 +356,8 @@ class ChatService {
       conversation_name: foundConversation.name,
       author: cache.get(roomName),
       user_name: participantName,
-      user_image: foundUser[0].user_image,
-      user_id: foundUser[0]._id.toString(),
+      user_image: foundUser.user_image,
+      user_id: foundUser._id.toString(),
       first_call,
       members: foundConversation.members
     };

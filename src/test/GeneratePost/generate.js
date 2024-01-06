@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
 const url = 'mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net';
-const dbName = 'SocialProDEV';
+const dbName = 'SocialProTest';
 
 function wait(ms) {
     return new Promise((resolve) => {
@@ -37,13 +37,13 @@ async function generateData() {
     // "$regex": "https://loremflickr.com/640/480.*464$"
 
 
-    for (let i = 0; i < 20000; i++) {
+    for (let i = 0; i < 100000; i++) {
 
         const doc = {
             type: 'Post',
             scope: 'Normal',
             post_attributes: {
-                user: new ObjectId(randomId(['64fac9b2545bc6a41973744c', '64fc1215bb5536f522ca979d', '650ac1e3f3563200db3b434b', '65143a4b4d4280e1868fb6de', '6550b230f0b007cd763e90ab'])),
+                user: new ObjectId(randomId(['6581664e3c1177588794427b', '658166c2ed6e5ac53faeaffe'])),
                 title: faker.lorem.sentence(5),
                 content: faker.lorem.sentences(5),
                 link: faker.internet.url(),

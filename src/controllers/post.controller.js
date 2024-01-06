@@ -17,8 +17,8 @@ class PostController {
     new OK({
       message: 'View Post Successfully',
       metadata: await PostService.viewPost({
-        ...req,
         res,
+        cookies: req.cookies,
         post_id: req.params.post_id,
         user_id: req.user.userId
       })
@@ -202,6 +202,21 @@ class PostController {
       metadata: await PostService.createPost({
         ...req.body,
         user: req.user.userId
+      })
+    }).send(res);
+  };
+
+  /* 
+    Get Posts By Title
+    Link: http://localhost:4052/api/v1/posts/search/top?search=con
+  */
+  static searchPosts = async (req, res, next) => {
+    new OK({
+      message: 'Get Posts By Title Successfully',
+      metadata: await PostService.searchPosts({
+        search: req.query.search,
+        page: req.query.page,
+        me_id: req.user.userId
       })
     }).send(res);
   };

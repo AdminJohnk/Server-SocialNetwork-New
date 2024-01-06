@@ -166,7 +166,7 @@ class ChildCommentClass {
       },
       { $project: { ...unGetSelectData(unselect) } },
       { $sort: sort },
-      { $skip: skip },
+      { $skip: skip }
       // { $limit: limit }
     ]);
   }
@@ -187,11 +187,7 @@ class ChildCommentClass {
       .lean();
   }
   static async updateComment_admin({ comment_id, content }) {
-    return await ChildCommentModel.findByIdAndUpdate(
-      comment_id,
-      { content },
-      { new: true }
-    );
+    return await ChildCommentModel.findByIdAndUpdate(comment_id, { content }, { new: true });
   }
   static async deleteComment_admin({ comment_id }) {
     return await ChildCommentModel.findByIdAndDelete(comment_id);

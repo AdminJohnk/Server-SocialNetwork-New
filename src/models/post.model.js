@@ -8,6 +8,7 @@ const {
   unSe_PostDefault,
   se_UserDefaultForPost
 } = require('../utils/constants');
+const { FriendClass } = require('./friend.model');
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Post';
@@ -74,7 +75,7 @@ PostSchema.index({ 'post_attributes.view_number': 1, createdAt: -1 });
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
-const addFieldsObject = user => {
+const addFieldsObject = (user) => {
   return {
     is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
     is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
@@ -88,15 +89,12 @@ const choosePopulateAttr = ({ from, attribute, select }) => {
     $lookup: {
       from: from,
       let: { temp: '$post_attributes.' + attribute },
-      pipeline: [
-        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
-        { $project: select }
-      ],
+      pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$temp'] } } }, { $project: select }],
       as: 'post_attributes.' + attribute
     }
   };
 };
-const getFirstElement = attribute => {
+const getFirstElement = (attribute) => {
   return {
     $addFields: {
       [`post_attributes.${attribute}`]: {
@@ -121,7 +119,7 @@ class PostClass {
   }
   static async viewPost({ post_id, user_id, cookies, res }) {
     // Check if the post has already been viewed
-    let viewedPosts = cookies?.viewedPosts || [];
+    let viewedPosts = cookies?.viewedPosts || '';
     if (viewedPosts.includes(post_id)) {
       return await this.findByID({ post_id });
     }
@@ -134,21 +132,11 @@ class PostClass {
     });
 
     // Add post to viewedPosts
-    viewedPosts.push(post_id);
-    res.cookie('viewedPosts', viewedPosts, {
-      maxAge: 12 * 60 * 60 * 1000 // 12 hours
-    });
+    viewedPosts += `${post_id},`;
 
-    return await this.findByID({ post_id });
+    return { viewedPosts };
   }
-  static async getAllPopularPost({
-    user_id,
-    limit,
-    skip,
-    sort,
-    scope,
-    sortBy
-  }) {
+  static async getAllPopularPost({ user_id, limit, skip, sort, scope, sortBy }) {
     let condition = { scope, type: 'Post' };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -266,14 +254,8 @@ class PostClass {
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
-  static async updatePost({ post_id, user_id, post_attributes }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(
-      post_id,
-      post_attributes,
-      {
-        new: true
-      }
-    ).lean();
+  static async updatePost({ post_id, user_id, payload }) {
+    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
@@ -295,7 +277,7 @@ class PostClass {
     let numShare = 1;
 
     if (sharedPost) {
-     await Promise.resolve(PostModel.deleteOne(sharedPost._id));
+      await Promise.resolve(PostModel.deleteOne(sharedPost._id));
       numShare = -1;
     } else await PostModel.create({ type, post_attributes });
 
@@ -314,15 +296,7 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({
-    user_id,
-    me_id,
-    limit,
-    skip,
-    sort,
-    scope,
-    isFullSearch = false
-  }) {
+  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort, scope, isFullSearch = false }) {
     let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -334,6 +308,37 @@ class PostClass {
     });
     return foundPost;
   }
+
+  static async searchPosts({ search, me_id, limit, skip, sort, isFullSearch = false }) {
+    const friends = await FriendClass.getAllFriends({ user_id: me_id });
+
+    const searchRegex = { $regex: search, $options: 'i' };
+    const userSearch = { 'post_attributes.user': new ObjectId(me_id) };
+    const friendSearch = { 'post_attributes.user': { $in: friends } };
+    const publicVisibility = { visibility: { $eq: 'public' } };
+    const nonPrivateVisibility = { visibility: { $ne: 'private' } };
+
+    let condition = {
+      $or: [
+        { $and: [{ 'post_attributes.title': searchRegex }, publicVisibility] },
+        { $and: [userSearch, { 'post_attributes.title': searchRegex }] },
+        { $and: [friendSearch, nonPrivateVisibility, { 'post_attributes.content': searchRegex }] },
+        { $and: [{ 'post_attributes.content': searchRegex }, publicVisibility] },
+        { $and: [userSearch, { 'post_attributes.content': searchRegex }] },
+        { $and: [friendSearch, nonPrivateVisibility, { 'post_attributes.content': searchRegex }] }
+      ]
+    };
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id,
+      limit,
+      skip,
+      isFullSearch,
+      sort
+    });
+    return foundPost;
+  }
+
   static async findByID({ post_id, user, scope, isFullSearch = false }) {
     let condition = {
       _id: new ObjectId(post_id),
@@ -355,35 +360,14 @@ class PostClass {
     isFullSearch = false,
     sortBy
   }) {
-    const additionalCondition1 = {
-      $lookup: {
-        from: 'friends',
-        let: { temp: '$post_attributes.user' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [{ $eq: ['$user', new ObjectId(me_id)] }, { $in: ['$$temp', '$friends'] }]
-              }
-            }
-          }
-        ],
-        as: 'lookup'
-      }
-    };
-
+    const friends = await FriendClass.getAllFriends({ user_id: me_id });
     const additionalCondition2 = {
       $match: {
         $or: [
           { visibility: 'public' },
           {
             visibility: 'friend',
-            $expr: {
-              $or: [
-                { $gt: [{ $size: '$lookup' }, 0] },
-                { $eq: ['$post_attributes.user', new ObjectId(me_id)] }
-              ]
-            }
+            'post_attributes.user': { $in: friends }
           }
         ]
       }
@@ -421,46 +405,30 @@ class PostClass {
       // ===========================================
 
       {
-        $lookup: {
-          from: 'friends',
-          let: { id: '$post_attributes.user._id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
-                }
-              }
-            }
-          ],
-          as: 'friend'
-        }
-      },
-      {
         $addFields: {
           'post_attributes.user.is_friend': {
-            $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false }
+            $cond: { if: { $in: ['$post_attributes.user', friends] }, then: true, else: false }
           }
         }
       },
 
-      { $project: { ...unGetSelectData(unSe_PostDefault), friend: 0, lookup: 0 } }
+      { $project: { ...unGetSelectData(unSe_PostDefault) } }
     ];
 
     if (!isFullSearch) {
-      aggregatePipeline.unshift(additionalCondition1, additionalCondition2);
+      aggregatePipeline.unshift(additionalCondition2);
     }
 
     let foundPost = await PostModel.aggregate(aggregatePipeline);
 
-    foundPost.map(post => {
+    foundPost.map((post) => {
       if (post.type === 'Post') {
         delete post.post_attributes.post;
         delete post.post_attributes.owner_post;
       }
     });
 
-    foundPost = foundPost.filter(item => {
+    foundPost = foundPost.filter((item) => {
       const date = new Date(item.createdAt);
       const dateNow = new Date();
       const diffTime = Math.abs(dateNow.getTime() - date.getTime());
@@ -485,16 +453,7 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({
-    type,
-    user,
-    title,
-    content,
-    images,
-    scope,
-    community,
-    visibility
-  }) {
+  static async createPost({ type, user, title, content, images, scope, community, visibility }) {
     const post_attributes = { user, title, content, images };
     const newPost = await PostModel.create({
       type,

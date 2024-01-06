@@ -11,6 +11,7 @@ const NotiRouter = require('./notification.router');
 const ChatRouter = require('./chat.router');
 const CommunityRouter = require('./community.router');
 const ImageRouter = require('./image.router');
+const SearchLogRouter = require('./searchLog.router');
 const AdminRouter = require('./admin.router');
 const { checkApiKey, checkPermission } = require('../auth/checkAuth');
 const { pushToLogDiscord } = require('../middlewares/logger.middleware');
@@ -24,14 +25,15 @@ const { pushToLogDiscord } = require('../middlewares/logger.middleware');
 // check permission
 // router.use(checkPermission('0000'));
 
-router.use('/auth', authRouter);
-router.use('/admin', AdminRouter);
-router.use('/images', ImageRouter);
-router.use('/communities', CommunityRouter);
-router.use('/chat', ChatRouter);
-router.use('/notifications', NotiRouter);
-router.use('/comments', CommentRouter);
-router.use('/posts', postRouter);
-router.use('/users', userRouter);
+router.use('/auth', limiter, authRouter);
+router.use('/admin', limiter, AdminRouter);
+router.use('/images', limiter, ImageRouter);
+router.use('/communities', limiter, CommunityRouter);
+router.use('/chat', limiter, ChatRouter);
+router.use('/notifications', limiter, NotiRouter);
+router.use('/comments', limiter, CommentRouter);
+router.use('/posts', limiter, postRouter);
+router.use('/users', limiter, userRouter);
+router.use('/searchlog', limiter, SearchLogRouter);
 
 module.exports = router;
