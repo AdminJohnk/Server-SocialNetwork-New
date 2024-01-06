@@ -191,7 +191,7 @@ class PostService {
       user_id,
       payload: updateNestedObjectParser({
         visibility,
-        post_attributes: post_attributes
+        post_attributes
       })
     });
   }

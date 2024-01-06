@@ -254,8 +254,8 @@ class PostClass {
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
-  static async updatePost({ post_id, user_id, post_attributes }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(post_id, post_attributes).lean();
+  static async updatePost({ post_id, user_id, payload }) {
+    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },

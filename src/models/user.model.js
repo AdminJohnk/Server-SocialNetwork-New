@@ -189,7 +189,7 @@ class UserClass {
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
-    const isSaved = await this.checkExist({
+    const isSaved = await this.checkExistMany({
       _id: user,
       favorites: { $in: new ObjectId(post) }
     });
