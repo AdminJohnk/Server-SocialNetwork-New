@@ -166,7 +166,7 @@ class ParentCommentClass {
       },
       { $project: { ...unGetSelectData(unselect) } },
       { $sort: sort },
-      { $skip: skip },
+      { $skip: skip }
       // { $limit: limit }
     ]);
   }
@@ -175,6 +175,22 @@ class ParentCommentClass {
   }
   static async checkExist(select) {
     return await ParentCommentModel.findOne(select).lean();
+  }
+  // ================= ADMIN =================
+  static async getAllParentComments_admin({ post, limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    return await ParentCommentModel.find({ post })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', pp_UserDefault)
+      .sort(sort)
+      .lean();
+  }
+  static async updateComment_admin({ comment_id, content }) {
+    return await ParentCommentModel.findByIdAndUpdate(comment_id, { content }, { new: true });
+  }
+  static async deleteComment_admin({ comment_id }) {
+    return await ParentCommentModel.findByIdAndDelete(comment_id);
   }
 }
 

@@ -42,7 +42,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all admins
-    const foundUsers = await UserClass.checkExist({ _id: { $in: admins } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: admins } });
     if (foundUsers.length !== admins.length) throw new NotFoundError('User not found');
 
     // Check is admins
@@ -68,7 +68,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     // Check is members
@@ -179,7 +179,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     return await ConversationClass.deleteMemberFromConversation({
@@ -201,7 +201,7 @@ class ChatService {
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
     // Check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     return await ConversationClass.addMemberToConversation({
@@ -302,7 +302,7 @@ class ChatService {
   };
   static createConverSation = async ({ type, name, members, user }) => {
     // check exist all members
-    const foundUsers = await UserClass.checkExist({ _id: { $in: members } });
+    const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
     return await ConversationClass.createConverSation({
@@ -330,17 +330,17 @@ class ChatService {
       const foundRoom = rooms.find((room) => room.name === roomName);
       if (!foundRoom) {
         first_call = true;
-        cache.set(roomName, foundUser[0]);
+        cache.set(roomName, foundUser);
         await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
       }
     });
 
-    const participantName = foundUser[0].name;
+    const participantName = foundUser.name;
 
     const at = new AccessToken(process.env.LK_API_KEY, process.env.LK_API_SECRET, {
-      identity: foundUser[0]._id.toString(),
+      identity: foundUser._id.toString(),
       name: participantName,
-      metadata: foundUser[0].user_image
+      metadata: foundUser.user_image
     });
     at.addGrant({
       room: roomName,
@@ -356,8 +356,8 @@ class ChatService {
       conversation_name: foundConversation.name,
       author: cache.get(roomName),
       user_name: participantName,
-      user_image: foundUser[0].user_image,
-      user_id: foundUser[0]._id.toString(),
+      user_image: foundUser.user_image,
+      user_id: foundUser._id.toString(),
       first_call,
       members: foundConversation.members
     };

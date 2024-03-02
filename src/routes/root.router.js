@@ -12,13 +12,12 @@ const ChatRouter = require('./chat.router');
 const CommunityRouter = require('./community.router');
 const ImageRouter = require('./image.router');
 const SearchLogRouter = require('./searchLog.router');
-const TestRouter = require('../test/Nhap/tes');
+const AdminRouter = require('./admin.router');
 const { checkApiKey, checkPermission } = require('../auth/checkAuth');
 const { pushToLogDiscord } = require('../middlewares/logger.middleware');
-const { authentication } = require('../auth/authUtils');
 
 // add log to discord
-router.use(pushToLogDiscord);
+// router.use(pushToLogDiscord);
 
 // check apiKey
 // router.use(checkApiKey);
@@ -27,6 +26,7 @@ router.use(pushToLogDiscord);
 // router.use(checkPermission('0000'));
 
 router.use('/auth', limiter, authRouter);
+router.use('/admin', limiter, AdminRouter);
 router.use('/images', limiter, ImageRouter);
 router.use('/communities', limiter, CommunityRouter);
 router.use('/chat', limiter, ChatRouter);
@@ -35,6 +35,5 @@ router.use('/comments', limiter, CommentRouter);
 router.use('/posts', limiter, postRouter);
 router.use('/users', limiter, userRouter);
 router.use('/searchlog', limiter, SearchLogRouter);
-router.use('/test', limiter, TestRouter);
 
 module.exports = router;

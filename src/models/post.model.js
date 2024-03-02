@@ -255,9 +255,7 @@ class PostClass {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
   static async updatePost({ post_id, user_id, payload }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload, {
-      new: true
-    }).lean();
+    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
@@ -313,7 +311,7 @@ class PostClass {
 
   static async searchPosts({ search, me_id, limit, skip, sort, isFullSearch = false }) {
     const friends = await FriendClass.getAllFriends({ user_id: me_id });
-    
+
     const searchRegex = { $regex: search, $options: 'i' };
     const userSearch = { 'post_attributes.user': new ObjectId(me_id) };
     const friendSearch = { 'post_attributes.user': { $in: friends } };
@@ -346,7 +344,11 @@ class PostClass {
       _id: new ObjectId(post_id),
       scope
     };
-    let foundPost = await this.findPostByAggregate({ condition, me_id: user, isFullSearch });
+    let foundPost = await this.findPostByAggregate({
+      condition,
+      me_id: user,
+      isFullSearch
+    });
     return foundPost[0];
   }
   static async findPostByAggregate({
@@ -451,8 +453,8 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content, images, link, scope, community, visibility }) {
-    const post_attributes = { user, title, content, images, link };
+  static async createPost({ type, user, title, content, images, scope, community, visibility }) {
+    const post_attributes = { user, title, content, images };
     const newPost = await PostModel.create({
       type,
       scope,
@@ -507,6 +509,37 @@ class PostClass {
   }
   static async checkExist(select) {
     return await PostModel.findOne(select).lean();
+  }
+  // ================= ADMIN =================
+  static async getAllPosts_admin({ limit, page, sort }) {
+    const skip = (page - 1) * limit;
+    return await PostModel.find({
+      type: 'Post'
+    })
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .populate('post_attributes.user', pp_UserDefault)
+      .lean();
+  }
+  static async findPostById_admin({ post_id }) {
+    return await PostModel.findById(post_id);
+  }
+  static async updatePost_admin({ post_id, visibility, post_attributes }) {
+    console.log('post_attributes:: ', post_attributes);
+    return await PostModel.findByIdAndUpdate(
+      post_id,
+      { visibility, ...post_attributes },
+      {
+        new: true
+      }
+    ).lean();
+  }
+  static async deletePost_admin({ post_id }) {
+    return await PostModel.findByIdAndDelete(post_id).lean();
+  }
+  static async getPostNumber_admin() {
+    return await PostModel.countDocuments({ type: 'Post' });
   }
 }
 

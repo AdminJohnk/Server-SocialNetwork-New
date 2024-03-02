@@ -2,7 +2,7 @@
 
 const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData, getSelectData } = require('../utils/functions');
-const { avt_default, se_UserDefault, RoleUser } = require('../utils/constants');
+const { avt_default, se_UserDefault, RoleUser, se_UserAdmin } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 const { UserIncrClass } = require('./user_incr.model');
 
@@ -181,7 +181,7 @@ class UserClass {
       {
         $sort: { name: 1 }
       }
-    ])
+    ]);
     return users;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
@@ -189,7 +189,7 @@ class UserClass {
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
-    const isSaved = await this.checkExist({
+    const isSaved = await this.checkExistMany({
       _id: user,
       favorites: { $in: new ObjectId(post) }
     });
@@ -301,8 +301,36 @@ class UserClass {
     ).lean();
   }
   static async checkExist(select) {
+    return await UserModel.findOne(select).lean();
+  }
+  static async checkExistMany(select) {
     return await UserModel.find(select).lean();
   }
+  // ================= ADMIN =================
+  static deleteUser = async ({ user_id }) => {
+    return await UserModel.findByIdAndDelete(user_id).lean();
+  };
+  static findUserById_admin = async ({ user_id }) => {
+    return await UserModel.findById(user_id).lean();
+  };
+  static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
+    const skip = (page - 1) * limit;
+    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
+  };
+  static updateUser_admin = async ({ user_id, payload }) => {
+    return await UserModel.findByIdAndUpdate(user_id, payload, {
+      new: true
+    }).lean();
+  };
+  static deleteUser_admin = async ({ user_id }) => {
+    return await UserModel.findByIdAndDelete(user_id).lean();
+  };
+  static createUser_admin = async ({ name, email, password }) => {
+    return await UserModel.create({ name, email, password });
+  };
+  static getUserNumber_admin = async () => {
+    return await UserModel.countDocuments();
+  };
 }
 
 //Export the model

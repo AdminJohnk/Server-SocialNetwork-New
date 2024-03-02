@@ -5,6 +5,14 @@ const { OK, CREATED } = require('../core/success.response');
 const { HEADER } = require('../utils/constants');
 
 class UserController {
+  static checkExistEmail = async (req, res, next) => {
+    new OK({
+      message: 'Check Exist Email Successfully',
+      metadata: await UserService.checkExistEmail({
+        email: req.params.email
+      })
+    }).send(res);
+  };
   /* 
     Delete User
   */
