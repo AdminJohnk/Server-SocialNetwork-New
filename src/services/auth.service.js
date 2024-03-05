@@ -124,7 +124,7 @@ class AuthService {
     // 5 - Get data return login
     return {
       user: getInfoData({
-        fields: ['_id', 'name', 'email'],
+        fields: ['id', 'name', 'email', 'user_image'],
         object: foundUser
       }),
       tokens
