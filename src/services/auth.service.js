@@ -124,22 +124,16 @@ class AuthService {
     // 5 - Get data return login
     return {
       user: getInfoData({
-        fields: ['id', 'name', 'email', 'user_image'],
+        fields: ['id', '_id', 'name', 'email', 'user_image'],
         object: foundUser
       }),
       tokens
     };
   };
 
-  static loginWithGoogleService = async ({ token }) => {
-    const URL = 'https://www.googleapis.com/oauth2/v3/userinfo?access_token=' + token;
-
-    // Get JSON data from Google API
-    const response = await axios.get(URL);
-    const user = await response.data;
-
+  static loginWithGoogleService = async ({ email }) => {
     // Check if user exists
-    const foundUser = await UserClass.findByEmail({ email: user.email });
+    const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) {
       const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 4096,
@@ -154,11 +148,7 @@ class AuthService {
       });
 
       // create token pair
-      const tokens = await createTokenPair(
-        { userId: foundUser._id, email: user.email },
-        publicKey,
-        privateKey
-      );
+      const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
 
       const keyStore = await KeyTokenClass.createKeyToken({
         userId: foundUser._id,
@@ -171,7 +161,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['_id', 'name', 'email'],
+          fields: ['id', '_id', 'name', 'email', 'user_image'],
           object: foundUser
         }),
         tokens
@@ -180,7 +170,7 @@ class AuthService {
 
     const newUser = await UserClass.createUser({
       name: user.family_name + ' ' + user.given_name,
-      email: user.email,
+      email,
       user_image: user.picture
     });
 
@@ -198,7 +188,7 @@ class AuthService {
       });
 
       // create token pair
-      const tokens = await createTokenPair({ userId: newUser._id, email: user.email }, publicKey, privateKey);
+      const tokens = await createTokenPair({ userId: newUser._id, email }, publicKey, privateKey);
 
       const keyStore = await KeyTokenClass.createKeyToken({
         userId: newUser._id,
@@ -211,7 +201,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['_id', 'name', 'email'],
+          fields: ['id', '_id', 'name', 'email', 'user_image'],
           object: newUser
         }),
         tokens
@@ -219,37 +209,8 @@ class AuthService {
     }
   };
 
-  static loginWithGithubService = async ({ code }) => {
-    const URL = 'https://github.com/login/oauth/access_token';
-    const options = {
-      client_id: process.env.GITHUB_OAUTH_CLIENT_ID,
-      client_secret: process.env.GITHUB_OAUTH_CLIENT_SECRET,
-      code: code
-    };
-
-    const queryString = qs.stringify(options);
-
-    const { data } = await axios.post(`${URL}?${queryString}`, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-
-    const accessTokenGitHub = qs.parse(data).access_token;
-
-    const { data: user } = await axios.get('https://api.github.com/user', {
-      headers: {
-        Authorization: `Bearer ${accessTokenGitHub}`
-      }
-    });
-
-    const { data: email } = await axios.get('https://api.github.com/user/emails', {
-      headers: {
-        Authorization: `Bearer ${accessTokenGitHub}`
-      }
-    });
-
-    const foundUser = await UserClass.findByEmail({ email: email[0].email });
+  static loginWithGithubService = async ({ email }) => {
+    const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) {
       const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
         modulusLength: 4096,
@@ -264,11 +225,7 @@ class AuthService {
       });
 
       // create token pair
-      const tokens = await createTokenPair(
-        { userId: foundUser._id, email: email[0].email },
-        publicKey,
-        privateKey
-      );
+      const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
 
       const keyStore = await KeyTokenClass.createKeyToken({
         userId: foundUser._id,
@@ -280,7 +237,7 @@ class AuthService {
       if (!keyStore) throw new BadRequestError("Can't create keyStore!");
       return {
         user: getInfoData({
-          fields: ['_id', 'name', 'email'],
+          fields: ['id', '_id', 'name', 'email', 'user_image'],
           object: foundUser
         }),
         tokens,
@@ -290,7 +247,7 @@ class AuthService {
 
     const newUser = await UserClass.createUser({
       name: user.name,
-      email: email[0].email,
+      email,
       user_image: user.avatar_url
     });
 
@@ -308,11 +265,7 @@ class AuthService {
       });
 
       // create token pair
-      const tokens = await createTokenPair(
-        { userId: newUser._id, email: email[0].email },
-        publicKey,
-        privateKey
-      );
+      const tokens = await createTokenPair({ userId: newUser._id, email }, publicKey, privateKey);
 
       const keyStore = await KeyTokenClass.createKeyToken({
         userId: newUser._id,
@@ -325,7 +278,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['_id', 'name', 'email'],
+          fields: ['id', '_id', 'name', 'email', 'user_image'],
           object: newUser
         }),
         tokens,
@@ -379,7 +332,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['_id', 'name', 'email'],
+          fields: ['id', '_id', 'name', 'email', 'user_image'],
           object: newUser
         }),
         tokens
