@@ -37,12 +37,10 @@ class AuthController {
   };
 
   static loginGithub = async (req, res, next) => {
-    const result = await AuthService.loginWithGithubService(req.query);
-    return res.redirect(
-      `${process.env.CLIENT_URL}/login-callback?${qs.stringify(result.tokens)}&_id=${
-        result.user._id
-      }&${qs.stringify(result.user)}&accessTokenGitHub=${result.accessTokenGitHub}`
-    );
+    new OK({
+      message: 'Login Github Successfully',
+      metadata: await AuthService.loginWithGithubService(req.body)
+    }).send(res);
   };
 
   static signUp = async (req, res, next) => {
