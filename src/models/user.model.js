@@ -116,7 +116,7 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
-const getFirstElement = (attribute) => {
+const getFirstElement = attribute => {
   return {
     $addFields: {
       [attribute]: {
@@ -144,7 +144,9 @@ class UserClass {
     return result;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
+    return await UserModel.findOne({ _id: user_id })
+      .select(getSelectData(select))
+      .lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -165,7 +167,11 @@ class UserClass {
     };
   }
   static async updateUser({ email, payload }) {
-    return await UserModel.findOneAndUpdate({ email }, { $set: { payload } }, { new: true }).lean();
+    return await UserModel.findOneAndUpdate(
+      { email },
+      { $set: { payload } },
+      { new: true }
+    ).lean();
   }
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
@@ -187,7 +193,10 @@ class UserClass {
             {
               $match: {
                 $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                  $and: [
+                    { $eq: ['$user', '$$id'] },
+                    { $in: [new ObjectId(me_id), '$friends'] }
+                  ]
                 }
               }
             }
@@ -197,7 +206,13 @@ class UserClass {
       },
       {
         $addFields: {
-          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+          is_friend: {
+            $cond: {
+              if: { $gt: [{ $size: '$friend' }, 0] },
+              then: true,
+              else: false
+            }
+          }
         }
       },
       {
@@ -208,7 +223,9 @@ class UserClass {
     return result[0];
   }
   static async findByEmail({ email }) {
-    return await UserModel.findOne({ email }).select({ password: 1 });
+    return await UserModel.findOne({ email })
+      .select(getSelectData(['_id', 'email', 'password', 'name', 'user_image']))
+      .lean();
   }
   static async deleteUser({ user_id }) {
     const user = await UserModel.findByIdAndDelete(user_id).lean();
