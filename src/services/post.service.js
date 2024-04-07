@@ -67,13 +67,7 @@ class PostService {
       scope
     });
   }
-  static async getAllUserSavePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserSavePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -90,13 +84,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserSharePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserSharePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -113,13 +101,7 @@ class PostService {
       sort
     });
   }
-  static async getAllUserLikePost({
-    post,
-    owner_post,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getAllUserLikePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -173,20 +155,11 @@ class PostService {
       user_id,
       type: 'post',
       number: -1
-    }).catch(err => console.log(err));
+    }).catch((err) => console.log(err));
 
     return result;
   }
-  static async updatePost({
-    post_id,
-    user_id,
-    content,
-    title,
-    scope,
-    community,
-    images,
-    visibility
-  }) {
+  static async updatePost({ post_id, user_id, content, title, scope, community, images, visibility }) {
     let post_attributes = { content, title, images };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
@@ -218,7 +191,7 @@ class PostService {
       user_id,
       payload: updateNestedObjectParser({
         visibility,
-        post_attributes: post_attributes
+        post_attributes
       })
     });
   }
@@ -294,18 +267,8 @@ class PostService {
 
     return true;
   }
-  static async createPost({
-    type = 'Post',
-    user,
-    title,
-    content,
-    images,
-    scope,
-    community,
-    visibility
-  }) {
-    if (!title || !content)
-      throw new BadRequestError('Post must have title or content');
+  static async createPost({ type = 'Post', user, title, content, images, scope, community, visibility }) {
+    if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
       user,
@@ -345,15 +308,18 @@ class PostService {
 
     return result;
   }
-  static async getSavedPosts({
-    user_id,
-    limit = 10,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) {
+  static async getSavedPosts({ user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const skip = (page - 1) * limit;
 
     return await PostClass.getSavedPosts({ user_id, limit, skip, sort });
+  }
+
+  static async searchPosts({ search, me_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    const skip = (page - 1) * limit;
+
+    const isFullSearch = true;
+
+    return await PostClass.searchPosts({ search, me_id, limit, skip, isFullSearch, sort });
   }
 }
 

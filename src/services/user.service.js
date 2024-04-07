@@ -222,6 +222,13 @@ class UserService {
       user_id
     });
   }
+  static async getUsersByName({ search, me_id, page }) {
+    return await UserClass.searchUsersByName({
+      search,
+      me_id,
+      page
+    });
+  }
 }
 
 module.exports = UserService;

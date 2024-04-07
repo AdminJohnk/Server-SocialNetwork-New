@@ -1,5 +1,5 @@
 'use strict';
-
+const qs = require('qs');
 const AuthService = require('../services/auth.service');
 const { OK, CREATED } = require('../core/success.response');
 
@@ -26,6 +26,20 @@ class AuthController {
     new OK({
       message: 'Login Successfully',
       metadata: await AuthService.loginService(req.body)
+    }).send(res);
+  };
+
+  static loginGoogle = async (req, res, next) => {
+    new OK({
+      message: 'Login Google Successfully',
+      metadata: await AuthService.loginWithGoogleService(req.body)
+    }).send(res);
+  };
+
+  static loginGithub = async (req, res, next) => {
+    new OK({
+      message: 'Login Github Successfully',
+      metadata: await AuthService.loginWithGithubService(req.body)
     }).send(res);
   };
 
@@ -71,13 +85,11 @@ class AuthController {
     }).send(res);
   };
 
-  static callbackGithub = async (req, res, next) => {
-    new OK({
-      message: 'Get Repository Github Successfully',
-      metadata: await AuthService.callbackGithub({
-        code: req.query.code
-      })
-    }).send(res);
+  static getTokenRepoGithub = async (req, res, next) => {
+    const result = await AuthService.getTokenRepoGithub(req.query);
+    return res.redirect(
+      `${process.env.CLIENT_URL}/repo-callback?accessTokenGitHub=${result.accessTokenGitHub}`
+    );
   };
 }
 

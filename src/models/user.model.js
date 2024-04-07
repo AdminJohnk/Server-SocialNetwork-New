@@ -2,12 +2,7 @@
 
 const { model, Schema, Types } = require('mongoose');
 const { unGetSelectData, getSelectData } = require('../utils/functions');
-const {
-  avt_default,
-  se_UserDefault,
-  RoleUser,
-  se_UserAdmin
-} = require('../utils/constants');
+const { avt_default, se_UserDefault, RoleUser, se_UserAdmin } = require('../utils/constants');
 const ObjectId = Types.ObjectId;
 const { UserIncrClass } = require('./user_incr.model');
 
@@ -143,6 +138,52 @@ class UserClass {
 
     return result;
   }
+  static async searchUsersByName({ search, me_id, page = 1 }) {
+    const limit = 10;
+    const skip = (Number.parseInt(page) - 1) * limit;
+    const unselect = ['password'];
+    const users = await UserModel.aggregate([
+      {
+        $match: {
+          $text: { $search: search }
+        }
+      },
+      {
+        $lookup: {
+          from: 'friends',
+          let: { id: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                }
+              }
+            }
+          ],
+          as: 'friend'
+        }
+      },
+      {
+        $addFields: {
+          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+        }
+      },
+      {
+        $project: { ...unGetSelectData(unselect), friend: 0 }
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: limit
+      },
+      {
+        $sort: { name: 1 }
+      }
+    ]);
+    return users;
+  }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
     return await UserModel.findOne({ _id: user_id })
       .select(getSelectData(select))
@@ -150,7 +191,7 @@ class UserClass {
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
-    const isSaved = await this.checkExist({
+    const isSaved = await this.checkExistMany({
       _id: user,
       favorites: { $in: new ObjectId(post) }
     });
@@ -224,7 +265,7 @@ class UserClass {
   }
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email })
-      .select(getSelectData(['_id', 'email', 'password', 'name', 'user_image']))
+      .select({ password: 1, email: 1, name: 1, user_image: 1 })
       .lean();
   }
   static async deleteUser({ user_id }) {
@@ -289,19 +330,9 @@ class UserClass {
   static findUserById_admin = async ({ user_id }) => {
     return await UserModel.findById(user_id).lean();
   };
-  static getAllUsers_admin = async ({
-    limit,
-    page,
-    sort,
-    select = se_UserAdmin
-  }) => {
+  static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
     const skip = (page - 1) * limit;
-    return await UserModel.find()
-      .limit(limit)
-      .skip(skip)
-      .select(getSelectData(select))
-      .sort(sort)
-      .lean();
+    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
   };
   static updateUser_admin = async ({ user_id, payload }) => {
     return await UserModel.findByIdAndUpdate(user_id, payload, {

@@ -9,7 +9,7 @@ class SuccessResponse {
     this.metadata = metadata;
   }
   send(res, headers = {}) {
-    return res.status(this.status).json(this);
+    return res.status(this.status).send(this);
   }
 }
 

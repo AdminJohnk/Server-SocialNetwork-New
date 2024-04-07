@@ -2,19 +2,20 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const compression = require('compression');
 const router = require('./routes/root.router');
 
 // init middleware
 app.use(morgan('dev'));
-app.use(helmet());
+app.use(helmet(/* { contentSecurityPolicy: { directives: { 'script-src': ["'self'", "'unsafe-inline'"] } } } */));
 app.use(compression());
+app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
-    origin: 'http://localhost:3000',
-    // origin: '*',
+    origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true
   })

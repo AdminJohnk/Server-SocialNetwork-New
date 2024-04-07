@@ -166,7 +166,7 @@ class ParentCommentClass {
       },
       { $project: { ...unGetSelectData(unselect) } },
       { $sort: sort },
-      { $skip: skip },
+      { $skip: skip }
       // { $limit: limit }
     ]);
   }
@@ -187,16 +187,11 @@ class ParentCommentClass {
       .lean();
   }
   static async updateComment_admin({ comment_id, content }) {
-    return await ParentCommentModel.findByIdAndUpdate(
-      comment_id,
-      { content },
-      { new: true }
-    );
+    return await ParentCommentModel.findByIdAndUpdate(comment_id, { content }, { new: true });
   }
   static async deleteComment_admin({ comment_id }) {
     return await ParentCommentModel.findByIdAndDelete(comment_id);
   }
-  
 }
 
 module.exports = {

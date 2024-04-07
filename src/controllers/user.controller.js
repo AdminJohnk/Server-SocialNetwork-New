@@ -12,7 +12,7 @@ class UserController {
         email: req.params.email
       })
     }).send(res);
-  }
+  };
   /* 
     Delete User
   */
@@ -219,6 +219,20 @@ class UserController {
       message: 'Get Request Received Successfully',
       metadata: await UserService.getRequestsReceived({
         user_id: req.user.userId
+      })
+    }).send(res);
+  };
+
+  /**
+   * Get Users By Name
+   */
+  static getUsersByName = async (req, res, next) => {
+    new OK({
+      message: 'Get Users By Name Successfully',
+      metadata: await UserService.getUsersByName({
+        search: req.query.search,
+        page: req.query.page,
+        me_id: req.user.userId
       })
     }).send(res);
   };
