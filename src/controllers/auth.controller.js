@@ -50,6 +50,13 @@ class AuthController {
     }).send(res);
   };
 
+  static changePassword = async (req, res, next) => {
+    new OK({
+      message: 'Change Password Successfully',
+      metadata: await AuthService.changePasswordService(req.body)
+    }).send(res);
+  };
+
   static forgotPassword = async (req, res, next) => {
     new OK({
       message: 'Forgot Password Successfully',

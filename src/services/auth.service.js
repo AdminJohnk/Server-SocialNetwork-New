@@ -124,7 +124,7 @@ class AuthService {
     // 5 - Get data return login
     return {
       user: getInfoData({
-        fields: ['id', '_id', 'name', 'email', 'user_image'],
+        fields: ['id', '_id', 'email'],
         object: foundUser
       }),
       tokens
@@ -161,7 +161,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['id', '_id', 'name', 'email', 'user_image'],
+          fields: ['id', '_id', 'email'],
           object: foundUser
         }),
         tokens
@@ -201,7 +201,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['id', '_id', 'name', 'email', 'user_image'],
+          fields: ['id', '_id', 'email'],
           object: newUser
         }),
         tokens
@@ -237,7 +237,7 @@ class AuthService {
       if (!keyStore) throw new BadRequestError("Can't create keyStore!");
       return {
         user: getInfoData({
-          fields: ['id', '_id', 'name', 'email', 'user_image'],
+          fields: ['id', '_id', 'email'],
           object: foundUser
         }),
         tokens,
@@ -278,7 +278,7 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['id', '_id', 'name', 'email', 'user_image'],
+          fields: ['id', '_id', 'email'],
           object: newUser
         }),
         tokens,
@@ -332,13 +332,29 @@ class AuthService {
 
       return {
         user: getInfoData({
-          fields: ['id', '_id', 'name', 'email', 'user_image'],
+          fields: ['id', '_id', 'email'],
           object: newUser
         }),
         tokens
       };
     }
     return {};
+  };
+
+  static changePasswordService = async ({ email, oldPassword, newPassword }) => {
+    const foundUser = await UserClass.findByEmail({ email });
+
+    if (!foundUser) throw new BadRequestError('Email not exists');
+
+    const match = await bcrypt.compare(oldPassword, foundUser.password);
+
+    if (!match) throw new BadRequestError('Old password not match');
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await foundUser.updateOne({ $set: { password: passwordHash } });
+
+    return { changePassword: true };
   };
 
   static forgotPasswordService = async ({ email }) => {
