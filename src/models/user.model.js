@@ -249,9 +249,7 @@ class UserClass {
     return result[0];
   }
   static async findByEmail({ email }) {
-    return await UserModel.findOne({ email })
-      .select({ password: 1, email: 1, name: 1, user_image: 1 })
-      .lean();
+    return await UserModel.findOne({ email }).select({ password: 1, email: 1, name: 1, user_image: 1 });
   }
   static async deleteUser({ user_id }) {
     const user = await UserModel.findByIdAndDelete(user_id).lean();

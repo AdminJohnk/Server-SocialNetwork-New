@@ -21,6 +21,9 @@ router.get('/login-github', asyncHandler(AuthController.loginGithub));
 // Get Token Repo Github
 router.get('/repo-github', asyncHandler(AuthController.getTokenRepoGithub));
 
+// Change Password
+router.post('/change-password', asyncHandler(AuthController.changePassword));
+
 // Forgot Password
 router.post('/forgot', asyncHandler(AuthController.forgotPassword));
 
