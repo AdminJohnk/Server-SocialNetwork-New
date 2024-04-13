@@ -10,11 +10,12 @@ require('./src/database/init.mongodb');
 SenderMailServer();
 
 // init rabbitmq
-// const RabbitInit = require('./src/database/init.rabbit');
-// RabbitInit.connectToRabbitMQ().then(({ channel, connection }) => {
-//   global.__channel = channel;
-//   global.__connection = connection;
-// });
+const RabbitInit = require('./src/database/init.rabbit');
+RabbitInit.connectToRabbitMQ().then(({ channel, connection }) => {
+  console.log('Connected to RabbitMQ');
+  global.__channel = channel;
+  global.__connection = connection;
+});
 
 // init redis
 // const RedisInit = require('./database/init.redis');
