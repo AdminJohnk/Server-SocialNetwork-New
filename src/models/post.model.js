@@ -1,14 +1,14 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
-const { getSelectData, unGetSelectData } = require('../utils/functions');
-const {
+import { model, Schema, Types } from 'mongoose';
+import { getSelectData, unGetSelectData } from '../utils/functions.js';
+import {
   pp_UserDefault,
   se_UserDefault,
   unSe_PostDefault,
   se_UserDefaultForPost
-} = require('../utils/constants');
-const { FriendClass } = require('./friend.model');
+} from '../utils/constants.js';
+import { FriendClass } from './friend.model.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Post';
@@ -544,7 +544,4 @@ class PostClass {
 }
 
 //Export the model
-module.exports = {
-  PostClass,
-  PostModel
-};
+export { PostClass, PostModel };

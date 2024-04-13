@@ -1,6 +1,6 @@
 'use strict';
 
-const { Client, GatewayIntentBits } = require('discord.js');
+import { Client, GatewayIntentBits } from 'discord.js';
 
 const { CHANNELID_DISCORD, TOKEN_DISCORD } = process.env;
 
@@ -25,21 +25,21 @@ class LoggerService {
 
   async sendToFormatCode(logData) {
     const {
-        code,
-        message = 'This is some additional information about the code',
-        title = 'Code Example'
+      code,
+      message = 'This is some additional information about the code',
+      title = 'Code Example'
     } = logData;
-    
+
     const codeMessage = {
-        content: message,
-        embeds: [
-            {
-                color: parseInt('00ff00', 16), // Convert hexadecimal color code to integer
-                title,
-                description: '```json\n' + JSON.stringify(code, null, 2) + '\n```'
-            }
-        ]
-    }
+      content: message,
+      embeds: [
+        {
+          color: parseInt('00ff00', 16), // Convert hexadecimal color code to integer
+          title,
+          description: '```json\n' + JSON.stringify(code, null, 2) + '\n```'
+        }
+      ]
+    };
     this.sendToMessage(codeMessage);
   }
 
@@ -50,8 +50,8 @@ class LoggerService {
       return;
     }
     // mesage user CHAT GPT API CALL
-    channel.send(message).catch(e => console.error(e));
+    channel.send(message).catch((e) => console.error(e));
   }
 }
 
-module.exports = new LoggerService();
+export default new LoggerService();

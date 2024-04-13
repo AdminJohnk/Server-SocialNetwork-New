@@ -1,8 +1,8 @@
 'use strict';
 
-const NotiService = require('../services/notification.service');
-const { OK, CREATED } = require('../core/success.response');
-const { HEADER } = require('../utils/constants');
+import NotiService from '../services/notification.service.js';
+import { OK, CREATED } from '../core/success.response.js';
+import { HEADER } from '../utils/constants.js';
 
 class NotiController {
   static getNewNotification = async (req, res, next) => {
@@ -16,4 +16,4 @@ class NotiController {
   };
 }
 
-module.exports = NotiController;
+export default NotiController;

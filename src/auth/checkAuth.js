@@ -1,22 +1,21 @@
-"use strict";
+'use strict';
 
-const { ApiKeyClass } = require("../models/apiKey.model");
-const { HEADER } = require("../utils/constants");
-
+import { ApiKeyClass } from '../models/apiKey.model.js';
+import { HEADER } from '../utils/constants.js';
 
 const checkApiKey = async (req, res, next) => {
   try {
     const key = req.headers[HEADER.API_KEY]?.toString();
     if (!key) {
       return res.status(403).json({
-        message: "Forbidden Error",
+        message: 'Forbidden Error'
       });
     }
     // check objKey
     const objKey = await ApiKeyClass.findByID(key);
     if (!objKey) {
       return res.status(403).json({
-        message: "Forbidden Error",
+        message: 'Forbidden Error'
       });
     }
 
@@ -32,21 +31,18 @@ const checkPermission = (permission) => {
   return (req, res, next) => {
     if (!req.objKey.permissions) {
       return res.status(403).json({
-        message: "Permission denied",
+        message: 'Permission denied'
       });
     }
 
     const validPermission = req.objKey.permissions.includes(permission);
     if (!validPermission) {
       return res.status(403).json({
-        message: "Permission denied",
+        message: 'Permission denied'
       });
     }
     return next();
   };
 };
 
-module.exports = {
-  checkApiKey,
-  checkPermission,
-};
+export { checkApiKey, checkPermission };

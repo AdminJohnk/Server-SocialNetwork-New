@@ -1,4 +1,4 @@
-const { connectToRabbitMQ } = require('../database/init.rabbit');
+import { connectToRabbitMQ } from '../database/init.rabbit.js';
 
 class PublisherService {
   static async publishNotify(message) {
@@ -29,14 +29,10 @@ class PublisherService {
       await channel.bindQueue(queueResult.queue, notificationExchange);
 
       // 4. send message
-      channel.sendToQueue(
-        queueResult.queue,
-        Buffer.from(JSON.stringify(message)),
-        {
-          persistent: true,
-          expiration: '10000'
-        }
-      );
+      channel.sendToQueue(queueResult.queue, Buffer.from(JSON.stringify(message)), {
+        persistent: true,
+        expiration: '10000'
+      });
 
       setTimeout(() => {
         connection.close();
@@ -47,5 +43,4 @@ class PublisherService {
   }
 }
 
-
-module.exports = PublisherService;
+export default PublisherService;

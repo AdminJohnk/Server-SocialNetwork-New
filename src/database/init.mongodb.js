@@ -1,9 +1,10 @@
 'use strict';
-const mongoose = require('mongoose');
-const { countConnect } = require('../helpers/check.connect');
+import { set, connect } from 'mongoose';
+import { countConnect } from '../helpers/check.connect.js';
+import configsMongodb from '../configs/configs.mongodb.js';
 const {
   db: { host, port, name }
-} = require('../configs/configs.mongodb');
+} = configsMongodb;
 
 class Database {
   constructor() {
@@ -13,8 +14,8 @@ class Database {
   connect(type) {
     if (type === 'mongodb') {
       if (1 === 1) {
-        mongoose.set('debug', true);
-        mongoose.set('debug', { color: true });
+        set('debug', true);
+        set('debug', { color: true });
       }
 
       // const connectString = `mongodb://${host}:${port}/${name}`;
@@ -22,15 +23,14 @@ class Database {
       const connectString =
         'mongodb+srv://socialnetwork:IsBSBM6L1CFiiQWL@socialcluster.i599n1a.mongodb.net/SocialProDEV';
 
-      mongoose
-        .connect(connectString, {
-          maxPoolSize: 50
-        })
+      connect(connectString, {
+        maxPoolSize: 50
+      })
         .then(() => {
           countConnect();
           console.log('Connected to MongoDB');
         })
-        .catch(err => {
+        .catch((err) => {
           console.log('Error connecting to MongoDB');
           console.log(err);
         });
@@ -45,4 +45,5 @@ class Database {
 }
 
 const instanceDB = Database.getInstance();
-module.exports = instanceDB;
+
+export default instanceDB;

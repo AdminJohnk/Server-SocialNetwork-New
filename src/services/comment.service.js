@@ -1,19 +1,19 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
-const { ParentCommentClass } = require('../models/parentComment.model');
-const { ChildCommentClass } = require('../models/childComment.model');
-const { PostClass } = require('../models/post.model');
-const NotificationService = require('../services/notification.service');
-const { Notification } = require('../utils/notificationType');
+} from '../core/error.response.js';
+import { ParentCommentClass } from '../models/parentComment.model.js';
+import { ChildCommentClass } from '../models/childComment.model.js';
+import { PostClass } from '../models/post.model.js';
+import NotificationService from '../services/notification.service.js';
+import { Notification } from '../utils/notificationType.js';
 const { COMMENTPOST_001, REPLYCOMMENT_001, LIKECOMMENT_001, DISLIKECOMMENT_001 } = Notification;
-const PublisherService = require('../services/publisher.service');
+import PublisherService from '../services/publisher.service.js';
 
 class CommentService {
   static async dislikeComment({ comment_id, post, user, owner_comment, type }) {
@@ -306,4 +306,4 @@ class CommentService {
   }
 }
 
-module.exports = CommentService;
+export default CommentService;

@@ -1,10 +1,10 @@
 'use strict';
-const express = require('express');
-const router = express.Router();
-const ChatController = require('../controllers/chat.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
-const { uploadImage } = require('../helpers/uploadImage');
+import { Router } from 'express';
+const router = Router();
+import ChatController from '../controllers/chat.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
+import { uploadImage } from '../helpers/uploadImage.js';
 
 // Authentication
 router.use(authentication);
@@ -88,4 +88,4 @@ router.delete('/conversations/:conversation_id', asyncHandler(ChatController.dis
 
 // =========================================================
 
-module.exports = router;
+export default router;

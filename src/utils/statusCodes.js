@@ -1,4 +1,4 @@
-module.exports = {
+const statusCodes = {
     /**
      * Official Documentation @ https://tools.ietf.org/html/rfc7231#section-6.2.1
      *
@@ -342,3 +342,5 @@ module.exports = {
      */
     NETWORK_AUTHENTICATION_REQUIRED: 511
 }
+
+export default statusCodes;

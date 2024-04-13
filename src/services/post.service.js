@@ -1,27 +1,27 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
-const {
+} from '../core/error.response.js';
+import {
   getInfoData,
   limitData,
   removeUndefinedFields,
   updateNestedObjectParser
-} = require('../utils/functions');
-const axios = require('axios');
-const { RoleUser } = require('../utils/constants');
-const { PostClass } = require('../models/post.model');
-const { UserClass } = require('../models/user.model');
-const { LikeClass } = require('../models/like.model');
-const { CommunityClass } = require('../models/community.model');
-const NotificationService = require('./notification.service');
-const PublisherService = require('./publisher.service');
-const { Notification } = require('../utils/notificationType');
+} from '../utils/functions.js';
+import axios from 'axios';
+import { RoleUser } from '../utils/constants.js';
+import { PostClass } from '../models/post.model.js';
+import { UserClass } from '../models/user.model.js';
+import { LikeClass } from '../models/like.model.js';
+import { CommunityClass } from '../models/community.model.js';
+import NotificationService from './notification.service.js';
+import PublisherService from './publisher.service.js';
+import { Notification } from '../utils/notificationType.js';
 const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
@@ -323,4 +323,4 @@ class PostService {
   }
 }
 
-module.exports = PostService;
+export default PostService;

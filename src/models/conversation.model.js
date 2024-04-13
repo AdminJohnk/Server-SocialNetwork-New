@@ -1,14 +1,14 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
+import { model, Schema, Types } from 'mongoose';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
-const { pp_UserDefault, se_UserDefaultForPost } = require('../utils/constants');
-const { MessageModel } = require('./message.model');
-const { getSelectData } = require('../utils/functions');
+import { pp_UserDefault, se_UserDefaultForPost } from '../utils/constants.js';
+import { MessageModel } from './message.model.js';
+import { getSelectData } from '../utils/functions.js';
 
 const ConversationSchema = new Schema(
   {
@@ -198,7 +198,7 @@ class ConversationClass {
         });
         return await result.populate('members', pp_UserDefault);
       } else {
-        return await foundConversation.populate('members', pp_UserDefault)
+        return await foundConversation.populate('members', pp_UserDefault);
       }
     } else if (type === 'group') {
       const admins = [author];
@@ -218,7 +218,4 @@ class ConversationClass {
   }
 }
 
-module.exports = {
-  ConversationClass,
-  ConversationModel
-};
+export { ConversationClass, ConversationModel };

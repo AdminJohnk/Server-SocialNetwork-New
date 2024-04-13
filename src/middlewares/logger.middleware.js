@@ -1,6 +1,6 @@
 'use strict';
 
-const Logger = require('../loggers/discord.log');
+import Logger from '../loggers/discord.log.js';
 
 const pushToLogDiscord = async (req, res, next) => {
   try {
@@ -16,6 +16,4 @@ const pushToLogDiscord = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  pushToLogDiscord
-};
+export { pushToLogDiscord };

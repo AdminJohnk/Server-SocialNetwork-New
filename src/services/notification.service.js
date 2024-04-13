@@ -1,15 +1,9 @@
-const { connectToRabbitMQ } = require('../database/init.rabbit');
-const { UserIncrClass } = require('../models/user_incr.model');
-const { NotiClass } = require('../models/notification.model');
+import { connectToRabbitMQ } from '../database/init.rabbit.js';
+import { UserIncrClass } from '../models/user_incr.model.js';
+import { NotiClass } from '../models/notification.model.js';
 
 class NotificationService {
-  static getNewNotification = async ({
-    user_id,
-    id_incr,
-    page = 1,
-    limit = 10,
-    sort = { createAt: -1 }
-  }) => {
+  static getNewNotification = async ({ user_id, id_incr, page = 1, limit = 10, sort = { createAt: -1 } }) => {
     await this.getNewNotificationFromMQ({ user_id, id_incr });
     return await NotiClass.getNewNotification({
       user_id,
@@ -35,7 +29,7 @@ class NotificationService {
 
     await channel.consume(
       queueName,
-      async msg => {
+      async (msg) => {
         const message = JSON.parse(msg.content.toString());
         if (message.receiver === user_id) {
           // if (message.receiver === user_id && message.id_incr === id_incr) {
@@ -73,4 +67,4 @@ class NotificationService {
   };
 }
 
-module.exports = NotificationService;
+export default NotificationService;

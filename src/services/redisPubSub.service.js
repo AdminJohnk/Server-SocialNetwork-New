@@ -1,9 +1,9 @@
-const redis = require('redis');
-const { objectConnectRedis } = require('../utils/constants');
+import { createClient } from 'redis';
+import { objectConnectRedis } from '../utils/constants.js';
 
 class RedisPubSubService {
   constructor() {
-    const client = redis.createClient(objectConnectRedis);
+    const client = createClient(objectConnectRedis);
     this.subscriber = client.duplicate();
     this.publisher = client.duplicate();
     this.connect();
@@ -38,4 +38,4 @@ class RedisPubSubService {
   }
 }
 
-module.exports = new RedisPubSubService();
+export default new RedisPubSubService();

@@ -1,13 +1,13 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../../core/error.response');
-const { UserClass } = require('../../models/user.model');
+} from '../../core/error.response.js';
+import { UserClass } from '../../models/user.model.js';
 
 class UserRedisService {
   static async delAll({ user_id }) {
@@ -38,4 +38,4 @@ class UserRedisService {
   }
 }
 
-module.exports = UserRedisService;
+export default UserRedisService;

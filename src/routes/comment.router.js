@@ -1,24 +1,18 @@
 'use strict';
-const express = require('express');
-const router = express.Router();
-const CommentController = require('../controllers/comment.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
+import { Router } from 'express';
+const router = Router();
+import CommentController from '../controllers/comment.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
 
 // Authentication
 router.use(authentication);
 
 /// GET //
 // Get All Parent Comments By Post ID
-router.get(
-  '/parents/:post_id',
-  asyncHandler(CommentController.getAllParentComments)
-);
+router.get('/parents/:post_id', asyncHandler(CommentController.getAllParentComments));
 // Get All Child Comments By Parent ID
-router.get(
-  '/:parent_id/children/:post_id',
-  asyncHandler(CommentController.getAllChildByParentID)
-);
+router.get('/:parent_id/children/:post_id', asyncHandler(CommentController.getAllChildByParentID));
 
 // =========================================================
 
@@ -36,10 +30,7 @@ router.put('/update/:comment_id', asyncHandler(CommentController.updateComment))
 router.put('/like/:comment_id', asyncHandler(CommentController.likeComment));
 
 // Dislike Comment
-router.put(
-  '/dislike/:comment_id',
-  asyncHandler(CommentController.dislikeComment)
-);
+router.put('/dislike/:comment_id', asyncHandler(CommentController.dislikeComment));
 
 // =========================================================
 
@@ -49,4 +40,4 @@ router.delete('/:comment_id', asyncHandler(CommentController.deleteComments));
 
 // =========================================================
 
-module.exports = router;
+export default router;

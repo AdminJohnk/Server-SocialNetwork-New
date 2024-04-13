@@ -1,8 +1,8 @@
 'use strict';
 
-const ImageService = require('../services/image.service');
-const { OK, CREATED } = require('../core/success.response');
-const { HEADER } = require('../utils/constants');
+import ImageService from '../services/image.service.js';
+import { OK, CREATED } from '../core/success.response.js';
+import { HEADER } from '../utils/constants.js';
 
 class ImageController {
   /* Delete Images */
@@ -36,4 +36,4 @@ class ImageController {
   };
 }
 
-module.exports = ImageController;
+export default ImageController;

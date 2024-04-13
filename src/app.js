@@ -1,18 +1,19 @@
-const express = require('express');
+import express, { json, urlencoded } from 'express';
+import morgan from 'morgan';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import compression from 'compression';
+import router from './routes/root.router.js';
+
 const app = express();
-const morgan = require('morgan');
-const helmet = require('helmet');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const compression = require('compression');
-const router = require('./routes/root.router');
 
 // init middleware
 app.use(morgan('dev'));
 app.use(helmet(/* { contentSecurityPolicy: { directives: { 'script-src': ["'self'", "'unsafe-inline'"] } } } */));
 app.use(compression());
 app.use(cookieParser());
-app.use(express.json());
+app.use(json());
 app.use(
   cors({
     origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
@@ -21,7 +22,7 @@ app.use(
   })
 );
 app.use(
-  express.urlencoded({
+  urlencoded({
     extended: true
   })
 );
@@ -51,4 +52,4 @@ app.use((error, req, res, next) => {
   });
 });
 
-module.exports = app;
+export default app;

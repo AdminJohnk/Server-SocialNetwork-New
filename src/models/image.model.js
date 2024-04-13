@@ -1,6 +1,6 @@
 'use strict';
 
-const { Schema, model, Types } = require('mongoose');
+import { Schema, model, Types } from 'mongoose';
 
 const DOCUMENT_NAME = 'Image';
 const COLLECTION_NAME = 'images';
@@ -31,7 +31,4 @@ class ImageClass {
   }
 }
 
-module.exports = {
-  ImageModel,
-  ImageClass
-};
+export { ImageModel, ImageClass };

@@ -1,6 +1,6 @@
-const { model, Schema, Types } = require('mongoose');
-const { se_UserDefault, pp_UserDefault } = require('../utils/constants');
-const { getSelectData } = require('../utils/functions');
+import { model, Schema, Types } from 'mongoose';
+import { se_UserDefault, pp_UserDefault } from '../utils/constants.js';
+import { getSelectData } from '../utils/functions.js';
 
 const ObjectId = Schema.Types.ObjectId;
 
@@ -228,7 +228,4 @@ class CommunityClass {
   }
 }
 
-module.exports = {
-  CommunityModel,
-  CommunityClass
-};
+export { CommunityModel, CommunityClass };

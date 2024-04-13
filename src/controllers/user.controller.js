@@ -1,8 +1,8 @@
 'use strict';
 
-const UserService = require('../services/user.service');
-const { OK, CREATED } = require('../core/success.response');
-const { HEADER } = require('../utils/constants');
+import UserService from '../services/user.service.js';
+import { OK, CREATED } from '../core/success.response.js';
+import { HEADER } from '../utils/constants.js';
 
 class UserController {
   static checkExistEmail = async (req, res, next) => {
@@ -238,4 +238,4 @@ class UserController {
   };
 }
 
-module.exports = UserController;
+export default UserController;

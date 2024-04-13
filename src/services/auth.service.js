@@ -1,14 +1,14 @@
 'use strict';
-const { UserClass } = require('../models/user.model');
-const { KeyTokenClass } = require('../models/keytoken.model');
-const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const qs = require('qs');
-const { createTokenPair } = require('../auth/authUtils');
-const { getInfoData } = require('../utils/functions');
-const { BadRequestError, AuthFailureError, ForbiddenError } = require('../core/error.response');
-const { default: axios } = require('axios');
-const { sendMailForgotPassword } = require('../configs/mailTransport');
+import { UserClass } from '../models/user.model.js';
+import { KeyTokenClass } from '../models/keytoken.model.js';
+import { compare, hash } from 'bcrypt';
+import { randomBytes, generateKeyPairSync } from 'crypto';
+import { stringify, parse } from 'qs';
+import { createTokenPair } from '../auth/authUtils.js';
+import { getInfoData } from '../utils/functions.js';
+import { BadRequestError, AuthFailureError, ForbiddenError } from '../core/error.response.js';
+import axios from 'axios';
+import { sendMailForgotPassword } from '../configs/mailTransport.js';
 
 /**
  * @type {{get: (function(string): {email: string, code: string, expireAt: number, timestamp: number, verified:boolean}), set: (function(string, {email: string, code: string, expireAt: number, timestamp: number}): void), del: (function(string): void)}}
@@ -25,7 +25,7 @@ const cache = {
  * @returns {{email: string, code: string, expireAt: number, timestamp: number}}
  */
 const generateCode = (email) => {
-  const code = crypto.randomBytes(4).toString('hex');
+  const code = randomBytes(4).toString('hex');
   const timestamp = Date.now();
   const expireAt = Date.now() + 10 * 60 * 1000; // 10 minutes in milliseconds
   return { email, code, expireAt, timestamp };
@@ -89,7 +89,7 @@ class AuthService {
     if (!foundUser) throw new BadRequestError('Email not exists!');
 
     // 2 - Match password
-    const match = await bcrypt.compare(password, foundUser.password);
+    const match = await compare(password, foundUser.password);
     if (!match) throw new AuthFailureError('Wrong password!');
 
     // 3 - Create privateKey vs publicKey
@@ -97,7 +97,7 @@ class AuthService {
     // const privateKey = crypto.randomBytes(64).toString('hex');
     // const publicKey = crypto.randomBytes(64).toString('hex');
 
-    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    const { privateKey, publicKey } = generateKeyPairSync('rsa', {
       modulusLength: 4096,
       publicKeyEncoding: {
         type: 'spki',
@@ -135,7 +135,7 @@ class AuthService {
     // Check if user exists
     const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) {
-      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      const { privateKey, publicKey } = generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
           type: 'spki',
@@ -175,7 +175,7 @@ class AuthService {
     });
 
     if (newUser) {
-      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      const { privateKey, publicKey } = generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
           type: 'spki',
@@ -212,7 +212,7 @@ class AuthService {
   static loginWithGithubService = async ({ email }) => {
     const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) {
-      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      const { privateKey, publicKey } = generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
           type: 'spki',
@@ -252,7 +252,7 @@ class AuthService {
     });
 
     if (newUser) {
-      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      const { privateKey, publicKey } = generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
           type: 'spki',
@@ -292,7 +292,7 @@ class AuthService {
     const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) throw new BadRequestError('Email already exists');
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await hash(password, 10);
 
     const newUser = await UserClass.createUser({
       name,
@@ -306,7 +306,7 @@ class AuthService {
       // const privateKey = crypto.randomBytes(64).toString('hex');
       // const publicKey = crypto.randomBytes(64).toString('hex');
 
-      const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      const { privateKey, publicKey } = generateKeyPairSync('rsa', {
         modulusLength: 4096,
         publicKeyEncoding: {
           type: 'spki',
@@ -346,11 +346,11 @@ class AuthService {
 
     if (!foundUser) throw new BadRequestError('Email not exists');
 
-    const match = await bcrypt.compare(oldPassword, foundUser.password);
+    const match = await compare(oldPassword, foundUser.password);
 
     if (!match) throw new BadRequestError('Old password not match');
 
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await hash(newPassword, 10);
 
     await foundUser.updateOne({ $set: { password: passwordHash } });
 
@@ -397,7 +397,7 @@ class AuthService {
     const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new BadRequestError('Email not exists');
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await hash(password, 10);
 
     await foundUser.updateOne({ $set: { password: passwordHash } });
 
@@ -438,7 +438,7 @@ class AuthService {
       code: code
     };
 
-    const queryString = qs.stringify(options);
+    const queryString = stringify(options);
 
     const { data } = await axios.post(`${URL}?${queryString}`, {
       headers: {
@@ -446,7 +446,7 @@ class AuthService {
       }
     });
 
-    const accessTokenGitHub = qs.parse(data).access_token;
+    const accessTokenGitHub = parse(data).access_token;
 
     return {
       accessTokenGitHub
@@ -454,4 +454,4 @@ class AuthService {
   };
 }
 
-module.exports = AuthService;
+export default AuthService;

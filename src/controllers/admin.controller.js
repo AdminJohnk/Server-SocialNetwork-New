@@ -1,7 +1,7 @@
 'use strict';
 
-const AdminService = require('../services/admin.service');
-const { OK, CREATED } = require('../core/success.response');
+import AdminService from '../services/admin.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
 class AdminController {
   static getPostNumber = async (req, res, next) => {
@@ -9,13 +9,13 @@ class AdminController {
       message: 'Get Post Number Successfully',
       metadata: await AdminService.getPostNumber()
     }).send(res);
-  }
+  };
   static getUserNumber = async (req, res, next) => {
     new OK({
       message: 'Get User Number Successfully',
       metadata: await AdminService.getUserNumber()
     }).send(res);
-  }
+  };
   static deleteComment = async (req, res, next) => {
     new OK({
       message: 'Delete Comment Successfully',
@@ -24,7 +24,7 @@ class AdminController {
         ...req.body
       })
     }).send(res);
-  }
+  };
   static updateComment = async (req, res, next) => {
     new OK({
       message: 'Update Comment Successfully',
@@ -121,7 +121,7 @@ class AdminController {
       message: 'Get All Posts Successfully',
       metadata: await AdminService.getAllPosts({
         page: req.params.page,
-        limit: req.params.pagesize,
+        limit: req.params.pagesize
       })
     }).send(res);
   };
@@ -159,7 +159,7 @@ class AdminController {
       message: 'Get All Users Successfully',
       metadata: await AdminService.getAllUsers({
         page: req.params.page,
-        limit: req.params.pagesize,
+        limit: req.params.pagesize
       })
     }).send(res);
   };
@@ -177,4 +177,4 @@ class AdminController {
   };
 }
 
-module.exports = AdminController;
+export default AdminController;

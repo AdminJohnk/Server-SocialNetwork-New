@@ -1,14 +1,14 @@
 'use strict';
 
-const amqp = require('amqplib');
+import { connect } from 'amqplib';
 
 const connectToRabbitMQ = async () => {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_HOST);
+    const connection = await connect(process.env.RABBITMQ_HOST);
     if (!connection) throw new Error('Connection RabbitMQ not established');
 
     const channel = await connection.createChannel();
-    
+
     return { channel, connection };
   } catch (error) {
     console.log(error);
@@ -16,7 +16,7 @@ const connectToRabbitMQ = async () => {
   }
 };
 
-const closeConnection = connection => {
+const closeConnection = (connection) => {
   try {
     setTimeout(() => {
       connection.close();
@@ -28,7 +28,4 @@ const closeConnection = connection => {
   }
 };
 
-module.exports = {
-  connectToRabbitMQ,
-  closeConnection
-};
+export { connectToRabbitMQ, closeConnection };

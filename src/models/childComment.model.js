@@ -1,7 +1,7 @@
 'use strict';
-const { model, Schema, Types } = require('mongoose');
-const { getSelectData, unGetSelectData } = require('../utils/functions');
-const { pp_UserDefault, se_UserDefault } = require('../utils/constants');
+import { model, Schema, Types } from 'mongoose';
+import { getSelectData, unGetSelectData } from '../utils/functions.js';
+import { pp_UserDefault, se_UserDefault } from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'ChildComment';
@@ -203,7 +203,4 @@ class ChildCommentClass {
   }
 }
 
-module.exports = {
-  ChildCommentClass,
-  ChildCommentModel
-};
+export { ChildCommentClass, ChildCommentModel };

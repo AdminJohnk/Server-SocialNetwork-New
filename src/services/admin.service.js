@@ -1,25 +1,22 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
-const bcrypt = require('bcrypt');
-const { UserClass, RoleUser } = require('../models/user.model');
-const { PostClass } = require('../models/post.model');
-const {
-  removeUndefinedFields,
-  updateNestedObjectParser
-} = require('../utils/functions');
-const { ParentCommentClass } = require('../models/parentComment.model');
-const { ChildCommentClass } = require('../models/childComment.model');
-const NotificationService = require('./notification.service');
-const { Notification } = require('../utils/notificationType');
-const PublisherService = require('./publisher.service');
-const { CommunityClass } = require('../models/community.model');
+} from '../core/error.response.js';
+import { hash } from 'bcrypt';
+import { UserClass, RoleUser } from '../models/user.model.js';
+import { PostClass } from '../models/post.model.js';
+import { removeUndefinedFields, updateNestedObjectParser } from '../utils/functions.js';
+import { ParentCommentClass } from '../models/parentComment.model.js';
+import { ChildCommentClass } from '../models/childComment.model.js';
+import NotificationService from './notification.service.js';
+import { Notification } from '../utils/notificationType.js';
+import PublisherService from './publisher.service.js';
+import { CommunityClass } from '../models/community.model.js';
 const { CREATEPOST_001 } = Notification;
 
 class AdminService {
@@ -108,12 +105,7 @@ class AdminService {
       throw new BadRequestError('Type of comment is invalid');
     }
   };
-  static getAllParentComments = async ({
-    post,
-    limit = 20,
-    page = 1,
-    sort = { createdAt: -1 }
-  }) => {
+  static getAllParentComments = async ({ post, limit = 20, page = 1, sort = { createdAt: -1 } }) => {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -139,23 +131,13 @@ class AdminService {
   static async getPostNumber() {
     return await PostClass.getPostNumber_admin();
   }
-  static async createPost({
-    type = 'Post',
-    email,
-    title,
-    content,
-    images,
-    scope,
-    community,
-    visibility
-  }) {
+  static async createPost({ type = 'Post', email, title, content, images, scope, community, visibility }) {
     const foundUser = await UserClass.checkExist({ email });
     if (!foundUser) throw new NotFoundError('User not found');
 
     const user = foundUser._id.toString();
 
-    if (!title || !content)
-      throw new BadRequestError('Post must have title or content');
+    if (!title || !content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
       user,
@@ -215,17 +197,11 @@ class AdminService {
       user_id,
       type: 'post',
       number: -1
-    }).catch(err => console.log(err));
+    }).catch((err) => console.log(err));
 
     return result;
   };
-  static updatePost = async ({
-    post_id,
-    content,
-    title,
-    images,
-    visibility
-  }) => {
+  static updatePost = async ({ post_id, content, title, images, visibility }) => {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -243,11 +219,7 @@ class AdminService {
   static findPostById = async ({ post_id }) => {
     return await PostClass.findPostById_admin({ post_id });
   };
-  static getAllPosts = async ({
-    limit = 20,
-    page = 1,
-    sort = { updatedAt: -1 }
-  }) => {
+  static getAllPosts = async ({ limit = 20, page = 1, sort = { updatedAt: -1 } }) => {
     return await PostClass.getAllPosts_admin({ limit, page, sort });
   };
 
@@ -259,7 +231,7 @@ class AdminService {
     const foundUser = await UserClass.checkExist({ email });
     if (foundUser) throw new ConflictRequestError('Email already exist');
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await hash(password, 10);
 
     return await UserClass.createUser_admin({
       name,
@@ -276,11 +248,7 @@ class AdminService {
 
     return await UserClass.updateUser_admin({ user_id, payload });
   };
-  static getAllUsers = async ({
-    limit = 20,
-    page = 1,
-    sort = { updatedAt: -1 }
-  }) => {
+  static getAllUsers = async ({ limit = 20, page = 1, sort = { updatedAt: -1 } }) => {
     return await UserClass.getAllUsers_admin({ limit, page, sort });
   };
   static deleteUser = async ({ user_id }) => {
@@ -291,4 +259,4 @@ class AdminService {
   };
 }
 
-module.exports = AdminService;
+export default AdminService;

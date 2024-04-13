@@ -1,35 +1,33 @@
 'use strict';
-const mongoose = require('mongoose');
-const os = require('os');
-const process = require('process');
+
+import { connections } from 'mongoose';
+import { cpus, totalmem } from 'os';
+import { memoryUsage as _memoryUsage } from 'process';
 
 // count Connect
 const countConnect = () => {
-    const numConnection = mongoose.connections.length;
-    console.log(`Number of connections: ${numConnection}`);
-}
+  const numConnection = connections.length;
+  console.log(`Number of connections: ${numConnection}`);
+};
 
 // check over load (Thông báo khi Server quá tải Connect)
 const checkOverLoad = () => {
-    setInterval(() => {
-        const numConnection = mongoose.connections.length;
-        const numCores = os.cpus().length;
-        const memoryUsage = process.memoryUsage().rss;
-        const memoryTotal = os.totalmem();
+  setInterval(() => {
+    const numConnection = connections.length;
+    const numCores = cpus().length;
+    const memoryUsage = _memoryUsage().rss;
+    const memoryTotal = totalmem();
 
-        // Giả sử 1 core chịu tối đa 5 connect. Nếu vượt quá thì thông báo
-        const maxConnection = numCores * 5;
-        if (numConnection > maxConnection) {
-            console.log('Connect overload detected!')
-        }
-        
-        console.log('---------------------------------');
-        console.log(`Number of connections: ${numConnection}`);
-        console.log(`Memory usage: ${Number(memoryUsage)/(1024**2)}/${Number(memoryTotal)/(1024**2)} MB`);
+    // Giả sử 1 core chịu tối đa 5 connect. Nếu vượt quá thì thông báo
+    const maxConnection = numCores * 5;
+    if (numConnection > maxConnection) {
+      console.log('Connect overload detected!');
+    }
 
-    }, 5000); // Theo dõi mỗi 5s
-}
+    console.log('---------------------------------');
+    console.log(`Number of connections: ${numConnection}`);
+    console.log(`Memory usage: ${Number(memoryUsage) / 1024 ** 2}/${Number(memoryTotal) / 1024 ** 2} MB`);
+  }, 5000); // Theo dõi mỗi 5s
+};
 
-module.exports = {
-    countConnect, checkOverLoad,
-}
+export { countConnect, checkOverLoad };

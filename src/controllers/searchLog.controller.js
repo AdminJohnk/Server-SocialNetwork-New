@@ -1,7 +1,7 @@
 'use strict';
 
-const SearchLogService = require('../services/searchLog.service');
-const { OK, CREATED } = require('../core/success.response');
+import SearchLogService from '../services/searchLog.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
 class SearchLogController {
   static async createSearchLog(req, res, next) {
@@ -32,4 +32,4 @@ class SearchLogController {
   }
 }
 
-module.exports = SearchLogController;
+export default SearchLogController;

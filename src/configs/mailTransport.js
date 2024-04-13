@@ -1,6 +1,6 @@
-const nodeMailer = require('nodemailer');
+import { createTransport } from 'nodemailer';
 
-const transporter = nodeMailer.createTransport({
+const transporter = createTransport({
   host: 'smtp.gmail.com',
   port: 465,
   secure: true,
@@ -20,26 +20,25 @@ const SendMail = (msg) => {
   });
 };
 
-module.exports = {
-  SenderMailServer: () => {
-    transporter.verify((error, success) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log('Server is ready to take our messages');
-      }
-    });
-  },
+export function SenderMailServer() {
+  transporter.verify((error, success) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Server is ready to take our messages');
+    }
+  });
+}
 
-  sendMailForgotPassword: (email, code) => {
-    const msg = {
-      to: email,
-      from: {
-        name: 'DevHub',
-        address: 'support@devhub.com'
-      },
-      subject: 'Reset your DevHub password',
-      html: `
+export function sendMailForgotPassword(email, code) {
+  const msg = {
+    to: email,
+    from: {
+      name: 'DevHub',
+      address: 'support@devhub.com'
+    },
+    subject: 'Reset your DevHub password',
+    html: `
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
           <tr>
             <td style="background-color: #f4f4f4; padding: 20px; text-align: center;">
@@ -65,7 +64,6 @@ module.exports = {
           </tr>
         </table>
       `
-    };
-    return SendMail(msg);
-  }
-};
+  };
+  return SendMail(msg);
+}
