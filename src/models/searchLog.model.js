@@ -1,10 +1,10 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData, getSelectData } = require('../utils/functions');
-const { avt_default, se_UserDefault, RoleUser } = require('../utils/constants');
+import { model, Schema, Types } from 'mongoose';
+import { unGetSelectData, getSelectData } from '../utils/functions.js';
+import { avt_default, se_UserDefault, RoleUser } from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
-const { UserIncrClass } = require('./user_incr.model');
+import { UserIncrClass } from './user_incr.model.js';
 
 const DOCUMENT_NAME = 'SearchLog';
 const COLLECTION_NAME = 'search_logs';
@@ -109,7 +109,4 @@ class SearchLogClass {
   }
 }
 
-module.exports = {
-  SearchLogModel,
-  SearchLogClass
-};
+export { SearchLogModel, SearchLogClass };

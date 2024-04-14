@@ -1,13 +1,13 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../../core/error.response');
-const { PostClass } = require('../../models/post.model');
+} from '../../core/error.response.js';
+import { PostClass } from '../../models/post.model.js';
 
 class PostRedisService {
   static delAll = async ({ post_id }) => {
@@ -28,4 +28,4 @@ class PostRedisService {
   }
 }
 
-module.exports = PostRedisService;
+export default PostRedisService;

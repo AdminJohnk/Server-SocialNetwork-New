@@ -1,7 +1,7 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
-const { pp_UserDefault } = require('../utils/constants');
+import { model, Schema, Types } from 'mongoose';
+import { pp_UserDefault } from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Like';
@@ -54,7 +54,4 @@ class LikeClass {
 }
 
 //Export the model
-module.exports = {
-  LikeClass,
-  LikeModel
-};
+export { LikeClass, LikeModel };

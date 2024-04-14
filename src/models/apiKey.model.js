@@ -1,7 +1,7 @@
 'use strict';
 
 // key !dmbg install by Mongo Snippets for Node-js
-const { model, Schema } = require('mongoose');
+import { model, Schema } from 'mongoose';
 const DOCUMENT_NAME = 'Apikey';
 const COLLECTION_NAME = 'apikeys';
 
@@ -37,7 +37,4 @@ class ApiKeyClass {
     return objKey;
   }
 }
-module.exports = {
-  ApiKeyModel,
-  ApiKeyClass
-}
+export { ApiKeyModel, ApiKeyClass };

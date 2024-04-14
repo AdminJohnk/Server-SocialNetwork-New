@@ -1,18 +1,13 @@
-const path = require('path');
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const sharp = require('sharp');
-const fs = require('fs');
-const {
-  S3Client,
-  GetObjectCommand,
-  DeleteObjectCommand
-} = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const crypto = require('crypto');
+import { extname } from 'path';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import sharp from 'sharp';
+import fs from 'fs';
+import { S3Client, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { randomBytes } from 'crypto';
 
-const generateFileName = (bytes = 16) =>
-  crypto.randomBytes(bytes).toString('hex');
+const generateFileName = (bytes = 16) => randomBytes(bytes).toString('hex');
 
 const s3 = new S3Client({
   credentials: {
@@ -25,9 +20,7 @@ const s3 = new S3Client({
 function sanitizeFile(file, cb) {
   const fileExts = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'];
 
-  const isAllowedExt = fileExts.includes(
-    path.extname(file.originalname.toLowerCase())
-  );
+  const isAllowedExt = fileExts.includes(extname(file.originalname.toLowerCase()));
 
   const isAllowedMimeType = file.mimetype?.startsWith('image/');
 
@@ -46,11 +39,7 @@ const s3Storage = multerS3({
     cb(null, { fieldname: file.fieldname });
   },
   key: (req, file, cb) => {
-    const fileName =
-      Date.now() +
-      '_' +
-      generateFileName() +
-      path.extname(file.originalname.toLowerCase());
+    const fileName = Date.now() + '_' + generateFileName() + extname(file.originalname.toLowerCase());
     cb(null, fileName);
   }
 });
@@ -66,7 +55,7 @@ const uploadImage = multer({
   }
 });
 
-const deleteImage = async key => {
+const deleteImage = async (key) => {
   const params = {
     Bucket: process.env.S3_BUCKET_NAME,
     Key: key
@@ -78,7 +67,4 @@ const deleteImage = async key => {
   }
 };
 
-module.exports = {
-  uploadImage,
-  deleteImage
-};
+export { uploadImage, deleteImage };

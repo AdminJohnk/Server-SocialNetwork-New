@@ -1,7 +1,7 @@
 'use strict';
 
-const CommunityService = require('../services/community.service');
-const { OK, CREATED } = require('../core/success.response');
+import CommunityService from '../services/community.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
 class CommunityController {
   static searchMember = async (req, res, next) => {
@@ -98,4 +98,4 @@ class CommunityController {
   };
 }
 
-module.exports = CommunityController;
+export default CommunityController;

@@ -1,9 +1,9 @@
 'use strict';
 
-const _ = require('lodash');
-const { Types } = require('mongoose');
+import _ from 'lodash';
+import { Types } from 'mongoose';
 
-const convertToObjectIDMongoDB = id => new Types.ObjectId(id);
+const convertToObjectIDMongoDB = (id) => new Types.ObjectId(id);
 
 /*
     const a = {
@@ -17,13 +17,13 @@ const convertToObjectIDMongoDB = id => new Types.ObjectId(id);
         `c.d`: 1
     })
  */
-const updateNestedObjectParser = obj => {
+const updateNestedObjectParser = (obj) => {
   // console.log("Nested1::", obj);
   const final = {};
-  Object.keys(obj).forEach(key => {
+  Object.keys(obj).forEach((key) => {
     if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
       const nested = updateNestedObjectParser(obj[key]);
-      Object.keys(nested).forEach(nestedKey => {
+      Object.keys(nested).forEach((nestedKey) => {
         final[`${key}.${nestedKey}`] = nested[nestedKey];
       });
     } else {
@@ -34,10 +34,10 @@ const updateNestedObjectParser = obj => {
   return final;
 };
 
-const removeUndefinedFields = obj => {
+const removeUndefinedFields = (obj) => {
   //   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v != null));
   // console.log('obj1::', obj);
-  Object.keys(obj).forEach(k => {
+  Object.keys(obj).forEach((k) => {
     if (obj[k] === null || obj[k] === undefined) delete obj[k];
   });
   // console.log('obj2::', obj);
@@ -57,15 +57,15 @@ const getInfoData = ({ fields = [], object = {} }) => {
 
 // ['name', 'age'] -> {name: 1, age: 1}
 const getSelectData = (select = []) => {
-  return Object.fromEntries(select.map(item => [item, 1]));
+  return Object.fromEntries(select.map((item) => [item, 1]));
 };
 
 // ['name', 'age'] -> {name: 0, age: 0}
 const unGetSelectData = (select = []) => {
-  return Object.fromEntries(select.map(item => [item, 0]));
+  return Object.fromEntries(select.map((item) => [item, 0]));
 };
 
-module.exports = {
+export {
   limitData,
   getInfoData,
   getSelectData,

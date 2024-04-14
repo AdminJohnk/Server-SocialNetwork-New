@@ -50,7 +50,4 @@ const Notification = {
 
 const EnumType = Object.keys(Notification);
 
-module.exports = {
-  Notification,
-  EnumType
-};
+export { Notification, EnumType };

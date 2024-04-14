@@ -1,9 +1,9 @@
 'use strict';
-const express = require('express');
-const router = express.Router();
-const UserController = require('../controllers/user.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
+import { Router } from 'express';
+const router = Router();
+import UserController from '../controllers/user.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
 
 // Authentication
 router.use(authentication);
@@ -72,4 +72,4 @@ router.delete('/delete', asyncHandler(UserController.deleteUser));
 
 // =========================================================
 
-module.exports = router;
+export default router;

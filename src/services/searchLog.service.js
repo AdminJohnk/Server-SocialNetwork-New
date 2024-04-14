@@ -1,7 +1,7 @@
 'use strict';
-const { AuthFailureError, NotFoundError, ForbiddenError } = require('../core/error.response');
-const { SearchLogClass } = require('../models/searchLog.model');
-const { limitData } = require('../utils/functions');
+import { AuthFailureError, NotFoundError, ForbiddenError } from '../core/error.response.js';
+import { SearchLogClass } from '../models/searchLog.model.js';
+import { limitData } from '../utils/functions.js';
 
 class SearchLogService {
   static async createSearchLog({ user, keyword, recently_search }) {
@@ -10,9 +10,9 @@ class SearchLogService {
   static async getSearchLog({ user }) {
     return await SearchLogClass.getSearchLog({ user });
   }
-  static async deleteSearchLog({ user,keyword, recently_search }) {
+  static async deleteSearchLog({ user, keyword, recently_search }) {
     return await SearchLogClass.deleteSearchLog({ user, keyword, recently_search });
   }
 }
 
-module.exports = SearchLogService;
+export default SearchLogService;

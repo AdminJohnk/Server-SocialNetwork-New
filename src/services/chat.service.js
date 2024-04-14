@@ -1,19 +1,19 @@
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
+} from '../core/error.response.js';
 
-const { UserClass } = require('../models/user.model');
-const { ConversationClass } = require('../models/conversation.model');
-const { MessageClass } = require('../models/message.model');
+import { UserClass } from '../models/user.model.js';
+import { ConversationClass } from '../models/conversation.model.js';
+import { MessageClass } from '../models/message.model.js';
 
-const { AccessToken, RoomServiceClient } = require('livekit-server-sdk');
-const { ImageClass } = require('../models/image.model');
-const ImageService = require('./image.service');
-const { deleteImage } = require('../helpers/uploadImage');
+import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
+import { ImageClass } from '../models/image.model.js';
+import ImageService from './image.service.js';
+import { deleteImage } from '../helpers/uploadImage.js';
 
 const livekitHost = process.env.LK_SERVER_URL;
 const roomService = new RoomServiceClient(livekitHost, process.env.LK_API_KEY, process.env.LK_API_SECRET);
@@ -364,4 +364,4 @@ class ChatService {
   };
 }
 
-module.exports = ChatService;
+export default ChatService;

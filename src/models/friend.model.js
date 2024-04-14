@@ -1,7 +1,7 @@
 'use strict';
-const { model, Schema, Types } = require('mongoose');
-const { getSelectData, unGetSelectData } = require('../utils/functions');
-const { se_UserDefault, pp_UserDefault } = require('../utils/constants');
+import { model, Schema, Types } from 'mongoose';
+import { getSelectData, unGetSelectData } from '../utils/functions.js';
+import { se_UserDefault, pp_UserDefault } from '../utils/constants.js';
 
 const ObjectId = Types.ObjectId;
 
@@ -184,7 +184,7 @@ class FriendClass {
   static async getRequestsSent({ user_id }) {
     const user = await FriendModel.findOne({ user: user_id });
     if (!user) return [];
-    
+
     return user.requestsSent;
   }
   static async getRequestsReceived({ user_id }) {
@@ -195,7 +195,4 @@ class FriendClass {
   }
 }
 
-module.exports = {
-  FriendModel,
-  FriendClass
-};
+export { FriendModel, FriendClass };

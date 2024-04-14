@@ -1,10 +1,10 @@
 'use strict';
 
-const SearchLogController = require('../controllers/searchLog.controller');
-const express = require('express');
-const router = express.Router();
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
+import SearchLogController from '../controllers/searchLog.controller.js';
+import { Router } from 'express';
+const router = Router();
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
 
 // Authentication
 router.use(authentication);
@@ -18,4 +18,4 @@ router.post('/', asyncHandler(SearchLogController.createSearchLog));
 // Delete Search Log
 router.put('/', asyncHandler(SearchLogController.deleteSearchLog));
 
-module.exports = router;
+export default router;

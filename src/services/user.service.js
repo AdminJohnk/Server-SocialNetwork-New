@@ -1,21 +1,21 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
-const { getInfoData, limitData } = require('../utils/functions');
-const axios = require('axios');
-const { UserClass } = require('../models/user.model');
-const { PostClass } = require('../models/post.model');
-const { LikeClass } = require('../models/like.model');
-const { FriendClass } = require('../models/friend.model');
-const PublisherService = require('./publisher.service');
-const NotificationService = require('./notification.service');
-const { Notification } = require('../utils/notificationType');
+} from '../core/error.response.js';
+import { getInfoData, limitData } from '../utils/functions.js';
+import axios from 'axios';
+import { UserClass } from '../models/user.model.js';
+import { PostClass } from '../models/post.model.js';
+import { LikeClass } from '../models/like.model.js';
+import { FriendClass } from '../models/friend.model.js';
+import PublisherService from './publisher.service.js';
+import NotificationService from './notification.service.js';
+import { Notification } from '../utils/notificationType.js';
 const { LIKEPOST_001, SENDFRIENDREQUEST_001, ACCEPTFRIENDREQUEST_001 } = Notification;
 
 class UserService {
@@ -231,4 +231,4 @@ class UserService {
   }
 }
 
-module.exports = UserService;
+export default UserService;

@@ -1,17 +1,17 @@
-require('dotenv').config();
-const { checkOverLoad } = require('./src/helpers/check.connect');
-const { SenderMailServer } = require('./src/configs/mailTransport');
-const app = require('./src/app');
+import 'dotenv/config';
+import { checkOverLoad } from './src/helpers/check.connect.js';
+import { SenderMailServer } from './src/configs/mailTransport.js';
+import app from './src/app.js';
 
 // init db
-require('./src/database/init.mongodb');
+import './src/database/init.mongodb.js';
 
 // init mail service
 SenderMailServer();
 
 // init rabbitmq
-const RabbitInit = require('./src/database/init.rabbit');
-RabbitInit.connectToRabbitMQ().then(({ channel, connection }) => {
+import { connectToRabbitMQ } from './src/database/init.rabbit.js';
+connectToRabbitMQ().then(({ channel, connection }) => {
   console.log('Connected to RabbitMQ');
   global.__channel = channel;
   global.__connection = connection;

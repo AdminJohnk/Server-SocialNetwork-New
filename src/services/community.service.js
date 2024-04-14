@@ -1,19 +1,19 @@
 'use strict';
 
-const { Types } = require('mongoose');
+import { Types } from 'mongoose';
 const ObjectId = Types.ObjectId;
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
+} from '../core/error.response.js';
 
-const { CommunityClass } = require('../models/community.model');
-const { UserClass } = require('../models/user.model');
-const { PostClass } = require('../models/post.model');
+import { CommunityClass } from '../models/community.model.js';
+import { UserClass } from '../models/user.model.js';
+import { PostClass } from '../models/post.model.js';
 
 class CommunityService {
   static async searchMember({ community_id, key_search }) {
@@ -179,4 +179,4 @@ class CommunityService {
   }
 }
 
-module.exports = CommunityService;
+export default CommunityService;

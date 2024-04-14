@@ -1,10 +1,10 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
-const { unGetSelectData, getSelectData } = require('../utils/functions');
-const { avt_default, se_UserDefault, RoleUser, se_UserAdmin } = require('../utils/constants');
+import { model, Schema, Types } from 'mongoose';
+import { unGetSelectData, getSelectData } from '../utils/functions.js';
+import { avt_default, se_UserDefault, RoleUser, se_UserAdmin } from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
-const { UserIncrClass } = require('./user_incr.model');
+import { UserIncrClass } from './user_incr.model.js';
 
 const DOCUMENT_NAME = 'User';
 const COLLECTION_NAME = 'users';
@@ -334,8 +334,4 @@ class UserClass {
 }
 
 //Export the model
-module.exports = {
-  RoleUser,
-  UserClass,
-  UserModel
-};
+export { RoleUser, UserClass, UserModel };

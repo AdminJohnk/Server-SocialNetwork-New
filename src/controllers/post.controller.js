@@ -1,7 +1,7 @@
 'use strict';
 
-const PostService = require('../services/post.service');
-const { OK, CREATED } = require('../core/success.response');
+import PostService from '../services/post.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
 class PostController {
   static async getSavedPosts(req, res, next) {
@@ -222,4 +222,4 @@ class PostController {
   };
 }
 
-module.exports = PostController;
+export default PostController;

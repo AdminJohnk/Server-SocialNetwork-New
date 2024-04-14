@@ -1,4 +1,4 @@
-const redis = require('redis');
+import { createClient } from 'redis';
 const redis_link = process.env.REDIS_LINK_DEV || process.env.REDIS_LINK_PRO;
 
 class RedisInit {
@@ -16,7 +16,7 @@ class RedisInit {
   }
   static async getInstanceRedis() {
     if (!this.redisClient) {
-      this.redisClient = redis.createClient({ url: redis_link });
+      this.redisClient = createClient({ url: redis_link });
       await this.connect().catch(err => {
         throw new Error(err);
       });
@@ -25,4 +25,4 @@ class RedisInit {
   }
 }
 
-module.exports = RedisInit
+export default RedisInit

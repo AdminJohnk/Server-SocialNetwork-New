@@ -1,6 +1,6 @@
 'use strict';
 
-const { Schema, model, Types } = require('mongoose');
+import { Schema, model, Types } from 'mongoose';
 
 const DOCUMENT_NAME = 'Key';
 const COLLECTION_NAME = 'keys';
@@ -72,7 +72,4 @@ class KeyTokenClass {
   }
 }
 
-module.exports = {
-  KeyTokenModel,
-  KeyTokenClass
-};
+export { KeyTokenModel, KeyTokenClass };

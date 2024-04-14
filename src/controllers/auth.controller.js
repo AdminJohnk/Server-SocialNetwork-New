@@ -1,7 +1,7 @@
 'use strict';
-const qs = require('qs');
-const AuthService = require('../services/auth.service');
-const { OK, CREATED } = require('../core/success.response');
+import qs from 'qs';
+import AuthService from '../services/auth.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
 class AuthController {
   static handleRefreshToken = async (req, res, next) => {
@@ -100,4 +100,4 @@ class AuthController {
   };
 }
 
-module.exports = AuthController;
+export default AuthController;

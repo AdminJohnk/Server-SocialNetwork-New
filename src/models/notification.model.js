@@ -1,13 +1,13 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
+import { model, Schema, Types } from 'mongoose';
 const ObjectId = Types.ObjectId;
-const { pp_UserDefault } = require('../utils/constants');
+import { pp_UserDefault } from '../utils/constants.js';
 
 const DOCUMENT_NAME = 'Notification';
 const COLLECTION_NAME = 'notifications';
 
-const { EnumType } = require('../utils/notificationType');
+import { EnumType } from '../utils/notificationType.js';
 
 const NotificationSchema = new Schema(
   {
@@ -44,7 +44,4 @@ class NotiClass {
   }
 }
 
-module.exports = {
-  NotiModel,
-  NotiClass
-};
+export { NotiModel, NotiClass };

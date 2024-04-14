@@ -1,7 +1,7 @@
 'use strict';
 
-const CommentService = require('../services/comment.service');
-const { OK, CREATED } = require('../core/success.response');
+import CommentService from '../services/comment.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
 class CommentController {
   /* 
@@ -140,4 +140,4 @@ class CommentController {
   };
 }
 
-module.exports = CommentController;
+export default CommentController;

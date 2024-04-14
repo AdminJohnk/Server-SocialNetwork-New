@@ -1,14 +1,14 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
-const { UserClass } = require('../models/user.model');
-const { RoleUser } = require('../utils/constants');
+} from '../core/error.response.js';
+import { UserClass } from '../models/user.model.js';
+import { RoleUser } from '../utils/constants.js';
 
 const checkIsAdmin = async (req, res, next) => {
   const { userId } = req.user;
@@ -22,4 +22,4 @@ const checkIsAdmin = async (req, res, next) => {
   next();
 };
 
-module.exports = { checkIsAdmin };
+export { checkIsAdmin };

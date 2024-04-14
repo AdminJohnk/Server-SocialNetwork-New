@@ -1,9 +1,9 @@
 'use strict';
-const express = require('express');
-const router = express.Router();
-const NotiController = require('../controllers/notification.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
+import { Router } from 'express';
+const router = Router();
+import NotiController from '../controllers/notification.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
 
 // Authentication
 router.use(authentication);
@@ -26,4 +26,4 @@ router.get('/newnoti/:id_incr', asyncHandler(NotiController.getNewNotification))
 
 // =========================================================
 
-module.exports = router;
+export default router;

@@ -1,10 +1,10 @@
 'use strict';
 
-const express = require('express');
-const router = express.Router();
-const AuthController = require('../controllers/auth.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
+import { Router } from 'express';
+const router = Router();
+import AuthController from '../controllers/auth.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
 
 // Sign-up
 router.post('/signup', asyncHandler(AuthController.signUp));
@@ -48,4 +48,4 @@ router.post('/logout', asyncHandler(AuthController.logout));
 // Refresh Token
 router.post('/refreshtoken', asyncHandler(AuthController.handleRefreshToken));
 
-module.exports = router;
+export default router;

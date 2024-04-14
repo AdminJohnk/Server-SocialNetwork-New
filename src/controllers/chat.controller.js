@@ -1,9 +1,9 @@
 'use strict';
 
-const ChatService = require('../services/chat.service');
-const { OK, CREATED } = require('../core/success.response');
+import ChatService from '../services/chat.service.js';
+import { OK, CREATED } from '../core/success.response.js';
 
-class CommentController {
+class ChatController {
   /* 
     Remove Admin Role
     Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/admins/remove
@@ -246,4 +246,4 @@ class CommentController {
   };
 }
 
-module.exports = CommentController;
+export default ChatController;

@@ -1,7 +1,7 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
-const { pp_UserDefault } = require('../utils/constants');
+import { model, Schema, Types } from 'mongoose';
+import { pp_UserDefault } from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Message';
@@ -60,7 +60,4 @@ class MessageClass {
   }
 }
 
-module.exports = {
-  MessageClass,
-  MessageModel
-};
+export { MessageClass, MessageModel };

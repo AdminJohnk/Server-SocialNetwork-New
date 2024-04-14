@@ -1,15 +1,15 @@
 'use strict';
 
-const {
+import {
   ConflictRequestError,
   BadRequestError,
   AuthFailureError,
   NotFoundError,
   ForbiddenError
-} = require('../core/error.response');
+} from '../core/error.response.js';
 
-const { ImageClass } = require('../models/image.model');
-const { deleteImage } = require('../helpers/uploadImage');
+import { ImageClass } from '../models/image.model.js';
+import { deleteImage } from '../helpers/uploadImage.js';
 
 class ImageService {
   static deleteImages = async ({ images }) => {
@@ -32,4 +32,4 @@ class ImageService {
   };
 }
 
-module.exports = ImageService;
+export default ImageService;

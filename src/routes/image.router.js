@@ -1,10 +1,10 @@
 'use strict';
-const express = require('express');
-const router = express.Router();
-const ImageController = require('../controllers/image.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
-const { uploadImage } = require('../helpers/uploadImage');
+import { Router } from 'express';
+const router = Router();
+import ImageController from '../controllers/image.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
+import { uploadImage } from '../helpers/uploadImage.js';
 
 // Authentication
 router.use(authentication);
@@ -31,4 +31,4 @@ router.delete('/delete-multiple', asyncHandler(ImageController.deleteImages));
 
 // =========================================================
 
-module.exports = router;
+export default router;

@@ -1,6 +1,6 @@
 'use strict';
 
-const { model, Schema, Types } = require('mongoose');
+import { model, Schema, Types } from 'mongoose';
 
 const DOCUMENT_NAME = 'UserIncr';
 const COLLECTION_NAME = 'userIncrs';
@@ -59,7 +59,4 @@ class UserIncrClass {
   }
 }
 
-module.exports = {
-  UserIncrModel,
-  UserIncrClass
-};
+export { UserIncrModel, UserIncrClass };

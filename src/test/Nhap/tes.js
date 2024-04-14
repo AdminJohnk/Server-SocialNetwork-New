@@ -7,7 +7,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const { S3Client, GetObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { MessageModel } = require('../../models/message.model');
+const { MessageModel } = require('../../models/message.model.js');
 const { default: mongoose } = require('mongoose');
 
 // var MessageSchema = new Schema(
@@ -37,4 +37,4 @@ router.get('', async (req, res, next) => {
   res.send('done');
 });
 
-module.exports = router;
+export default router;

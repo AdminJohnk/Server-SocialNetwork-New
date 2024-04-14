@@ -1,9 +1,9 @@
 'use strict';
-const express = require('express');
-const router = express.Router();
-const CommunityController = require('../controllers/community.controller');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { authentication } = require('../auth/authUtils');
+import { Router } from 'express';
+const router = Router();
+import CommunityController from '../controllers/community.controller.js';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { authentication } from '../auth/authUtils.js';
 
 // Authentication
 router.use(authentication);
@@ -52,4 +52,4 @@ router.put('/delete-members/:community_id', asyncHandler(CommunityController.del
 
 // =========================================================
 
-module.exports = router;
+export default router;

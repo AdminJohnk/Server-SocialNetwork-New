@@ -1,10 +1,10 @@
 'use strict';
 
-const JWT = require('jsonwebtoken');
-const { asyncHandler } = require('../helpers/asyncHandler');
-const { KeyTokenClass } = require('../models/keytoken.model');
-const { AuthFailureError, NotFoundError } = require('../core/error.response');
-const { HEADER } = require('../utils/constants');
+import JWT from 'jsonwebtoken';
+import { asyncHandler } from '../helpers/asyncHandler.js';
+import { KeyTokenClass } from '../models/keytoken.model.js';
+import { AuthFailureError, NotFoundError } from '../core/error.response.js';
+import { HEADER } from '../utils/constants.js';
 
 const authentication = asyncHandler(async (req, res, next) => {
   const userId = req.headers[HEADER.CLIENT_ID];
@@ -17,8 +17,7 @@ const authentication = asyncHandler(async (req, res, next) => {
     try {
       const refreshToken = req.headers[HEADER.REFRESHTOKEN];
       const decodeUser = JWT.verify(refreshToken, keyStore.privateKey);
-      if (userId !== decodeUser.userId)
-        throw new AuthFailureError('Invalid UserId');
+      if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid UserId');
       req.keyStore = keyStore;
       req.user = decodeUser;
       req.refreshToken = refreshToken;
@@ -33,8 +32,7 @@ const authentication = asyncHandler(async (req, res, next) => {
 
   try {
     const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
-    if (userId !== decodeUser.userId)
-      throw new AuthFailureError('Invalid UserId');
+    if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid UserId');
     req.keyStore = keyStore;
     req.user = decodeUser;
     return next();
@@ -79,9 +77,4 @@ const verifyToken = async (token, keySecret) => {
   }
 };
 
-module.exports = {
-  HEADER,
-  createTokenPair,
-  authentication,
-  verifyToken
-};
+export { HEADER, createTokenPair, authentication, verifyToken };
