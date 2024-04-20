@@ -245,14 +245,14 @@ class PostService {
     return await PostClass.findByID({ post_id, user, scope, isFullSearch });
   }
 
-  static async sharePost({ user, post, owner_post }) {
+  static async sharePost({ user, post, owner_post, content_share }) {
     const foundPost = await PostClass.checkExist({
       _id: post,
       'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { numShare } = await PostClass.sharePost({ user, post, owner_post });
+    const { numShare } = await PostClass.sharePost({ user, post, owner_post, content_share });
 
     if (user !== owner_post && numShare === 1) {
       const msg = NotificationService.createMsgToPublish({

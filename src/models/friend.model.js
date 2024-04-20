@@ -64,16 +64,19 @@ class FriendClass {
     if (!user) return [];
     return user.friends;
   }
+
   static async getAllFriends({ user_id }) {
     const user = await FriendModel.findOne({ user: user_id })
       .select('friends')
       .populate({
         path: 'friends',
-        select: getSelectData(se_UserDefault)
+        select: getSelectData([...se_UserDefault, 'experiences'])
       });
     if (!user) return [];
     return user.friends;
   }
+
+  // me
   static async sendFriendRequest({ user_id, friend_id }) {
     let [user, friend] = await Promise.all([
       FriendModel.findOne({ user: user_id }),
@@ -122,7 +125,11 @@ class FriendClass {
     ]);
 
     if (!user || !friend) return null;
-    if (!user.requestsSent.includes(friend_id) || !friend.requestsReceived.includes(user_id)) return null;
+    if (
+      !user.requestsSent.includes(friend_id) ||
+      !friend.requestsReceived.includes(user_id)
+    )
+      return null;
 
     friend.requestsReceived.pull(user_id);
     user.requestsSent.pull(friend_id);
@@ -131,6 +138,25 @@ class FriendClass {
 
     return user;
   }
+  static async deleteFriend({ user_id, friend_id }) {
+    const [user, friend] = await Promise.all([
+      FriendModel.findOne({ user: user_id }),
+      FriendModel.findOne({ user: friend_id })
+    ]);
+
+    if (!user || !friend) return null;
+    if (!user.friends.includes(friend_id) || !friend.friends.includes(user_id))
+      return null;
+
+    friend.friends.pull(user_id);
+    user.friends.pull(friend_id);
+
+    await Promise.all([friend.save(), user.save()]);
+
+    return user;
+  }
+
+  // friend
   static async acceptFriendRequest({ user_id, friend_id }) {
     const [user, friend] = await Promise.all([
       FriendModel.findOne({ user: user_id }),
@@ -138,7 +164,11 @@ class FriendClass {
     ]);
 
     if (!user || !friend) return null;
-    if (!friend.requestsSent.includes(user_id) || !user.requestsReceived.includes(friend_id)) return null;
+    if (
+      !friend.requestsSent.includes(user_id) ||
+      !user.requestsReceived.includes(friend_id)
+    )
+      return null;
 
     friend.requestsSent.pull(user_id);
     friend.friends.push(user_id);
@@ -156,7 +186,11 @@ class FriendClass {
     ]);
 
     if (!user || !friend) return null;
-    if (!friend.requestsSent.includes(user_id) || !user.requestsReceived.includes(friend_id)) return null;
+    if (
+      !friend.requestsSent.includes(user_id) ||
+      !user.requestsReceived.includes(friend_id)
+    )
+      return null;
 
     friend.requestsSent.pull(user_id);
     user.requestsReceived.pull(friend_id);
@@ -165,26 +199,10 @@ class FriendClass {
 
     return user;
   }
-  static async deleteFriend({ user_id, friend_id }) {
-    const [user, friend] = await Promise.all([
-      FriendModel.findOne({ user: user_id }),
-      FriendModel.findOne({ user: friend_id })
-    ]);
-
-    if (!user || !friend) return null;
-    if (!user.friends.includes(friend_id) || !friend.friends.includes(user_id)) return null;
-
-    friend.friends.pull(user_id);
-    user.friends.pull(friend_id);
-
-    await Promise.all([friend.save(), user.save()]);
-
-    return user;
-  }
   static async getRequestsSent({ user_id }) {
     const user = await FriendModel.findOne({ user: user_id });
     if (!user) return [];
-    
+
     return user.requestsSent;
   }
   static async getRequestsReceived({ user_id }) {

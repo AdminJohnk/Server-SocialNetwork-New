@@ -16,7 +16,8 @@ const { FriendClass } = require('../models/friend.model');
 const PublisherService = require('./publisher.service');
 const NotificationService = require('./notification.service');
 const { Notification } = require('../utils/notificationType');
-const { LIKEPOST_001, SENDFRIENDREQUEST_001, ACCEPTFRIENDREQUEST_001 } = Notification;
+const { LIKEPOST_001, SENDFRIENDREQUEST_001, ACCEPTFRIENDREQUEST_001 } =
+  Notification;
 
 class UserService {
   static checkExistEmail = async ({ email }) => {
@@ -82,16 +83,19 @@ class UserService {
     return true;
   };
   static getRepositoryGithub = async ({ access_token_github }) => {
-    const { data: result } = await axios.get('https://api.github.com/user/repos', {
-      headers: {
-        Authorization: `Bearer ${access_token_github}`,
-        Accept: 'application/vnd.github.v3+json'
+    const { data: result } = await axios.get(
+      'https://api.github.com/user/repos',
+      {
+        headers: {
+          Authorization: `Bearer ${access_token_github}`,
+          Accept: 'application/vnd.github.v3+json'
+        }
       }
-    });
+    );
     if (!result) throw new BadRequestError('Cannot get repository github');
 
     const repos = await Promise.all(
-      result.map(async (repository) => {
+      result.map(async repository => {
         const { data } = await axios.get(repository.languages_url, {
           headers: {
             Authorization: `Bearer ${access_token_github}`,
@@ -100,7 +104,15 @@ class UserService {
         });
 
         const result = getInfoData({
-          fields: ['id', 'name', 'private', 'html_url', 'watchers_count', 'forks_count', 'stargazers_count'],
+          fields: [
+            'id',
+            'name',
+            'private',
+            'html_url',
+            'watchers_count',
+            'forks_count',
+            'stargazers_count'
+          ],
           object: repository
         });
 
@@ -207,9 +219,10 @@ class UserService {
       skip
     });
   };
-  static async getAllFriends({ user_id }) {
+  static async getAllFriends({ user_id, me_id }) {
     return await FriendClass.getAllFriends({
-      user_id
+      user_id,
+      me_id
     });
   }
   static async getRequestsSent({ user_id }) {
