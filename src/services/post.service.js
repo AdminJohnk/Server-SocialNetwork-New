@@ -25,6 +25,12 @@ import { Notification } from '../utils/notificationType.js';
 const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
+  static async getAllImage({ user_id }) {
+    const foundUser = await UserClass.checkExist({ _id: user_id });
+    if (!foundUser) throw new NotFoundError('User not found');
+
+    return await PostClass.getAllImage({ user_id });
+  }
   static async viewPost({ post_id, user_id, cookies, res }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
@@ -245,14 +251,14 @@ class PostService {
     return await PostClass.findByID({ post_id, user, scope, isFullSearch });
   }
 
-  static async sharePost({ user, post, owner_post }) {
+  static async sharePost({ user, post, owner_post, content_share }) {
     const foundPost = await PostClass.checkExist({
       _id: post,
       'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { numShare } = await PostClass.sharePost({ user, post, owner_post });
+    const { numShare } = await PostClass.sharePost({ user, post, owner_post, content_share });
 
     if (user !== owner_post && numShare === 1) {
       const msg = NotificationService.createMsgToPublish({

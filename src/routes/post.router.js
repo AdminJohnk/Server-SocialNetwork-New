@@ -39,6 +39,9 @@ router.get('/saved', asyncHandler(PostController.getSavedPosts));
 // Get Posts By Title
 router.get('/search/top', asyncHandler(PostController.searchPosts));
 
+// Get All Image Of Post
+router.get('/images/:user_id', asyncHandler(PostController.getAllImage));
+
 // =========================================================
 
 /// POST //

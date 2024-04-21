@@ -26,15 +26,16 @@ const PostSchema = new Schema(
     },
 
     post_attributes: {
-      // type = Post
       user: { type: ObjectId, ref: 'User' }, // me_id
+
+      // type = Post
       title: String,
       content: String,
       link: String,
       images: { type: [String], default: [] },
 
       // type = Share
-      user: { type: ObjectId, ref: 'User' }, // me_id
+      content_share: { type: String, default: '' },
       post: { type: ObjectId, ref: 'Post' },
       owner_post: { type: ObjectId, ref: 'User' },
 
@@ -75,7 +76,7 @@ PostSchema.index({ 'post_attributes.view_number': 1, createdAt: -1 });
 const PostModel = model(DOCUMENT_NAME, PostSchema);
 
 // Add fields is_liked, is_saved, is_shared
-const addFieldsObject = (user) => {
+const addFieldsObject = user => {
   return {
     is_liked: { $in: [new ObjectId(user), '$post_attributes.likes'] },
     is_saved: { $in: [new ObjectId(user), '$post_attributes.saves'] },
@@ -89,12 +90,15 @@ const choosePopulateAttr = ({ from, attribute, select }) => {
     $lookup: {
       from: from,
       let: { temp: '$post_attributes.' + attribute },
-      pipeline: [{ $match: { $expr: { $eq: ['$_id', '$$temp'] } } }, { $project: select }],
+      pipeline: [
+        { $match: { $expr: { $eq: ['$_id', '$$temp'] } } },
+        { $project: select }
+      ],
       as: 'post_attributes.' + attribute
     }
   };
 };
-const getFirstElement = (attribute) => {
+const getFirstElement = attribute => {
   return {
     $addFields: {
       [`post_attributes.${attribute}`]: {
@@ -105,6 +109,17 @@ const getFirstElement = (attribute) => {
 };
 
 class PostClass {
+  static async getAllImage({user_id}) {
+    const images = await PostModel.find({
+      'post_attributes.user': user_id,
+      type: 'Post'
+    }).select('post_attributes.images');
+
+    const imagesArray = images.map(image => image.post_attributes.images).flat();
+
+    return imagesArray;
+
+  }
   static async getSavedPosts({ user_id, limit, skip, sort }) {
     let condition = { 'post_attributes.saves': new ObjectId(user_id) };
     let foundPost = await this.findPostByAggregate({
@@ -136,7 +151,14 @@ class PostClass {
 
     return { viewedPosts };
   }
-  static async getAllPopularPost({ user_id, limit, skip, sort, scope, sortBy }) {
+  static async getAllPopularPost({
+    user_id,
+    limit,
+    skip,
+    sort,
+    scope,
+    sortBy
+  }) {
     let condition = { scope, type: 'Post' };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -225,7 +247,10 @@ class PostClass {
             {
               $match: {
                 $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                  $and: [
+                    { $eq: ['$user', '$$id'] },
+                    { $in: [new ObjectId(me_id), '$friends'] }
+                  ]
                 }
               }
             }
@@ -236,7 +261,11 @@ class PostClass {
       {
         $addFields: {
           'post_attributes.user.is_friend': {
-            $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false }
+            $cond: {
+              if: { $gt: [{ $size: '$friend' }, 0] },
+              then: true,
+              else: false
+            }
           }
         }
       },
@@ -249,13 +278,16 @@ class PostClass {
       }
     ]);
 
-    return result.map((doc) => doc.post_attributes[`${type}s`]);
+    return result.map(doc => doc.post_attributes[`${type}s`]);
   }
   static async deletePost({ post_id }) {
     return await PostModel.findByIdAndDelete(post_id).lean();
   }
   static async updatePost({ post_id, user_id, payload }) {
-    const postUpdate = await PostModel.findByIdAndUpdate(post_id, payload).lean();
+    const postUpdate = await PostModel.findByIdAndUpdate(
+      post_id,
+      payload
+    ).lean();
 
     const result = await this.findPostByAggregate({
       condition: { _id: postUpdate._id },
@@ -265,8 +297,8 @@ class PostClass {
 
     return result[0];
   }
-  static async sharePost({ type = 'Share', user, post, owner_post }) {
-    const post_attributes = { user, post, owner_post };
+  static async sharePost({ type = 'Share', user, post, owner_post, content_share }) {
+    const post_attributes = { user, post, owner_post, content_share };
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
       'post_attributes.user': user,
@@ -296,7 +328,15 @@ class PostClass {
     let posts = PostModel.find().skip(skip).limit(limit).sort(sort);
     return await this.populatePostShare(posts);
   }
-  static async getAllPostByUserId({ user_id, me_id, limit, skip, sort, scope, isFullSearch = false }) {
+  static async getAllPostByUserId({
+    user_id,
+    me_id,
+    limit,
+    skip,
+    sort,
+    scope,
+    isFullSearch = false
+  }) {
     let condition = { 'post_attributes.user': new ObjectId(user_id), scope };
     let foundPost = await this.findPostByAggregate({
       condition,
@@ -309,7 +349,14 @@ class PostClass {
     return foundPost;
   }
 
-  static async searchPosts({ search, me_id, limit, skip, sort, isFullSearch = false }) {
+  static async searchPosts({
+    search,
+    me_id,
+    limit,
+    skip,
+    sort,
+    isFullSearch = false
+  }) {
     const friends = await FriendClass.getAllFriends({ user_id: me_id });
 
     const searchRegex = { $regex: search, $options: 'i' };
@@ -322,10 +369,24 @@ class PostClass {
       $or: [
         { $and: [{ 'post_attributes.title': searchRegex }, publicVisibility] },
         { $and: [userSearch, { 'post_attributes.title': searchRegex }] },
-        { $and: [friendSearch, nonPrivateVisibility, { 'post_attributes.content': searchRegex }] },
-        { $and: [{ 'post_attributes.content': searchRegex }, publicVisibility] },
+        {
+          $and: [
+            friendSearch,
+            nonPrivateVisibility,
+            { 'post_attributes.content': searchRegex }
+          ]
+        },
+        {
+          $and: [{ 'post_attributes.content': searchRegex }, publicVisibility]
+        },
         { $and: [userSearch, { 'post_attributes.content': searchRegex }] },
-        { $and: [friendSearch, nonPrivateVisibility, { 'post_attributes.content': searchRegex }] }
+        {
+          $and: [
+            friendSearch,
+            nonPrivateVisibility,
+            { 'post_attributes.content': searchRegex }
+          ]
+        }
       ]
     };
     let foundPost = await this.findPostByAggregate({
@@ -407,7 +468,11 @@ class PostClass {
       {
         $addFields: {
           'post_attributes.user.is_friend': {
-            $cond: { if: { $in: ['$post_attributes.user', friends] }, then: true, else: false }
+            $cond: {
+              if: { $in: ['$post_attributes.user', friends] },
+              then: true,
+              else: false
+            }
           }
         }
       },
@@ -421,14 +486,14 @@ class PostClass {
 
     let foundPost = await PostModel.aggregate(aggregatePipeline);
 
-    foundPost.map((post) => {
+    foundPost.map(post => {
       if (post.type === 'Post') {
         delete post.post_attributes.post;
         delete post.post_attributes.owner_post;
       }
     });
 
-    foundPost = foundPost.filter((item) => {
+    foundPost = foundPost.filter(item => {
       const date = new Date(item.createdAt);
       const dateNow = new Date();
       const diffTime = Math.abs(dateNow.getTime() - date.getTime());
@@ -453,7 +518,16 @@ class PostClass {
 
     return foundPost;
   }
-  static async createPost({ type, user, title, content, images, scope, community, visibility }) {
+  static async createPost({
+    type,
+    user,
+    title,
+    content,
+    images,
+    scope,
+    community,
+    visibility
+  }) {
     const post_attributes = { user, title, content, images };
     const newPost = await PostModel.create({
       type,

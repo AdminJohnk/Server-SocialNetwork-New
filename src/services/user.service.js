@@ -207,9 +207,10 @@ class UserService {
       skip
     });
   };
-  static async getAllFriends({ user_id }) {
+  static async getAllFriends({ user_id, me_id }) {
     return await FriendClass.getAllFriends({
-      user_id
+      user_id,
+      me_id
     });
   }
   static async getRequestsSent({ user_id }) {
