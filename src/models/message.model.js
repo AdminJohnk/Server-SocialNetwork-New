@@ -30,6 +30,9 @@ MessageSchema.index({ conversation_id: 1, createdAt: -1 });
 const MessageModel = model(DOCUMENT_NAME, MessageSchema);
 
 class MessageClass {
+  static async createMessage(message) {
+    return await MessageModel.create(message);
+  }
   static async deleteMessagesByConversationId({ conversation_id }) {
     return await MessageModel.deleteMany({ conversation_id });
   }
