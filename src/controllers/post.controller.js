@@ -4,6 +4,15 @@ import PostService from '../services/post.service.js';
 import { OK, CREATED } from '../core/success.response.js';
 
 class PostController {
+  static async getAllImage(req, res, next) {
+    new OK({
+      message: 'Get All Image Of Post Successfully',
+      metadata: await PostService.getAllImage({
+        user_id: req.params.user_id
+      })
+    }).send(res);
+  }
+
   static async getSavedPosts(req, res, next) {
     new OK({
       message: 'Get Saved Posts Successfully',

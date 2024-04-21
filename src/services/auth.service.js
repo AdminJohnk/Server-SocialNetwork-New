@@ -14,9 +14,9 @@ import { sendMailForgotPassword } from '../configs/mailTransport.js';
  * @type {{get: (function(string): {email: string, code: string, expireAt: number, timestamp: number, verified:boolean}), set: (function(string, {email: string, code: string, expireAt: number, timestamp: number}): void), del: (function(string): void)}}
  */
 const cache = {
-  get: (key) => cache[key],
+  get: key => cache[key],
   set: (key, value) => (cache[key] = value),
-  del: (key) => delete cache[key]
+  del: key => delete cache[key]
 };
 
 /**
@@ -37,7 +37,7 @@ const generateCode = (email) => {
  * @description Generate a code and store it in cache
  * @example
  */
-const storeCache = (email) => {
+const storeCache = email => {
   const setCode = generateCode(email);
   cache.set(email, setCode);
   setTimeout(() => cache.del(email), 10 * 60 * 1000); // 10 minutes in milliseconds
@@ -55,13 +55,18 @@ class AuthService {
     }
 
     // keyStore.refreshToken là Token đang sử dụng so sánh với refreshToken gửi lên
-    if (keyStore.refreshToken !== refreshToken) throw new AuthFailureError('User not registered');
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError('User not registered');
 
     const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new AuthFailureError('User not registered');
 
     // create accessToken và refreshToken
-    const tokens = await createTokenPair({ userId, email }, keyStore.publicKey, keyStore.privateKey);
+    const tokens = await createTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey
+    );
 
     // update Token
     await keyStore.updateOne({
@@ -78,7 +83,7 @@ class AuthService {
     };
   };
 
-  static logoutService = async (keyStore) => {
+  static logoutService = async keyStore => {
     const delKey = await KeyTokenClass.removeKeyByID(keyStore._id);
     return delKey;
   };
@@ -86,6 +91,7 @@ class AuthService {
   static loginService = async ({ email, password, refreshToken = null }) => {
     // 1 - Check email exist
     const foundUser = await UserClass.findByEmail({ email });
+    console.log('foundUser', foundUser);
     if (!foundUser) throw new BadRequestError('Email not exists!');
 
     // 2 - Match password
@@ -110,7 +116,11 @@ class AuthService {
     });
 
     // 4 - Generate accessTokens vs refreshToken
-    const tokens = await createTokenPair({ userId: foundUser._id, email }, publicKey, privateKey);
+    const tokens = await createTokenPair(
+      { userId: foundUser._id, email },
+      publicKey,
+      privateKey
+    );
 
     const keyStore = await KeyTokenClass.createKeyToken({
       userId: foundUser._id,
@@ -119,6 +129,7 @@ class AuthService {
       refreshToken: tokens.refreshToken
     });
 
+    if (!keyStore) throw new BadRequestError("Can't create keyStore!");
     if (!keyStore) throw new BadRequestError("Can't create keyStore!");
 
     // 5 - Get data return login
@@ -319,7 +330,11 @@ class AuthService {
       });
 
       // create token pair
-      const tokens = await createTokenPair({ userId: newUser._id, email }, publicKey, privateKey);
+      const tokens = await createTokenPair(
+        { userId: newUser._id, email },
+        publicKey,
+        privateKey
+      );
 
       const keyStore = await KeyTokenClass.createKeyToken({
         userId: newUser._id,
@@ -378,7 +393,8 @@ class AuthService {
 
     if (foundCode.code !== code) throw new BadRequestError('Code not match');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+    if (foundCode.expireAt < Date.now())
+      throw new BadRequestError('Code expired');
 
     cache.set(email, { ...foundCode, verified: true });
 
@@ -392,7 +408,8 @@ class AuthService {
 
     if (!foundCode.verified) throw new BadRequestError('Code already verified');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+    if (foundCode.expireAt < Date.now())
+      throw new BadRequestError('Code expired');
 
     const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new BadRequestError('Email not exists');
@@ -413,7 +430,8 @@ class AuthService {
 
     if (foundCode.verified) throw new BadRequestError('Code already verified');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+    if (foundCode.expireAt < Date.now())
+      throw new BadRequestError('Code expired');
 
     return { verified: true };
   }
@@ -425,7 +443,8 @@ class AuthService {
 
     if (!foundCode.verified) throw new BadRequestError('Code not verified');
 
-    if (foundCode.expireAt < Date.now()) throw new BadRequestError('Code expired');
+    if (foundCode.expireAt < Date.now())
+      throw new BadRequestError('Code expired');
 
     return { verified: true };
   }
