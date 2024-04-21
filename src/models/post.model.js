@@ -109,6 +109,17 @@ const getFirstElement = attribute => {
 };
 
 class PostClass {
+  static async getAllImage({user_id}) {
+    const images = await PostModel.find({
+      'post_attributes.user': user_id,
+      type: 'Post'
+    }).select('post_attributes.images');
+
+    const imagesArray = images.map(image => image.post_attributes.images).flat();
+
+    return imagesArray;
+
+  }
   static async getSavedPosts({ user_id, limit, skip, sort }) {
     let condition = { 'post_attributes.saves': new ObjectId(user_id) };
     let foundPost = await this.findPostByAggregate({

@@ -25,6 +25,12 @@ const { Notification } = require('../utils/notificationType');
 const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
+  static async getAllImage({ user_id }) {
+    const foundUser = await UserClass.checkExist({ _id: user_id });
+    if (!foundUser) throw new NotFoundError('User not found');
+
+    return await PostClass.getAllImage({ user_id });
+  }
   static async viewPost({ post_id, user_id, cookies, res }) {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
