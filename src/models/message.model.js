@@ -15,6 +15,23 @@ const MessageSchema = new Schema(
       enum: ['text', 'image', 'notification', 'audio', 'file', 'voice', 'video'],
       default: 'text'
     },
+
+    // notification
+    action: {
+      type: String,
+      enum: [
+        'promote_admin',
+        'revoke_admin',
+        'remove_member',
+        'change_name',
+        'change_avatar',
+        'leave_conversation',
+        'add_member'
+      ],
+      default: null
+    },
+    target: { type: ObjectId, ref: 'User', default: null },
+
     images: { type: [String], default: null },
     sender: { type: ObjectId, ref: 'User', required: true },
     content: { type: String, default: null },
@@ -40,6 +57,7 @@ class MessageClass {
     const skip = (page - 1) * limit + extend;
     const result = await MessageModel.find({ conversation_id })
       .populate('sender', pp_UserDefault)
+      .populate('target', pp_UserDefault)
       .skip(skip)
       .limit(limit)
       .sort(sort)
@@ -51,6 +69,7 @@ class MessageClass {
     const skip = (page - 1) * limit + extend;
     const result = await MessageModel.find({ conversation_id, images: { $gt: [] } })
       .populate('sender', pp_UserDefault)
+      .populate('target', pp_UserDefault)
       .skip(skip)
       .limit(limit)
       .sort(sort)

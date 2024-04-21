@@ -47,10 +47,16 @@ class ConversationClass {
       .populate('members', pp_UserDefault)
       .populate({
         path: 'lastMessage',
-        populate: {
-          path: 'sender',
-          select: pp_UserDefault
-        }
+        populate: [
+          {
+            path: 'sender',
+            select: pp_UserDefault
+          },
+          {
+            path: 'target',
+            select: pp_UserDefault
+          }
+        ]
       })
       .lean();
   }
@@ -144,10 +150,16 @@ class ConversationClass {
       .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
-        populate: {
-          path: 'sender',
-          select: pp_UserDefault
-        }
+        populate: [
+          {
+            path: 'sender',
+            select: pp_UserDefault
+          },
+          {
+            path: 'target',
+            select: pp_UserDefault
+          }
+        ]
       })
       .lean();
   }
@@ -163,10 +175,16 @@ class ConversationClass {
       .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
-        populate: {
-          path: 'sender',
-          select: pp_UserDefault
-        }
+        populate: [
+          {
+            path: 'sender',
+            select: pp_UserDefault
+          },
+          {
+            path: 'target',
+            select: pp_UserDefault
+          }
+        ]
       })
       .skip(skip)
       .limit(limit)
