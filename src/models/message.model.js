@@ -35,7 +35,8 @@ const MessageSchema = new Schema(
     images: { type: [String], default: null },
     sender: { type: ObjectId, ref: 'User', required: true },
     content: { type: String, default: null },
-    createdAt: { type: Date, required: true }
+    createdAt: { type: Date, required: true },
+    updatedAt: { type: Date, default: new Date() }
   },
   {
     collection: COLLECTION_NAME
