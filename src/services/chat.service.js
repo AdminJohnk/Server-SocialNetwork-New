@@ -344,7 +344,7 @@ class ChatService {
       if (!foundRoom) {
         first_call = true;
         cache.set(roomName, foundUser);
-        await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
+        await roomService.createRoom({ name: roomName, emptyTimeout: 0, departureTimeout: 0 });
       }
     });
 
@@ -355,6 +355,7 @@ class ChatService {
       name: participantName,
       metadata: foundUser.user_image
     });
+
     at.addGrant({
       room: roomName,
       roomJoin: true,
@@ -363,7 +364,7 @@ class ChatService {
     });
 
     return {
-      token: at.toJwt(),
+      token: await at.toJwt(),
       conversation_id,
       typeofConversation: foundConversation.type,
       conversation_name: foundConversation.name,
