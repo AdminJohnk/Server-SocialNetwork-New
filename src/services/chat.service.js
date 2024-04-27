@@ -1,18 +1,10 @@
-import {
-  ConflictRequestError,
-  BadRequestError,
-  AuthFailureError,
-  NotFoundError,
-  ForbiddenError
-} from '../core/error.response.js';
+import { NotFoundError, ForbiddenError } from '../core/error.response.js';
 
 import { UserClass } from '../models/user.model.js';
 import { ConversationClass } from '../models/conversation.model.js';
 import { MessageClass } from '../models/message.model.js';
 
 import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
-import { ImageClass } from '../models/image.model.js';
-import ImageService from './image.service.js';
 import { deleteImage } from '../helpers/uploadImage.js';
 
 const livekitHost = process.env.LK_SERVER_URL;
@@ -375,6 +367,19 @@ class ChatService {
       first_call,
       members: foundConversation.members
     };
+  };
+  static deleteCall = async ({ conversation_id, type }) => {
+    const roomName = conversation_id + '-' + type;
+
+    await roomService.listRooms().then(async (rooms) => {
+      const foundRoom = rooms.find((room) => room.name === roomName);
+      if (foundRoom) {
+        cache.del(roomName);
+        await roomService.deleteRoom(roomName);
+      }
+    });
+
+    return true;
   };
 }
 

@@ -244,6 +244,19 @@ class ChatController {
       })
     }).send(res);
   };
+  /* 
+   Delete Call
+    Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/calls/delete?type=audio
+  */
+  static deleteCall = async (req, res, next) => {
+    new OK({
+      message: 'Delete Call Successfully',
+      metadata: await ChatService.deleteCall({
+        conversation_id: req.params.conversation_id,
+        type: req.query.type
+      })
+    }).send(res);
+  };
 }
 
 export default ChatController;
