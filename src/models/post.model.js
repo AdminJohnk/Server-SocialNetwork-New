@@ -29,7 +29,6 @@ const PostSchema = new Schema(
       user: { type: ObjectId, ref: 'User' }, // me_id
 
       // type = Post
-      title: String,
       content: String,
       link: String,
       images: { type: [String], default: [] },
@@ -521,14 +520,13 @@ class PostClass {
   static async createPost({
     type,
     user,
-    title,
     content,
     images,
     scope,
     community,
     visibility
   }) {
-    const post_attributes = { user, title, content, images };
+    const post_attributes = { user, content, images };
     const newPost = await PostModel.create({
       type,
       scope,

@@ -10,7 +10,7 @@ class ImageController {
     new OK({
       message: 'Delete Image Successfully',
       metadata: await ImageService.deleteImages({
-        images: req.body
+        ...req.body
       })
     }).send(res);
   };

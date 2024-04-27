@@ -273,12 +273,11 @@ class PostService {
 
     return true;
   }
-  static async createPost({ type = 'Post', user, title, content, images, scope, community, visibility }) {
-    if (!title || !content) throw new BadRequestError('Post must have title or content');
+  static async createPost({ type = 'Post', user, content, images, scope, community, visibility }) {
+    if (!content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
       user,
-      title,
       content,
       images,
       scope,
