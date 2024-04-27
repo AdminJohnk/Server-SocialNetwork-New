@@ -6,6 +6,9 @@ import { asyncHandler } from '../helpers/asyncHandler.js';
 import { authentication } from '../auth/authUtils.js';
 import { uploadImage } from '../helpers/uploadImage.js';
 
+// Delete Call
+router.delete('/conversations/:conversation_id/calls/delete', asyncHandler(ChatController.deleteCall));
+
 // Authentication
 router.use(authentication);
 

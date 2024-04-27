@@ -1,18 +1,10 @@
-import {
-  ConflictRequestError,
-  BadRequestError,
-  AuthFailureError,
-  NotFoundError,
-  ForbiddenError
-} from '../core/error.response.js';
+import { NotFoundError, ForbiddenError } from '../core/error.response.js';
 
 import { UserClass } from '../models/user.model.js';
 import { ConversationClass } from '../models/conversation.model.js';
 import { MessageClass } from '../models/message.model.js';
 
 import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
-import { ImageClass } from '../models/image.model.js';
-import ImageService from './image.service.js';
 import { deleteImage } from '../helpers/uploadImage.js';
 
 const livekitHost = process.env.LK_SERVER_URL;
@@ -305,11 +297,24 @@ class ChatService {
     const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
-    return await ConversationClass.createConverSation({
+    const conversation = await ConversationClass.createConverSation({
       type,
       members: [...members, user],
       name,
       author: user
+    });
+
+    const newMessage = await MessageClass.createMessage({
+      conversation_id: conversation._id,
+      sender: user,
+      type: 'notification',
+      content: 'created this conversation',
+      createdAt: new Date()
+    });
+
+    return await ConversationClass.updateLastMessage({
+      conversation_id: conversation._id,
+      message_id: newMessage._id
     });
   };
   static getTokenForCall = async ({ user_id, conversation_id, type }) => {
@@ -331,7 +336,7 @@ class ChatService {
       if (!foundRoom) {
         first_call = true;
         cache.set(roomName, foundUser);
-        await roomService.createRoom({ name: roomName, emptyTimeout: 0 });
+        await roomService.createRoom({ name: roomName, departureTimeout: 0 });
       }
     });
 
@@ -342,6 +347,7 @@ class ChatService {
       name: participantName,
       metadata: foundUser.user_image
     });
+
     at.addGrant({
       room: roomName,
       roomJoin: true,
@@ -350,7 +356,7 @@ class ChatService {
     });
 
     return {
-      token: at.toJwt(),
+      token: await at.toJwt(),
       conversation_id,
       typeofConversation: foundConversation.type,
       conversation_name: foundConversation.name,
@@ -361,6 +367,19 @@ class ChatService {
       first_call,
       members: foundConversation.members
     };
+  };
+  static deleteCall = async ({ conversation_id, type }) => {
+    const roomName = conversation_id + '-' + type;
+
+    await roomService.listRooms().then(async (rooms) => {
+      const foundRoom = rooms.find((room) => room.name === roomName);
+      if (foundRoom) {
+        cache.del(roomName);
+        await roomService.deleteRoom(roomName);
+      }
+    });
+
+    return true;
   };
 }
 
