@@ -16,8 +16,6 @@ const ConversationSchema = new Schema(
     type: { type: String, enum: ['private', 'group'], required: true },
     members: { type: [ObjectId], ref: 'User', required: true },
     lastMessage: { type: ObjectId, ref: 'Message', default: null },
-    seen: { type: [ObjectId], ref: 'User', default: [] },
-
     // private
 
     // group
@@ -54,6 +52,10 @@ class ConversationClass {
           },
           {
             path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
             select: pp_UserDefault
           }
         ]
@@ -147,7 +149,6 @@ class ConversationClass {
       { new: true }
     )
       .populate('members', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
         populate: [
@@ -157,6 +158,10 @@ class ConversationClass {
           },
           {
             path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
             select: pp_UserDefault
           }
         ]
@@ -172,7 +177,6 @@ class ConversationClass {
       members: { $in: [user_id] }
     })
       .populate('members', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
         populate: [
@@ -182,6 +186,10 @@ class ConversationClass {
           },
           {
             path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
             select: pp_UserDefault
           }
         ]
@@ -203,6 +211,7 @@ class ConversationClass {
       type: { $in: ['voice', 'video'] }
     })
       .populate('sender', pp_UserDefault)
+      .populate('seen', pp_UserDefault)
       .populate({ path: 'conversation_id', populate: { path: 'members', select: pp_UserDefault } })
       .sort(sort)
       .skip(skip)
@@ -215,7 +224,6 @@ class ConversationClass {
     return await ConversationModel.findById(conversation_id)
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
       .lean();
   }
   static async createConverSation({ type, members, name, author }) {
