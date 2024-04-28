@@ -256,16 +256,16 @@ class ConversationClass {
           creator: author
         });
 
-        await MessageClass.createMessage({
+        const newMessage = await MessageClass.createMessage({
           conversation_id: result._id,
-          sender: user,
+          sender: author,
           type: 'notification',
           content: 'created this conversation',
           createdAt: new Date()
         });
 
         await ConversationClass.updateLastMessage({
-          conversation_id: conversation._id,
+          conversation_id: result._id,
           message_id: newMessage._id
         });
 
