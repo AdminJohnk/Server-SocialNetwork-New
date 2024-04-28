@@ -269,9 +269,45 @@ class ConversationClass {
           message_id: newMessage._id
         });
 
-        return await result.populate('members', pp_UserDefault);
+        return await ConversationModel.findById(result._id)
+          .populate('members', pp_UserDefault)
+          .populate({
+            path: 'lastMessage',
+            populate: [
+              {
+                path: 'sender',
+                select: pp_UserDefault
+              },
+              {
+                path: 'target',
+                select: pp_UserDefault
+              },
+              {
+                path: 'seen',
+                select: pp_UserDefault
+              }
+            ]
+          });
       } else {
-        return await foundConversation.populate('members', pp_UserDefault);
+        return await (
+          await foundConversation.populate('members', pp_UserDefault)
+        ).populate({
+          path: 'lastMessage',
+          populate: [
+            {
+              path: 'sender',
+              select: pp_UserDefault
+            },
+            {
+              path: 'target',
+              select: pp_UserDefault
+            },
+            {
+              path: 'seen',
+              select: pp_UserDefault
+            }
+          ]
+        });
       }
     } else if (type === 'group') {
       const admins = [author];
@@ -283,7 +319,38 @@ class ConversationClass {
         creator: author
       });
 
-      return await result.populate('members', pp_UserDefault);
+      const newMessage = await MessageClass.createMessage({
+        conversation_id: result._id,
+        sender: author,
+        type: 'notification',
+        content: 'created this conversation',
+        createdAt: new Date()
+      });
+
+      await ConversationClass.updateLastMessage({
+        conversation_id: result._id,
+        message_id: newMessage._id
+      });
+
+      return await ConversationModel.findById(result._id)
+        .populate('members', pp_UserDefault)
+        .populate({
+          path: 'lastMessage',
+          populate: [
+            {
+              path: 'sender',
+              select: pp_UserDefault
+            },
+            {
+              path: 'target',
+              select: pp_UserDefault
+            },
+            {
+              path: 'seen',
+              select: pp_UserDefault
+            }
+          ]
+        });
     }
   }
   static async checkExist(select) {
