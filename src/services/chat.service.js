@@ -297,24 +297,11 @@ class ChatService {
     const foundUsers = await UserClass.checkExistMany({ _id: { $in: members } });
     if (foundUsers.length !== members.length) throw new NotFoundError('User not found');
 
-    const conversation = await ConversationClass.createConverSation({
+    return await ConversationClass.createConverSation({
       type,
       members: [...members, user],
       name,
       author: user
-    });
-
-    const newMessage = await MessageClass.createMessage({
-      conversation_id: conversation._id,
-      sender: user,
-      type: 'notification',
-      content: 'created this conversation',
-      createdAt: new Date()
-    });
-
-    return await ConversationClass.updateLastMessage({
-      conversation_id: conversation._id,
-      message_id: newMessage._id
     });
   };
   static getTokenForCall = async ({ user_id, conversation_id, type }) => {

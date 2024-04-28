@@ -255,6 +255,20 @@ class ConversationClass {
           members,
           creator: author
         });
+
+        await MessageClass.createMessage({
+          conversation_id: result._id,
+          sender: user,
+          type: 'notification',
+          content: 'created this conversation',
+          createdAt: new Date()
+        });
+
+        await ConversationClass.updateLastMessage({
+          conversation_id: conversation._id,
+          message_id: newMessage._id
+        });
+
         return await result.populate('members', pp_UserDefault);
       } else {
         return await foundConversation.populate('members', pp_UserDefault);
