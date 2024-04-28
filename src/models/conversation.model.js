@@ -224,6 +224,23 @@ class ConversationClass {
     return await ConversationModel.findById(conversation_id)
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
+      .populate({
+        path: 'lastMessage',
+        populate: [
+          {
+            path: 'sender',
+            select: pp_UserDefault
+          },
+          {
+            path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
+            select: pp_UserDefault
+          }
+        ]
+      })
       .lean();
   }
   static async createConverSation({ type, members, name, author }) {
