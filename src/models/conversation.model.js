@@ -7,7 +7,7 @@ const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
 import { pp_UserDefault, se_UserDefaultForPost } from '../utils/constants.js';
-import { MessageModel } from './message.model.js';
+import { MessageClass, MessageModel } from './message.model.js';
 import { getSelectData } from '../utils/functions.js';
 
 const ConversationSchema = new Schema(
