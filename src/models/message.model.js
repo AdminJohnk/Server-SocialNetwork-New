@@ -34,6 +34,7 @@ const MessageSchema = new Schema(
 
     images: { type: [String], default: null },
     sender: { type: ObjectId, ref: 'User', required: true },
+    seen: { type: [ObjectId], ref: 'User', default: [] },
     content: { type: String, default: null },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, default: new Date() }
@@ -59,6 +60,7 @@ class MessageClass {
     const result = await MessageModel.find({ conversation_id })
       .populate('sender', pp_UserDefault)
       .populate('target', pp_UserDefault)
+      .populate('seen', pp_UserDefault)
       .skip(skip)
       .limit(limit)
       .sort(sort)
@@ -71,6 +73,7 @@ class MessageClass {
     const result = await MessageModel.find({ conversation_id, images: { $gt: [] } })
       .populate('sender', pp_UserDefault)
       .populate('target', pp_UserDefault)
+      .populate('seen', pp_UserDefault)
       .skip(skip)
       .limit(limit)
       .sort(sort)

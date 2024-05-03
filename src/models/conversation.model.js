@@ -7,7 +7,7 @@ const DOCUMENT_NAME = 'Conversation';
 const COLLECTION_NAME = 'conversations';
 
 import { pp_UserDefault, se_UserDefaultForPost } from '../utils/constants.js';
-import { MessageModel } from './message.model.js';
+import { MessageClass, MessageModel } from './message.model.js';
 import { getSelectData } from '../utils/functions.js';
 
 const ConversationSchema = new Schema(
@@ -16,8 +16,6 @@ const ConversationSchema = new Schema(
     type: { type: String, enum: ['private', 'group'], required: true },
     members: { type: [ObjectId], ref: 'User', required: true },
     lastMessage: { type: ObjectId, ref: 'Message', default: null },
-    seen: { type: [ObjectId], ref: 'User', default: [] },
-
     // private
 
     // group
@@ -54,6 +52,10 @@ class ConversationClass {
           },
           {
             path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
             select: pp_UserDefault
           }
         ]
@@ -147,7 +149,6 @@ class ConversationClass {
       { new: true }
     )
       .populate('members', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
         populate: [
@@ -157,6 +158,10 @@ class ConversationClass {
           },
           {
             path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
             select: pp_UserDefault
           }
         ]
@@ -172,7 +177,6 @@ class ConversationClass {
       members: { $in: [user_id] }
     })
       .populate('members', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
       .populate({
         path: 'lastMessage',
         populate: [
@@ -182,6 +186,10 @@ class ConversationClass {
           },
           {
             path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
             select: pp_UserDefault
           }
         ]
@@ -203,6 +211,7 @@ class ConversationClass {
       type: { $in: ['voice', 'video'] }
     })
       .populate('sender', pp_UserDefault)
+      .populate('seen', pp_UserDefault)
       .populate({ path: 'conversation_id', populate: { path: 'members', select: pp_UserDefault } })
       .sort(sort)
       .skip(skip)
@@ -215,7 +224,23 @@ class ConversationClass {
     return await ConversationModel.findById(conversation_id)
       .populate('members', pp_UserDefault)
       .populate('admins', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
+      .populate({
+        path: 'lastMessage',
+        populate: [
+          {
+            path: 'sender',
+            select: pp_UserDefault
+          },
+          {
+            path: 'target',
+            select: pp_UserDefault
+          },
+          {
+            path: 'seen',
+            select: pp_UserDefault
+          }
+        ]
+      })
       .lean();
   }
   static async createConverSation({ type, members, name, author }) {
@@ -230,9 +255,59 @@ class ConversationClass {
           members,
           creator: author
         });
-        return await result.populate('members', pp_UserDefault);
+
+        const newMessage = await MessageClass.createMessage({
+          conversation_id: result._id,
+          sender: author,
+          type: 'notification',
+          content: 'created this conversation',
+          createdAt: new Date()
+        });
+
+        await ConversationClass.updateLastMessage({
+          conversation_id: result._id,
+          message_id: newMessage._id
+        });
+
+        return await ConversationModel.findById(result._id)
+          .populate('members', pp_UserDefault)
+          .populate({
+            path: 'lastMessage',
+            populate: [
+              {
+                path: 'sender',
+                select: pp_UserDefault
+              },
+              {
+                path: 'target',
+                select: pp_UserDefault
+              },
+              {
+                path: 'seen',
+                select: pp_UserDefault
+              }
+            ]
+          });
       } else {
-        return await foundConversation.populate('members', pp_UserDefault);
+        return await (
+          await foundConversation.populate('members', pp_UserDefault)
+        ).populate({
+          path: 'lastMessage',
+          populate: [
+            {
+              path: 'sender',
+              select: pp_UserDefault
+            },
+            {
+              path: 'target',
+              select: pp_UserDefault
+            },
+            {
+              path: 'seen',
+              select: pp_UserDefault
+            }
+          ]
+        });
       }
     } else if (type === 'group') {
       const admins = [author];
@@ -244,7 +319,38 @@ class ConversationClass {
         creator: author
       });
 
-      return await result.populate('members', pp_UserDefault);
+      const newMessage = await MessageClass.createMessage({
+        conversation_id: result._id,
+        sender: author,
+        type: 'notification',
+        content: 'created this conversation',
+        createdAt: new Date()
+      });
+
+      await ConversationClass.updateLastMessage({
+        conversation_id: result._id,
+        message_id: newMessage._id
+      });
+
+      return await ConversationModel.findById(result._id)
+        .populate('members', pp_UserDefault)
+        .populate({
+          path: 'lastMessage',
+          populate: [
+            {
+              path: 'sender',
+              select: pp_UserDefault
+            },
+            {
+              path: 'target',
+              select: pp_UserDefault
+            },
+            {
+              path: 'seen',
+              select: pp_UserDefault
+            }
+          ]
+        });
     }
   }
   static async checkExist(select) {
