@@ -170,41 +170,6 @@ class UserClass {
         }
       },
       {
-        $unwind: { path: '$friend' }
-      },
-      {
-        $addFields: {
-          friends: {
-            $cond: {
-              if: { $and: [{ $isArray: "$friend.friends" }] },
-              then: {
-                $lookup: {
-                  from: 'users',
-                  let: { id: '$friend.friends' },
-                  pipeline: [
-                    {
-                      $match: {
-                        $expr: {
-                          $in: ['$_id', '$$id']
-                        }
-                      }
-                    },
-                    {
-                      $project: {
-                        name: 1,
-                        user_image: 1
-                      }
-                    }
-                  ],
-                  as: 'friends'
-                }
-              },
-              else: []
-            }
-          }
-        }
-      },
-      {
         $project: { ...unGetSelectData(unselect), friend: 0 }
       },
       {
