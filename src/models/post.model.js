@@ -108,7 +108,7 @@ const getFirstElement = attribute => {
 };
 
 class PostClass {
-  static async getAllImage({user_id}) {
+  static async getAllImage({ user_id }) {
     const images = await PostModel.find({
       'post_attributes.user': user_id,
       type: 'Post'
@@ -298,8 +298,26 @@ class PostClass {
   }
   static async sharePost({ type = 'Share', user, post, owner_post, content_share }) {
     const post_attributes = { user, post, owner_post, content_share };
+
+    let numShare = 1;
+
+    await PostModel.create({ type, post_attributes });
+
+    this.changeToArrayPost({
+      post_id: post,
+      type: 'share',
+      number: numShare,
+      user_id: user
+    });
+
+    return {
+      numShare
+    };
+  }
+  static async deleteSharePost({ type = 'Share', user, post, shared_post }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
+      '_id': shared_post,
       'post_attributes.user': user,
       'post_attributes.post': post,
       type
@@ -310,14 +328,14 @@ class PostClass {
     if (sharedPost) {
       await Promise.resolve(PostModel.deleteOne(sharedPost._id));
       numShare = -1;
-    } else await PostModel.create({ type, post_attributes });
 
-    this.changeToArrayPost({
-      post_id: post,
-      type: 'share',
-      number: numShare,
-      user_id: user
-    });
+      this.changeToArrayPost({
+        post_id: post,
+        type: 'share',
+        number: numShare,
+        user_id: user
+      });
+    }
 
     return {
       numShare

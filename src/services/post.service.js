@@ -22,6 +22,8 @@ import { CommunityClass } from '../models/community.model.js';
 import NotificationService from './notification.service.js';
 import PublisherService from './publisher.service.js';
 import { Notification } from '../utils/notificationType.js';
+import ImageService from './image.service.js';
+
 const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
@@ -144,6 +146,11 @@ class PostService {
       const foundCommunity = await CommunityClass.checkExist(condition);
       if (!foundCommunity) throw new NotFoundError('Community not found');
     }
+
+    const removeImages = foundPost.post_attributes.images;
+    if (removeImages.length > 0) {
+      await ImageService.deleteImages({ images: removeImages });
+    } // Xóa ảnh trong S3
 
     const result = await PostClass.deletePost({ post_id });
 
@@ -273,6 +280,18 @@ class PostService {
 
     return true;
   }
+
+  static async deleteSharePost({ user, post, owner_post, shared_post }) {
+    const foundPost = await PostClass.checkExist({
+      _id: post,
+      'post_attributes.user': owner_post
+    });
+    if (!foundPost) throw new NotFoundError('Post not found');
+    const { numDeleteShare } = await PostClass.deleteSharePost({ user, post, shared_post });
+
+    return true;
+  }
+
   static async createPost({ type = 'Post', user, content, images, scope, community, visibility }) {
     if (!content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
