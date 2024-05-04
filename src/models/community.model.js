@@ -75,11 +75,11 @@ const CommunitySchema = new Schema(
     },
 
     // Number
-    post_number: { type: Number, default: 0 },
-    member_number: { type: Number, default: 0 },
-    admin_number: { type: Number, default: 0 },
-    waitlist_user_number: { type: Number, default: 0 },
-    waitlist_post_number: { type: Number, default: 0 }
+    // post_number: { type: Number, default: 0 },
+    // member_number: { type: Number, default: 0 },
+    // admin_number: { type: Number, default: 0 },
+    // waitlist_user_number: { type: Number, default: 0 },
+    // waitlist_post_number: { type: Number, default: 0 }
   },
   {
     timestamps: true,

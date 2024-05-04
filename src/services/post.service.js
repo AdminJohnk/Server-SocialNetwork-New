@@ -14,6 +14,7 @@ import {
   updateNestedObjectParser
 } from '../utils/functions.js';
 import axios from 'axios';
+import { JSDOM } from 'jsdom';
 import { RoleUser } from '../utils/constants.js';
 import { PostClass } from '../models/post.model.js';
 import { UserClass } from '../models/user.model.js';
@@ -27,6 +28,46 @@ import ImageService from './image.service.js';
 const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
+  static async linkPreview({ url }) {
+    const extractMetaTags = async url => {
+      try {
+        const response = await axios.get(url);
+        const dom = new JSDOM(response.data);
+        const document = dom.window.document;
+        const metaTags = Array.from(document.querySelectorAll('meta')).reduce(
+          (tags, meta) => {
+            const name =
+              meta.getAttribute('name') ||
+              meta.getAttribute('property') ||
+              meta.getAttribute('itemprop');
+            const content = meta.getAttribute('content');
+
+            if (name && content) {
+              tags[name] = content;
+            }
+
+            return tags;
+          },
+          {}
+        );
+
+        return {
+          title:
+            document.title || metaTags['og:title'] || metaTags['twitter:title'],
+          description:
+            metaTags.description ||
+            metaTags['og:description'] ||
+            metaTags['twitter:description'],
+          image:
+            metaTags.image || metaTags['og:image'] || metaTags['twitter:image']
+        };
+      } catch (error) {
+        console.error('Error fetching Open Graph details', error);
+      }
+    };
+
+    return await extractMetaTags(url);
+  }
   static async getAllImage({ user_id }) {
     const foundUser = await UserClass.checkExist({ _id: user_id });
     if (!foundUser) throw new NotFoundError('User not found');
@@ -75,7 +116,13 @@ class PostService {
       scope
     });
   }
-  static async getAllUserSavePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getAllUserSavePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -92,7 +139,13 @@ class PostService {
       sort
     });
   }
-  static async getAllUserSharePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getAllUserSharePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -109,7 +162,13 @@ class PostService {
       sort
     });
   }
-  static async getAllUserLikePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getAllUserLikePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -168,11 +227,20 @@ class PostService {
       user_id,
       type: 'post',
       number: -1
-    }).catch((err) => console.log(err));
+    }).catch(err => console.log(err));
 
     return result;
   }
-  static async updatePost({ post_id, user_id, content, title, scope, community, images, visibility }) {
+  static async updatePost({
+    post_id,
+    user_id,
+    content,
+    title,
+    scope,
+    community,
+    images,
+    visibility
+  }) {
     let post_attributes = { content, title, images };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
@@ -265,7 +333,12 @@ class PostService {
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { numShare } = await PostClass.sharePost({ user, post, owner_post, content_share });
+    const { numShare } = await PostClass.sharePost({
+      user,
+      post,
+      owner_post,
+      content_share
+    });
 
     if (user !== owner_post && numShare === 1) {
       const msg = NotificationService.createMsgToPublish({
@@ -292,7 +365,15 @@ class PostService {
     return true;
   }
 
-  static async createPost({ type = 'Post', user, content, images, scope, community, visibility }) {
+  static async createPost({
+    type = 'Post',
+    user,
+    content,
+    images,
+    scope,
+    community,
+    visibility
+  }) {
     if (!content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
@@ -332,18 +413,36 @@ class PostService {
 
     return result;
   }
-  static async getSavedPosts({ user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getSavedPosts({
+    user_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     return await PostClass.getSavedPosts({ user_id, limit, skip, sort });
   }
 
-  static async searchPosts({ search, me_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async searchPosts({
+    search,
+    me_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const isFullSearch = true;
 
-    return await PostClass.searchPosts({ search, me_id, limit, skip, isFullSearch, sort });
+    return await PostClass.searchPosts({
+      search,
+      me_id,
+      limit,
+      skip,
+      isFullSearch,
+      sort
+    });
   }
 }
 

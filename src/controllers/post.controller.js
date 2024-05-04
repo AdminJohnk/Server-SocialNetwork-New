@@ -4,6 +4,14 @@ import PostService from '../services/post.service.js';
 import { OK, CREATED } from '../core/success.response.js';
 
 class PostController {
+  static linkPreview = async (req, res, next) => {
+    new OK({
+      message: 'Link Preview Successfully',
+      metadata: await PostService.linkPreview({
+        ...req.query
+      })
+    }).send(res);
+  };
   static async getAllImage(req, res, next) {
     new OK({
       message: 'Get All Image Of Post Successfully',

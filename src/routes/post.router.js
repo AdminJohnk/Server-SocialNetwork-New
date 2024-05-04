@@ -42,6 +42,9 @@ router.get('/search/top', asyncHandler(PostController.searchPosts));
 // Get All Image Of Post
 router.get('/images/:user_id', asyncHandler(PostController.getAllImage));
 
+// Link Preview
+router.get('/link-preview', asyncHandler(PostController.linkPreview));
+
 // =========================================================
 
 /// POST //
