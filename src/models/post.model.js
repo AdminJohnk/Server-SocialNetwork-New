@@ -108,16 +108,20 @@ const getFirstElement = attribute => {
 };
 
 class PostClass {
-  static async getAllImage({user_id}) {
+  static async getAllImage({ user_id }) {
     const images = await PostModel.find({
       'post_attributes.user': user_id,
       type: 'Post'
-    }).select('post_attributes.images');
+    })
+      .select('post_attributes.images')
+      .sort({ createdAt: -1 })
+      .lean();
 
-    const imagesArray = images.map(image => image.post_attributes.images).flat();
+    const imagesArray = images
+      .map(image => image.post_attributes.images)
+      .flat();
 
     return imagesArray;
-
   }
   static async getSavedPosts({ user_id, limit, skip, sort }) {
     let condition = { 'post_attributes.saves': new ObjectId(user_id) };
@@ -296,7 +300,13 @@ class PostClass {
 
     return result[0];
   }
-  static async sharePost({ type = 'Share', user, post, owner_post, content_share }) {
+  static async sharePost({
+    type = 'Share',
+    user,
+    post,
+    owner_post,
+    content_share
+  }) {
     const post_attributes = { user, post, owner_post, content_share };
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
