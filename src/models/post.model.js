@@ -17,7 +17,11 @@ const COLLECTION_NAME = 'posts';
 const PostSchema = new Schema(
   {
     type: { type: String, enum: ['Post', 'Share'], required: true },
-    scope: { type: String, enum: ['Normal', 'Community'], default: 'Normal' },
+    scope: {
+      type: String,
+      enum: ['Normal', 'Community'],
+      default: 'Normal'
+    },
     community: { type: ObjectId, ref: 'Community' },
     visibility: {
       type: String,

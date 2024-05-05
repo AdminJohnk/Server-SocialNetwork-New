@@ -13,6 +13,7 @@ import CommunityRouter from './community.router.js';
 import ImageRouter from './image.router.js';
 import SearchLogRouter from './searchLog.router.js';
 import AdminRouter from './admin.router.js';
+import SeriesRouter from './series.router.js';
 import { checkApiKey, checkPermission } from '../auth/checkAuth.js';
 import { pushToLogDiscord } from '../middlewares/logger.middleware.js';
 
@@ -35,5 +36,6 @@ router.use('/comments', limiter, CommentRouter);
 router.use('/posts', limiter, postRouter);
 router.use('/users', limiter, userRouter);
 router.use('/searchlog', limiter, SearchLogRouter);
+router.use('/series', limiter, SeriesRouter);
 
 export default router;
