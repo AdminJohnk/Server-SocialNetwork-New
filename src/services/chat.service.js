@@ -323,7 +323,7 @@ class ChatService {
       if (!foundRoom) {
         first_call = true;
         cache.set(roomName, foundUser);
-        await roomService.createRoom({ name: roomName, departureTimeout: 0 });
+        await roomService.createRoom({ name: roomName, departureTimeout: 0, emptyTimeout: 0 });
       }
     });
 
