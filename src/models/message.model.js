@@ -12,7 +12,7 @@ const MessageSchema = new Schema(
     conversation_id: { type: ObjectId, ref: 'Conversation', required: true },
     type: {
       type: String,
-      enum: ['text', 'image', 'notification', 'audio', 'file', 'voice', 'video'],
+      enum: ['text', 'image', 'notification', 'audio', 'file', 'voice', 'video', 'post'],
       default: 'text'
     },
 
@@ -36,6 +36,7 @@ const MessageSchema = new Schema(
     sender: { type: ObjectId, ref: 'User', required: true },
     seen: { type: [ObjectId], ref: 'User', default: [] },
     content: { type: String, default: null },
+    post_id: { type: String, default: null },
     createdAt: { type: Date, required: true },
     updatedAt: { type: Date, default: new Date() }
   },
