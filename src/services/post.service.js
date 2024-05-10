@@ -326,7 +326,7 @@ class PostService {
     return await PostClass.findByID({ post_id, user, scope, isFullSearch });
   }
 
-  static async sharePost({ user, post, owner_post, content_share }) {
+  static async sharePost({ user, post, owner_post, content }) {
     const foundPost = await PostClass.checkExist({
       _id: post,
       'post_attributes.user': owner_post
@@ -337,7 +337,7 @@ class PostService {
       user,
       post,
       owner_post,
-      content_share
+      content
     });
 
     if (user !== owner_post && numShare === 1) {

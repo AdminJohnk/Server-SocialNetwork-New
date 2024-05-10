@@ -31,14 +31,13 @@ const PostSchema = new Schema(
 
     post_attributes: {
       user: { type: ObjectId, ref: 'User' }, // me_id
+      content: String,
 
       // type = Post
-      content: String,
       link: String,
       images: { type: [String], default: [] },
 
       // type = Share
-      content_share: { type: String, default: '' },
       post: { type: ObjectId, ref: 'Post' },
       owner_post: { type: ObjectId, ref: 'User' },
 
@@ -309,9 +308,9 @@ class PostClass {
     user,
     post,
     owner_post,
-    content_share
+    content
   }) {
-    const post_attributes = { user, post, owner_post, content_share };
+    const post_attributes = { user, post, owner_post, content };
 
     let numShare = 1;
 
