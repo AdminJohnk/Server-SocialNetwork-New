@@ -1,7 +1,7 @@
 'use strict';
 import { UserClass } from '../models/user.model.js';
 import { KeyTokenClass } from '../models/keytoken.model.js';
-import { compare, hash } from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { randomBytes, generateKeyPairSync } from 'crypto';
 import { stringify, parse } from 'qs';
 import { createTokenPair } from '../auth/authUtils.js';
@@ -90,7 +90,7 @@ class AuthService {
     if (!foundUser) throw new BadRequestError('Email not exists!');
 
     // 2 - Match password
-    const match = await compare(password, foundUser.password);
+    const match = await bcrypt.compare(password, foundUser.password);
     if (!match) throw new AuthFailureError('Wrong password!');
 
     // 3 - Create privateKey vs publicKey
@@ -289,58 +289,27 @@ class AuthService {
     }
   };
 
-  static signUpService = async ({ name, email, password }) => {
+  static signUpService = async ({ name, email, password, alias }) => {
+    // check Alias exist
+    const foundAlias = await UserClass.findByAlias({ alias });
+    if (foundAlias) throw new BadRequestError('Alias already exists');
+
     // check Email exist
     const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) throw new BadRequestError('Email already exists');
 
-    const passwordHash = await hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const newUser = await UserClass.createUser({
       name,
       email,
-      password: passwordHash
+      password: passwordHash,
+      alias
     });
 
-    if (newUser) {
-      // create privateKey, publicKey
-
-      // const privateKey = crypto.randomBytes(64).toString('hex');
-      // const publicKey = crypto.randomBytes(64).toString('hex');
-
-      const { privateKey, publicKey } = generateKeyPairSync('rsa', {
-        modulusLength: 4096,
-        publicKeyEncoding: {
-          type: 'spki',
-          format: 'pem'
-        },
-        privateKeyEncoding: {
-          type: 'pkcs8',
-          format: 'pem'
-        }
-      });
-
-      // create token pair
-      const tokens = await createTokenPair({ userId: newUser._id, email }, publicKey, privateKey);
-
-      const keyStore = await KeyTokenClass.createKeyToken({
-        userId: newUser._id,
-        publicKey,
-        privateKey,
-        refreshToken: tokens.refreshToken
-      });
-
-      if (!keyStore) throw new BadRequestError("Can't create keyStore!");
-
-      return {
-        user: getInfoData({
-          fields: ['id', '_id', 'email'],
-          object: newUser
-        }),
-        tokens
-      };
-    }
-    return {};
+    return {
+      success: !!newUser
+    };
   };
 
   static changePasswordService = async ({ email, oldPassword, newPassword }) => {
@@ -352,7 +321,7 @@ class AuthService {
 
     if (!match) throw new BadRequestError('Old password not match');
 
-    const passwordHash = await hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(newPassword, 10);
 
     await foundUser.updateOne({ $set: { password: passwordHash } });
 
@@ -399,7 +368,7 @@ class AuthService {
     const foundUser = await UserClass.findByEmail({ email });
     if (!foundUser) throw new BadRequestError('Email not exists');
 
-    const passwordHash = await hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     await foundUser.updateOne({ $set: { password: passwordHash } });
 

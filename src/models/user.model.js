@@ -111,7 +111,7 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
-const getFirstElement = attribute => {
+const getFirstElement = (attribute) => {
   return {
     $addFields: {
       [attribute]: {
@@ -185,9 +185,7 @@ class UserClass {
     return users;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id })
-      .select(getSelectData(select))
-      .lean();
+    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -208,11 +206,7 @@ class UserClass {
     };
   }
   static async updateUser({ email, payload }) {
-    return await UserModel.findOneAndUpdate(
-      { email },
-      { $set: { payload } },
-      { new: true }
-    ).lean();
+    return await UserModel.findOneAndUpdate({ email }, { $set: { payload } }, { new: true }).lean();
   }
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
@@ -234,10 +228,7 @@ class UserClass {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ['$user', '$$id'] },
-                    { $in: [new ObjectId(me_id), '$friends'] }
-                  ]
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
                 }
               }
             }
@@ -266,18 +257,22 @@ class UserClass {
   static async findByEmail({ email }) {
     return await UserModel.findOne({ email }).select({ password: 1, email: 1, name: 1, user_image: 1 });
   }
+  static async findByAlias({ alias }) {
+    return await UserModel.findOne({ alias }).select({ password: 1, email: 1, name: 1, user_image: 1 });
+  }
   static async deleteUser({ user_id }) {
     const user = await UserModel.findByIdAndDelete(user_id).lean();
     await UserIncrClass.pushIdDelete(user.id_incr);
     return true;
   }
-  static async createUser({ name, email, password, user_image }) {
+  static async createUser({ name, email, password, user_image, alias }) {
     const user = await UserModel.create({
       name,
       email,
       password,
       user_image,
-      role: [RoleUser.USER]
+      role: [RoleUser.USER],
+      alias
     });
     return user;
   }
