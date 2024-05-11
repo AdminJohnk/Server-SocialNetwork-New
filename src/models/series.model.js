@@ -126,8 +126,8 @@ class SeriesClass {
       { new: true }
     );
   }
-  static async getSeriesById({ series_id, user }) {
-    return await SeriesModel.findOne({ _id: series_id, user })
+  static async getSeriesById({ series_id }) {
+    return await SeriesModel.findById(series_id)
       .populate('user', pp_UserMore)
       .populate('post.comments.user', pp_UserDefault)
       .populate('post.comments.child.user', pp_UserDefault)
@@ -137,21 +137,9 @@ class SeriesClass {
       .lean();
   }
   static async getAllSeries({ user, limit, skip, sort }) {
-    return await SeriesModel.find({ user })
-      .skip(skip)
-      .limit(limit)
-      .sort(sort)
-      .lean();
+    return await SeriesModel.find({ user }).skip(skip).limit(limit).sort(sort).lean();
   }
-  static async createSeries({
-    user,
-    title,
-    description,
-    introduction,
-    level,
-    cover_image,
-    visibility
-  }) {
+  static async createSeries({ user, title, description, introduction, level, cover_image, visibility }) {
     return await SeriesModel.create({
       user,
       title,

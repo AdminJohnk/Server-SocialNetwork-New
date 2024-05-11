@@ -42,8 +42,8 @@ class SeriesService {
       visibility
     });
   };
-  static getSeriesById = async ({ series_id, user }) => {
-    const series = await SeriesClass.getSeriesById({ series_id, user });
+  static getSeriesById = async ({ series_id }) => {
+    const series = await SeriesClass.getSeriesById({ series_id });
     if (!series) throw new NotFoundError('Series not found');
     return series;
   };

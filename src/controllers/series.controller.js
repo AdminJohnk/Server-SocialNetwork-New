@@ -21,8 +21,7 @@ class SeriesController {
     new OK({
       message: 'Get Series By ID Successfully',
       metadata: await SeriesService.getSeriesById({
-        series_id: req.params.series_id,
-        user: req.user.userId
+        series_id: req.params.series_id
       })
     }).send(res);
   };
