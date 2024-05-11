@@ -50,12 +50,13 @@ class SeriesService {
   static getAllSeries = async ({
     user,
     page,
+    me_id,
     limit = 10,
     sort = { createdAt: -1 }
   }) => {
     const skip = (parseInt(page) - 1) * limit;
 
-    const series = await SeriesClass.getAllSeries({ user, limit, skip, sort });
+    const series = await SeriesClass.getAllSeries({ user, limit, skip, sort,me_id });
     return series;
   };
   static createSeries = async ({

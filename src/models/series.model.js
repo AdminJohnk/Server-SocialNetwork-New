@@ -136,8 +136,12 @@ class SeriesClass {
       .populate('reviews.user', pp_UserDefault)
       .lean();
   }
-  static async getAllSeries({ user, limit, skip, sort }) {
-    return await SeriesModel.find({ user }).skip(skip).limit(limit).sort(sort).lean();
+  static async getAllSeries({ user, limit, skip, sort, me_id }) {
+    const condition = { user };
+
+    if (me_id !== user) condition.visibility = 'public';
+
+    return await SeriesModel.find(condition).skip(skip).limit(limit).sort(sort).lean();
   }
   static async createSeries({ user, title, description, introduction, level, cover_image, visibility }) {
     return await SeriesModel.create({

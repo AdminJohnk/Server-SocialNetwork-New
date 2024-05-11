@@ -32,7 +32,8 @@ class SeriesController {
       message: 'Get All Series Successfully',
       metadata: await SeriesService.getAllSeries({
         user: req.params.profile_id,
-        page: req.query.page
+        page: req.query.page,
+        me_id: req.user.userId
       })
     }).send(res);
   };
