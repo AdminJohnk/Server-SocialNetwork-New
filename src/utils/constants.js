@@ -14,8 +14,17 @@ const HEADER = {
 const avt_default = 'default_avatar.png';
 
 const pp_UserDefault = '_id name email user_image last_online';
+const pp_UserMore = '_id name email user_image last_online experiences';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image', 'last_online'];
-const se_UserAdmin = ['_id', 'name', 'email', 'user_image', 'experiences', 'tags', 'post_number'];
+const se_UserAdmin = [
+  '_id',
+  'name',
+  'email',
+  'user_image',
+  'experiences',
+  'tags',
+  'post_number'
+];
 
 const se_UserDefaultForPost = [
   '_id',
@@ -54,6 +63,7 @@ export {
   se_UserDefault,
   se_UserAdmin,
   pp_UserDefault,
+  pp_UserMore,
   se_UserDefaultForPost,
   objectConnectRedis,
   unSe_PostDefault

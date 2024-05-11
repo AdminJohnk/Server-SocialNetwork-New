@@ -8,6 +8,11 @@ import { authentication } from '../auth/authUtils.js';
 router.use(authentication);
 
 /// GET //
+// Get All Series
+router.get('/all', asyncHandler(SeriesController.getAllSeries));
+
+// Get Series By ID
+router.get('/find/:series_id', asyncHandler(SeriesController.getSeriesById));
 
 
 // =========================================================
@@ -25,7 +30,7 @@ router.post('/create-post', asyncHandler(SeriesController.createPost));
 
 /// PUT //
 // Update Series
-router.put('/update', asyncHandler(SeriesController.updateSeries));
+router.put('/update/:series_id', asyncHandler(SeriesController.updateSeries));
 
 // Update Post
 router.put('/update-post', asyncHandler(SeriesController.updatePost));

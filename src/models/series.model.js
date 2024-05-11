@@ -1,7 +1,7 @@
 'use strict';
 
 import { model, Mongoose, Schema, Types } from 'mongoose';
-import { pp_UserDefault } from '../utils/constants.js';
+import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
 import { de } from '@faker-js/faker';
 const ObjectId = Types.ObjectId;
 
@@ -103,6 +103,46 @@ SeriesSchema.index({ user: 1, post: 1 }, { unique: true });
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async updateSeries({
+    series_id,
+    user,
+    title,
+    description,
+    introduction,
+    level,
+    cover_image,
+    visibility
+  }) {
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id, user },
+      {
+        title,
+        description,
+        introduction,
+        level,
+        cover_image,
+        visibility
+      },
+      { new: true }
+    );
+  }
+  static async getSeriesById({ series_id, user }) {
+    return await SeriesModel.findOne({ _id: series_id, user })
+      .populate('user', pp_UserMore)
+      .populate('post.comments.user', pp_UserDefault)
+      .populate('post.comments.child.user', pp_UserDefault)
+      .populate('post.likes', pp_UserDefault)
+      .populate('post.saves', pp_UserDefault)
+      .populate('reviews.user', pp_UserDefault)
+      .lean();
+  }
+  static async getAllSeries({ user, limit, skip, sort }) {
+    return await SeriesModel.find({ user })
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .lean();
+  }
   static async createSeries({
     user,
     title,
@@ -121,6 +161,10 @@ class SeriesClass {
       cover_image,
       visibility
     });
+  }
+
+  static async checkExist(select) {
+    return await SeriesModel.findOne(select).lean();
   }
 
   //   static async getAllUserLikePost({ post, owner_post, limit, skip, sort }) {
