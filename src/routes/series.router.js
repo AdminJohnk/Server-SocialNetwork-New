@@ -9,7 +9,7 @@ router.use(authentication);
 
 /// GET //
 // Get All Series
-router.get('/all', asyncHandler(SeriesController.getAllSeries));
+router.get('/all/:profile_id', asyncHandler(SeriesController.getAllSeries));
 
 // Get Series By ID
 router.get('/find/:series_id', asyncHandler(SeriesController.getSeriesById));
