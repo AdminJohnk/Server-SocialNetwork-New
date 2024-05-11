@@ -69,6 +69,9 @@ router.put('/view/:post_id', asyncHandler(PostController.viewPost));
 // Delete Post
 router.delete('/delete/:post_id', asyncHandler(PostController.deletePost));
 
+// Delete Shared Post
+router.delete('/shared/delete', asyncHandler(PostController.deleteSharePost));
+
 // =========================================================
 
 export default router;

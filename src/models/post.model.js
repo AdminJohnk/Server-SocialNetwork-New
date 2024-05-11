@@ -31,14 +31,13 @@ const PostSchema = new Schema(
 
     post_attributes: {
       user: { type: ObjectId, ref: 'User' }, // me_id
+      content: String,
 
       // type = Post
-      content: String,
       link: String,
       images: { type: [String], default: [] },
 
       // type = Share
-      content_share: { type: String, default: '' },
       post: { type: ObjectId, ref: 'Post' },
       owner_post: { type: ObjectId, ref: 'User' },
 
@@ -309,11 +308,29 @@ class PostClass {
     user,
     post,
     owner_post,
-    content_share
+    content
   }) {
-    const post_attributes = { user, post, owner_post, content_share };
+    const post_attributes = { user, post, owner_post, content };
+
+    let numShare = 1;
+
+    await PostModel.create({ type, post_attributes });
+
+    this.changeToArrayPost({
+      post_id: post,
+      type: 'share',
+      number: numShare,
+      user_id: user
+    });
+
+    return {
+      numShare
+    };
+  }
+  static async deleteSharePost({ type = 'Share', user, post, shared_post }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
+      '_id': shared_post,
       'post_attributes.user': user,
       'post_attributes.post': post,
       type
@@ -324,14 +341,14 @@ class PostClass {
     if (sharedPost) {
       await Promise.resolve(PostModel.deleteOne(sharedPost._id));
       numShare = -1;
-    } else await PostModel.create({ type, post_attributes });
 
-    this.changeToArrayPost({
-      post_id: post,
-      type: 'share',
-      number: numShare,
-      user_id: user
-    });
+      this.changeToArrayPost({
+        post_id: post,
+        type: 'share',
+        number: numShare,
+        user_id: user
+      });
+    }
 
     return {
       numShare

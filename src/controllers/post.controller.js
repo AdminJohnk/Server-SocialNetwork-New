@@ -205,6 +205,16 @@ class PostController {
     }).send(res);
   };
 
+  static deleteSharePost = async (req, res, next) => {
+    new OK({
+      message: 'Delete Share Post Successfully',
+      metadata: await PostService.deleteSharePost({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  }
+
   /* 
     Create Post
     Link: http://localhost:4052/api/v1/posts
