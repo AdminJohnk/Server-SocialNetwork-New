@@ -44,8 +44,7 @@ class SeriesController {
     new OK({
       message: 'Get Series By ID Successfully',
       metadata: await SeriesService.getSeriesById({
-        series_id: req.params.series_id,
-        user: req.user.userId
+        series_id: req.params.series_id
       })
     }).send(res);
   };
@@ -56,7 +55,8 @@ class SeriesController {
       message: 'Get All Series Successfully',
       metadata: await SeriesService.getAllSeries({
         user: req.params.profile_id,
-        page: req.query.page
+        page: req.query.page,
+        me_id: req.user.userId
       })
     }).send(res);
   };

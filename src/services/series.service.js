@@ -111,20 +111,21 @@ class SeriesService {
       visibility
     });
   };
-  static getSeriesById = async ({ series_id, user }) => {
-    const series = await SeriesClass.getSeriesById({ series_id, user });
+  static getSeriesById = async ({ series_id }) => {
+    const series = await SeriesClass.getSeriesById({ series_id });
     if (!series) throw new NotFoundError('Series not found');
     return series;
   };
   static getAllSeries = async ({
     user,
     page,
+    me_id,
     limit = 10,
     sort = { createdAt: -1 }
   }) => {
     const skip = (parseInt(page) - 1) * limit;
 
-    const series = await SeriesClass.getAllSeries({ user, limit, skip, sort });
+    const series = await SeriesClass.getAllSeries({ user, limit, skip, sort,me_id });
     return series;
   };
   static createSeries = async ({
