@@ -24,6 +24,7 @@ import NotificationService from './notification.service.js';
 import PublisherService from './publisher.service.js';
 import { Notification } from '../utils/notificationType.js';
 import ImageService from './image.service.js';
+import HashTagService from './hashtag.service.js';
 
 const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
@@ -211,6 +212,9 @@ class PostService {
       await ImageService.deleteImages({ images: removeImages });
     } // Xóa ảnh trong S3
 
+    // Xóa hash tag
+    await HashTagService.deletePostHashTags({ post_id, user: user_id, scope });
+
     const result = await PostClass.deletePost({ post_id });
 
     // Xóa post trong community
@@ -229,12 +233,15 @@ class PostService {
       number: -1
     }).catch(err => console.log(err));
 
+
     return result;
   }
   static async updatePost({
     post_id,
     user_id,
     content,
+    hashtags,
+    rmHashtags,
     title,
     scope,
     community,
@@ -268,7 +275,9 @@ class PostService {
       if (!foundCommunity) throw new NotFoundError('Community not found');
     }
 
-    return await PostClass.updatePost({
+    // update hash tag
+
+    const updatePost = await PostClass.updatePost({
       post_id,
       user_id,
       payload: updateNestedObjectParser({
@@ -276,6 +285,10 @@ class PostService {
         post_attributes
       })
     });
+
+    await HashTagService.createOrUpdateHashTag({ rmHashtags, post_id, user: user_id, scope });
+
+    return updatePost;
   }
   static async getAllPost({ user_id, limit = 10, page = 1, sort = 'ctime' }) {
     const skip = (page - 1) * limit;
@@ -371,6 +384,7 @@ class PostService {
     user,
     content,
     images,
+    hashtags,
     scope,
     community,
     visibility,
@@ -382,6 +396,7 @@ class PostService {
       user,
       content,
       images,
+      hashtags,
       scope,
       community,
       visibility,
@@ -413,6 +428,9 @@ class PostService {
 
       // Add notification for all member in community
     }
+
+    // Thêm post vào hash tag
+    HashTagService.createOrUpdateHashTag({ post_id: result._id, user, scope });
 
     return result;
   }
@@ -446,6 +464,24 @@ class PostService {
       isFullSearch,
       sort
     });
+  }
+
+  static async getPostByHashtag({
+    hashtag,
+    user_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
+    const post_ids = await HashTagService.getHashTagByName({ name: '#' + hashtag });
+
+    if (!post_ids) return [];
+    const posts = await Promise.all(
+      post_ids.map(async post_id => {
+        return await PostClass.findByID({ post_id, user: user_id });
+      })
+    );
+    return posts;
   }
 }
 
