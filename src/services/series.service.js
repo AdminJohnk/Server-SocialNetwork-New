@@ -11,6 +11,75 @@ import {
 import { SeriesClass } from '../models/series.model.js';
 
 class SeriesService {
+  static updatePost = async ({
+    series_id,
+    id,
+    user,
+    title,
+    description,
+    content,
+    cover_image,
+    visibility,
+    read_time
+  }) => {
+    const series = await SeriesClass.getSeriesById({ series_id, user });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find((post) => post._id == id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    if (!title) throw new BadRequestError('Title is required');
+    if (!description) throw new BadRequestError('Description is required');
+    if (!content) throw new BadRequestError('Content is required');
+    if (!cover_image) throw new BadRequestError('Images is required');
+    if (!visibility) throw new BadRequestError('Visibility is required');
+    if (!read_time) throw new BadRequestError('Read time is required');
+
+    const updatedPost = await SeriesClass.updatePost({
+      series_id,
+      id,
+      title,
+      description,
+      content,
+      cover_image,
+      visibility,
+      read_time
+    });
+    return updatedPost;
+  };
+  static createPost = async ({
+    user,
+    series_id,
+    title,
+    description,
+    content,
+    cover_image,
+    visibility,
+    read_time
+  }) => {
+    const series = await SeriesClass.getSeriesById({ series_id, user });
+    if (!series) throw new NotFoundError('Series not found');
+
+    if (!title) throw new BadRequestError('Title is required');
+    if (!description) throw new BadRequestError('Description is required');
+    if (!content) throw new BadRequestError('Content is required');
+    if (!cover_image) throw new BadRequestError('Images is required');
+    if (!visibility) throw new BadRequestError('Visibility is required');
+    if (!read_time) throw new BadRequestError('Read time is required');
+
+    const post = await SeriesClass.createPost({
+      user,
+      series_id,
+      title,
+      description,
+      content,
+      cover_image,
+      visibility,
+      read_time
+    });
+    return post;
+  };
+
   static updateSeries = async ({
     series_id,
     user,

@@ -1,8 +1,7 @@
 'use strict';
 
-import { model, Mongoose, Schema, Types } from 'mongoose';
+import { model, mongo, Mongoose, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
-import { de } from '@faker-js/faker';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Series';
@@ -23,14 +22,15 @@ const SeriesSchema = new Schema(
       enum: ['public', 'private', 'friend'],
       default: 'public'
     },
-    post: {
+    posts: {
       type: [
         {
+          _id: { type: ObjectId, auto: true },
           title: { type: String, required: true },
-          content: { type: String, required: true },
-          cover_image: { type: String, required: true },
           description: { type: String, default: '' },
-          read_time: { type: Number, default: 0 },
+          cover_image: { type: String, required: true },
+          content: { type: String, required: true },
+          read_time: { type: String, default: '2 minutes' },
           likes: {
             type: [{ type: ObjectId, ref: 'User' }]
           },
@@ -58,6 +58,11 @@ const SeriesSchema = new Schema(
                 ]
               }
             ]
+          },
+          visibility: {
+            type: String,
+            enum: ['public', 'private', 'friend'],
+            default: 'public'
           },
           createdAt: { type: Date, default: Date.now }
         }
@@ -98,11 +103,63 @@ const SeriesSchema = new Schema(
   }
 );
 
-SeriesSchema.index({ user: 1, post: 1 }, { unique: true });
+SeriesSchema.index({ user: 1, posts: 1 }, { unique: true });
 
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async updatePost({
+    series_id,
+    id,
+    title,
+    description,
+    content,
+    cover_image,
+    visibility,
+    read_time
+  }) {
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id, 'posts._id': id },
+      {
+        $set: {
+          'posts.$.title': title,
+          'posts.$.description': description,
+          'posts.$.content': content,
+          'posts.$.cover_image': cover_image,
+          'posts.$.visibility': visibility,
+          'posts.$.read_time': read_time
+        }
+      },
+      { new: true }
+    );
+  }
+  static async createPost({
+    user,
+    series_id,
+    title,
+    description,
+    content,
+    cover_image,
+    visibility,
+    read_time
+  }) {
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id, user },
+      {
+        $push: {
+          posts: {
+            title,
+            description,
+            content,
+            cover_image,
+            visibility,
+            read_time
+          }
+        }
+      },
+      { new: true }
+    );
+  }
   static async updateSeries({
     series_id,
     user,
@@ -129,10 +186,10 @@ class SeriesClass {
   static async getSeriesById({ series_id, user }) {
     return await SeriesModel.findOne({ _id: series_id, user })
       .populate('user', pp_UserMore)
-      .populate('post.comments.user', pp_UserDefault)
-      .populate('post.comments.child.user', pp_UserDefault)
-      .populate('post.likes', pp_UserDefault)
-      .populate('post.saves', pp_UserDefault)
+      .populate('posts.comments.user', pp_UserDefault)
+      .populate('posts.comments.child.user', pp_UserDefault)
+      .populate('posts.likes', pp_UserDefault)
+      .populate('posts.saves', pp_UserDefault)
       .populate('reviews.user', pp_UserDefault)
       .lean();
   }
@@ -166,33 +223,6 @@ class SeriesClass {
   static async checkExist(select) {
     return await SeriesModel.findOne(select).lean();
   }
-
-  //   static async getAllUserLikePost({ post, owner_post, limit, skip, sort }) {
-  //     return await LikeModel.find({ post, owner_post })
-  //       .populate('user', pp_UserDefault)
-  //       .select('user')
-  //       .skip(skip)
-  //       .limit(limit)
-  //       .sort(sort)
-  //       .lean();
-  //   }
-  //   static async likePost({ user, post, owner_post }) {
-  //     const foundLike = await LikeModel.findOne({
-  //       user: user,
-  //       post: post
-  //     });
-  //     let numLike = 1;
-  //     if (foundLike) {
-  //       await Promise.resolve(LikeModel.deleteOne(foundLike));
-  //       numLike = -1;
-  //     } else await LikeModel.create({ user, post, owner_post });
-  //     return {
-  //       numLike
-  //     };
-  //   }
-  //   static async checkExist(select) {
-  //     return await LikeModel.findOne(select).lean();
-  //   }
 }
 
 //Export the model

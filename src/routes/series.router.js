@@ -14,7 +14,6 @@ router.get('/all/:profile_id', asyncHandler(SeriesController.getAllSeries));
 // Get Series By ID
 router.get('/find/:series_id', asyncHandler(SeriesController.getSeriesById));
 
-
 // =========================================================
 
 /// POST //
@@ -22,9 +21,10 @@ router.get('/find/:series_id', asyncHandler(SeriesController.getSeriesById));
 router.post('/create', asyncHandler(SeriesController.createSeries));
 
 // Create Post
-router.post('/create-post', asyncHandler(SeriesController.createPost));
-
-
+router.post(
+  '/create-post/:series_id',
+  asyncHandler(SeriesController.createPost)
+);
 
 // =========================================================
 
@@ -33,7 +33,7 @@ router.post('/create-post', asyncHandler(SeriesController.createPost));
 router.put('/update/:series_id', asyncHandler(SeriesController.updateSeries));
 
 // Update Post
-router.put('/update-post', asyncHandler(SeriesController.updatePost));
+router.put('/update-post/:series_id', asyncHandler(SeriesController.updatePost));
 
 // Review Series
 router.put('/review', asyncHandler(SeriesController.reviewSeries));
@@ -47,11 +47,9 @@ router.put('/comment-post', asyncHandler(SeriesController.commentPost));
 // Save Post
 router.put('/save-post', asyncHandler(SeriesController.savePost));
 
-
 // =========================================================
 
 /// DELETE //
-
 
 // =========================================================
 

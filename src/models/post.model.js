@@ -40,6 +40,7 @@ const PostSchema = new Schema(
       // type = Share
       post: { type: ObjectId, ref: 'Post' },
       owner_post: { type: ObjectId, ref: 'User' },
+      
 
       // common field
       like_number: { type: Number, default: 0 },
@@ -63,6 +64,10 @@ const PostSchema = new Schema(
       comments: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
+      },
+      hashtags: {
+        type: [{ type: String }],
+        default: []
       }
     }
   },
@@ -303,13 +308,7 @@ class PostClass {
 
     return result[0];
   }
-  static async sharePost({
-    type = 'Share',
-    user,
-    post,
-    owner_post,
-    content
-  }) {
+  static async sharePost({ type = 'Share', user, post, owner_post, content }) {
     const post_attributes = { user, post, owner_post, content };
 
     let numShare = 1;
@@ -330,7 +329,7 @@ class PostClass {
   static async deleteSharePost({ type = 'Share', user, post, shared_post }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({
-      '_id': shared_post,
+      _id: shared_post,
       'post_attributes.user': user,
       'post_attributes.post': post,
       type
@@ -555,9 +554,10 @@ class PostClass {
     images,
     scope,
     community,
-    visibility
+    visibility,
+    hashtags
   }) {
-    const post_attributes = { user, content, images };
+    const post_attributes = { user, content, images, hashtags };
     const newPost = await PostModel.create({
       type,
       scope,

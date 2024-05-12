@@ -5,6 +5,29 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class SeriesController {
+  // Update Post
+  static updatePost = async (req, res, next) => {
+    new OK({
+      message: 'Update Post Successfully',
+      metadata: await SeriesService.updatePost({
+        ...req.body,
+        series_id: req.params.series_id,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Create Post
+  static createPost = async (req, res, next) => {
+    new CREATED({
+      message: 'Create Post Successfully',
+      metadata: await SeriesService.createPost({
+        ...req.body,
+        series_id: req.params.series_id,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+
   // Update Series
   static updateSeries = async (req, res, next) => {
     new OK({

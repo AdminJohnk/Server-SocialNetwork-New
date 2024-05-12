@@ -239,9 +239,10 @@ class PostService {
     scope,
     community,
     images,
-    visibility
+    visibility,
+    hashtags
   }) {
-    let post_attributes = { content, title, images };
+    let post_attributes = { content, title, images, hashtags };
     const foundPost = await PostClass.checkExist({
       _id: post_id,
       'post_attributes.user': user_id
@@ -372,7 +373,8 @@ class PostService {
     images,
     scope,
     community,
-    visibility
+    visibility,
+    hashtags,
   }) {
     if (!content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
@@ -382,7 +384,8 @@ class PostService {
       images,
       scope,
       community,
-      visibility
+      visibility,
+      hashtags
     });
 
     UserClass.changeNumberUser({
