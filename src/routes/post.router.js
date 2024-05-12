@@ -36,7 +36,7 @@ router.get('/save/:post_id', asyncHandler(PostController.getAllUserSavePost));
 //Get all saved posts
 router.get('/saved', asyncHandler(PostController.getSavedPosts));
 
-// Get Posts By Title
+// Get Posts By Search keyword
 router.get('/search/top', asyncHandler(PostController.searchPosts));
 
 // Get All Image Of Post
@@ -44,6 +44,9 @@ router.get('/images/:user_id', asyncHandler(PostController.getAllImage));
 
 // Link Preview
 router.get('/link-preview', asyncHandler(PostController.linkPreview));
+
+// Get All Post By Hashtag
+router.get('/hashtag/:hashtag', asyncHandler(PostController.getPostByHashtag));
 
 // =========================================================
 

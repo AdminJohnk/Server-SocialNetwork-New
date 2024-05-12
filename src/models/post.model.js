@@ -63,7 +63,8 @@ const PostSchema = new Schema(
       comments: {
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
-      }
+      },
+      hashtags: { type: [String], default: [] }
     }
   },
   {
@@ -430,7 +431,7 @@ class PostClass {
     return foundPost;
   }
 
-  static async findByID({ post_id, user, scope, isFullSearch = false }) {
+  static async findByID({ post_id, user, scope = 'Normal', isFullSearch = false }) {
     let condition = {
       _id: new ObjectId(post_id),
       scope
@@ -553,11 +554,12 @@ class PostClass {
     user,
     content,
     images,
+    hashtags,
     scope,
     community,
     visibility
   }) {
-    const post_attributes = { user, content, images };
+    const post_attributes = { user, content, images, hashtags };
     const newPost = await PostModel.create({
       type,
       scope,

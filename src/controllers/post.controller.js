@@ -247,6 +247,17 @@ class PostController {
       })
     }).send(res);
   };
+
+  static getPostByHashtag = async (req, res, next) => {
+    new OK({
+      message: 'Get Post By Hashtag Successfully',
+      metadata: await PostService.getPostByHashtag({
+        hashtag: req.params.hashtag,
+        page: req.query.page,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  }
 }
 
 export default PostController;
