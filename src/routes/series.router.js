@@ -50,6 +50,9 @@ router.put('/save-post', asyncHandler(SeriesController.savePost));
 // =========================================================
 
 /// DELETE //
+// Delete Series
+router.delete('/delete/:series_id', asyncHandler(SeriesController.deleteSeries));
+
 // Delete Post
 router.delete('/delete-post/:series_id/:post_id', asyncHandler(SeriesController.deletePost));
 

@@ -11,6 +11,12 @@ import {
 import { SeriesClass } from '../models/series.model.js';
 
 class SeriesService {
+  static deleteSeries = async ({ series_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id, user });
+    if (!series) throw new ForbiddenError('Unauthorized to delete this series');
+
+    return await SeriesClass.deleteSeries({ series_id, user });
+  };
   static deletePost = async ({ series_id, post_id, user }) => {
     const series = await SeriesClass.checkExist({ _id: series_id, user });
     if (!series) throw new ForbiddenError('Unauthorized to delete this post');

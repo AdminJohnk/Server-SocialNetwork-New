@@ -5,6 +5,16 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class SeriesController {
+  // Delete Series
+  static deleteSeries = async (req, res, next) => {
+    new OK({
+      message: 'Delete Series Successfully',
+      metadata: await SeriesService.deleteSeries({
+        series_id: req.params.series_id,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
   // Delete Post
   static deletePost = async (req, res, next) => {
     new OK({

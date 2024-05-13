@@ -3,6 +3,7 @@
 import { model, mongo, Mongoose, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
 import { FriendClass } from './friend.model.js';
+import { de } from '@faker-js/faker';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Series';
@@ -78,12 +79,20 @@ const SeriesSchema = new Schema(
     },
     rating: {
       type: {
-        start_1: { type: Number, default: 0 },
-        start_2: { type: Number, default: 0 },
-        start_3: { type: Number, default: 0 },
-        start_4: { type: Number, default: 0 },
-        start_5: { type: Number, default: 0 },
-        avg: { type: Number, default: 0 }
+        star_1: { type: Number },
+        star_2: { type: Number },
+        star_3: { type: Number },
+        star_4: { type: Number },
+        star_5: { type: Number },
+        avg: { type: Number }
+      },
+      default: {
+        star_1: 0,
+        star_2: 0,
+        star_3: 0,
+        star_4: 0,
+        star_5: 0,
+        avg: 0
       }
     },
     reviews: {
@@ -110,6 +119,9 @@ SeriesSchema.index({ _id: 1, user: 1 }, { unique: true });
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async deleteSeries({ series_id, user }) {
+    return await SeriesModel.findOneAndDelete({ _id: series_id, user }).lean();
+  }
   static async deletePost({ series_id, post_id }) {
     return await SeriesModel.findOneAndUpdate(
       { _id: series_id },
