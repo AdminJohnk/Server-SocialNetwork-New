@@ -211,6 +211,12 @@ class FriendClass {
 
     return user.requestsReceived;
   }
+  static async isFriend({ user_id, friend_id }) {
+    const user = await FriendModel.findOne({ user: user_id });
+    if (!user) return false;
+
+    return user.friends.includes(friend_id);
+  }
 }
 
 export { FriendModel, FriendClass };

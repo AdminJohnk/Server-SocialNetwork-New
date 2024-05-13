@@ -11,6 +11,16 @@ import {
 import { SeriesClass } from '../models/series.model.js';
 
 class SeriesService {
+  static deletePost = async ({ series_id, post_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id, user });
+    if (!series) throw new ForbiddenError('Unauthorized to delete this post');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    return await SeriesClass.deletePost({ series_id, post_id });
+  };
+
   static updatePost = async ({
     series_id,
     id,
@@ -22,10 +32,10 @@ class SeriesService {
     visibility,
     read_time
   }) => {
-    const series = await SeriesClass.getSeriesById({ series_id, user });
-    if (!series) throw new NotFoundError('Series not found');
+    const series = await SeriesClass.checkExist({ _id: series_id, user });
+    if (!series) throw new ForbiddenError('Unauthorized to update this post');
 
-    const post = series.posts.find((post) => post._id == id);
+    const post = series.posts.find(post => post._id == id);
     if (!post) throw new NotFoundError('Post not found');
 
     if (!title) throw new BadRequestError('Title is required');
@@ -35,7 +45,7 @@ class SeriesService {
     if (!visibility) throw new BadRequestError('Visibility is required');
     if (!read_time) throw new BadRequestError('Read time is required');
 
-    const updatedPost = await SeriesClass.updatePost({
+    return await SeriesClass.updatePost({
       series_id,
       id,
       title,
@@ -45,7 +55,6 @@ class SeriesService {
       visibility,
       read_time
     });
-    return updatedPost;
   };
   static createPost = async ({
     user,
@@ -57,8 +66,8 @@ class SeriesService {
     visibility,
     read_time
   }) => {
-    const series = await SeriesClass.getSeriesById({ series_id, user });
-    if (!series) throw new NotFoundError('Series not found');
+    const series = await SeriesClass.checkExist({ _id: series_id, user });
+    if (!series) throw new ForbiddenError('Unauthorized to create post');
 
     if (!title) throw new BadRequestError('Title is required');
     if (!description) throw new BadRequestError('Description is required');
@@ -67,7 +76,7 @@ class SeriesService {
     if (!visibility) throw new BadRequestError('Visibility is required');
     if (!read_time) throw new BadRequestError('Read time is required');
 
-    const post = await SeriesClass.createPost({
+    return await SeriesClass.createPost({
       user,
       series_id,
       title,
@@ -77,7 +86,6 @@ class SeriesService {
       visibility,
       read_time
     });
-    return post;
   };
 
   static updateSeries = async ({
@@ -90,8 +98,8 @@ class SeriesService {
     cover_image,
     visibility
   }) => {
-    const series = await SeriesClass.getSeriesById({ series_id, user });
-    if (!series) throw new NotFoundError('Series not found');
+    const series = await SeriesClass.checkExist({ _id: series_id, user });
+    if (!series) throw new ForbiddenError('Unauthorized to update this series');
 
     if (!title) throw new BadRequestError('Title is required');
     if (!description) throw new BadRequestError('Description is required');
@@ -100,7 +108,7 @@ class SeriesService {
     if (!cover_image) throw new BadRequestError('Images is required');
     if (!visibility) throw new BadRequestError('Visibility is required');
 
-    const updatedSeries = await SeriesClass.updateSeries({
+    return await SeriesClass.updateSeries({
       series_id,
       user,
       title,
@@ -111,10 +119,13 @@ class SeriesService {
       visibility
     });
   };
-  static getSeriesById = async ({ series_id }) => {
-    const series = await SeriesClass.getSeriesById({ series_id });
+  static getSeriesById = async ({ series_id, me_id }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
     if (!series) throw new NotFoundError('Series not found');
-    return series;
+
+    const user = series.user.toString();
+
+    return SeriesClass.getSeriesById({ series_id, user, me_id });
   };
   static getAllSeries = async ({
     user,
@@ -125,8 +136,13 @@ class SeriesService {
   }) => {
     const skip = (parseInt(page) - 1) * limit;
 
-    const series = await SeriesClass.getAllSeries({ user, limit, skip, sort,me_id });
-    return series;
+    return await SeriesClass.getAllSeries({
+      user,
+      limit,
+      skip,
+      sort,
+      me_id
+    });
   };
   static createSeries = async ({
     user,
@@ -144,7 +160,7 @@ class SeriesService {
     if (!cover_image) throw new BadRequestError('Images is required');
     if (!visibility) throw new BadRequestError('Visibility is required');
 
-    const series = await SeriesClass.createSeries({
+    return await SeriesClass.createSeries({
       user,
       title,
       description,
@@ -153,27 +169,7 @@ class SeriesService {
       cover_image,
       visibility
     });
-    return series;
   };
-
-  //   static deleteImages = async ({ images }) => {
-  //     for (let image of images) {
-  //       await deleteImage(image); //S3
-  //     }
-  //     return true;
-  //   };
-  //   static uploadImages = async ({ images, user }) => {
-  //     const metadata = [];
-  //     for (let image of images) {
-  //       const { key } = image;
-  //       metadata.push(key);
-  //     }
-  //     return metadata;
-  //   };
-  //   static uploadImage = async ({ image, user }) => {
-  //     const { key } = image;
-  //     return { key };
-  //   };
 }
 
 export default SeriesService;

@@ -2,6 +2,7 @@
 
 import { model, mongo, Mongoose, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
+import { FriendClass } from './friend.model.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Series';
@@ -103,11 +104,19 @@ const SeriesSchema = new Schema(
   }
 );
 
-SeriesSchema.index({ user: 1, posts: 1 }, { unique: true });
+SeriesSchema.index({ _id: 1, 'posts._id': 1 }, { unique: true });
+SeriesSchema.index({ _id: 1, user: 1 }, { unique: true });
 
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async deletePost({ series_id, post_id }) {
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id },
+      { $pull: { posts: { _id: post_id } } },
+      { new: true }
+    ).lean();
+  }
   static async updatePost({
     series_id,
     id,
@@ -131,7 +140,7 @@ class SeriesClass {
         }
       },
       { new: true }
-    );
+    ).lean();
   }
   static async createPost({
     user,
@@ -158,7 +167,7 @@ class SeriesClass {
         }
       },
       { new: true }
-    );
+    ).lean();
   }
   static async updateSeries({
     series_id,
@@ -181,10 +190,21 @@ class SeriesClass {
         visibility
       },
       { new: true }
-    );
+    ).lean();
   }
-  static async getSeriesById({ series_id }) {
-    return await SeriesModel.findById(series_id)
+  static async getSeriesById({ series_id, user, me_id }) {
+    const condition = { _id: series_id };
+
+    if (me_id !== user) {
+      const check = FriendClass.isFriend({ user: me_id, friend: user });
+      if (!check) {
+        condition.visibility = 'public';
+      } else {
+        condition.visibility = { $ne: 'private' };
+      }
+    }
+
+    return await SeriesModel.findOne(condition)
       .populate('user', pp_UserMore)
       .populate('posts.comments.user', pp_UserDefault)
       .populate('posts.comments.child.user', pp_UserDefault)
@@ -195,12 +215,29 @@ class SeriesClass {
   }
   static async getAllSeries({ user, limit, skip, sort, me_id }) {
     const condition = { user };
-
-    if (me_id !== user) condition.visibility = 'public';
-
-    return await SeriesModel.find(condition).skip(skip).limit(limit).sort(sort).lean();
+    if (me_id !== user) {
+      const check = FriendClass.isFriend({ user: me_id, friend: user });
+      if (!check) {
+        condition.visibility = 'public';
+      } else {
+        condition.visibility = { $ne: 'private' };
+      }
+    }
+    return await SeriesModel.find(condition)
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .lean();
   }
-  static async createSeries({ user, title, description, introduction, level, cover_image, visibility }) {
+  static async createSeries({
+    user,
+    title,
+    description,
+    introduction,
+    level,
+    cover_image,
+    visibility
+  }) {
     return await SeriesModel.create({
       user,
       title,
