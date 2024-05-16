@@ -10,10 +10,11 @@ const app = express();
 
 // init middleware
 app.use(morgan('dev'));
-app.use(helmet(/* { contentSecurityPolicy: { directives: { 'script-src': ["'self'", "'unsafe-inline'"] } } } */));
+app.use(helmet({ contentSecurityPolicy: { directives: { 'script-src': ["'self'", "'unsafe-inline'"] } } }));
 app.use(compression());
 app.use(cookieParser());
 app.use(json());
+app.use(urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [process.env.CLIENT_URL, process.env.ADMIN_URL],
@@ -21,28 +22,23 @@ app.use(
     credentials: true
   })
 );
-app.use(
-  urlencoded({
-    extended: true
-  })
-);
 
 // init routes
 app.use('/api/v1', router);
 
 // Hello world
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.send('Hello world');
 });
 
 // handling error
-app.use((req, res, next) => {
+app.use((_, __, next) => {
   const error = new Error('Not found');
   error.status = 404;
   next(error);
 });
 
-app.use((error, req, res, next) => {
+app.use((error, _, res, __) => {
   console.log(`error::`, error);
   const status = error.status || 500;
   return res.status(status).json({
