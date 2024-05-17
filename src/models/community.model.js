@@ -133,9 +133,21 @@ class CommunityClass {
       { new: true }
     ).lean();
   }
+
+  static async rejectJoinRequest({ community_id, user_id }) {
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      {
+        $pull: { waitlist_users: user_id },
+        $inc: { waitlist_user_number: -1 }
+      },
+      { new: true }
+    ).lean();
+  }
+
   static async joinCommunity({ community_id, user_id }) {
     let result;
-    const community = await CommunityModel.findById(community_id).lean();
+    const community = await CommunityModel.findById(community_id).select('+waitlist_users').lean();
 
     let join_number;
 
@@ -148,6 +160,7 @@ class CommunityClass {
         { new: true }
       ).lean();
     }
+
     // Member đã là nằm trong waitlist của community thì xóa đi
     if (community.waitlist_users.findIndex((member) => member.toString() === user_id) !== -1) {
       result = await CommunityModel.findByIdAndUpdate(
