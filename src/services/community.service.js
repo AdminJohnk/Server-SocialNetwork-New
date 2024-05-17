@@ -163,14 +163,24 @@ class CommunityService {
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };
-  static createCommunity = async ({ author, name, description, about, tags, members, admins, rules }) => {
-    if (name === '') throw new BadRequestError('Name is required');
-    if (description === '') throw new BadRequestError('Description is required');
-    if (about === '') throw new BadRequestError('About is required');
+  static createCommunity = async ({
+    author,
+    name,
+    description,
+    about,
+    tags,
+    members = [],
+    admins = [],
+    rules,
+    image
+  }) => {
+    if (!name) throw new BadRequestError('Name is required');
+    if (!description) throw new BadRequestError('Description is required');
+    if (!about) throw new BadRequestError('About is required');
     if (!members.includes(author)) members.push(author);
     if (!admins.includes(author)) admins.push(author);
 
-    const payload = { name, description, about, tags, members, admins, rules };
+    const payload = { name, description, about, tags, members, admins, rules, creator: author, image };
 
     return await CommunityClass.createCommunity(payload);
   };
