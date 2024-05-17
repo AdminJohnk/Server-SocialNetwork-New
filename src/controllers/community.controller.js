@@ -96,6 +96,12 @@ class CommunityController {
       metadata: await CommunityService.getCommunityByID(req.params.community_id)
     }).send(res);
   };
+  static getCommunitiesByUserID = async (req, res, next) => {
+    new OK({
+      message: 'Get Community Successfully',
+      metadata: await CommunityService.getCommunitiesByUserID(req.user.userId)
+    }).send(res);
+  };
 }
 
 export default CommunityController;

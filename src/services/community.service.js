@@ -187,6 +187,9 @@ class CommunityService {
   static async getCommunityByID(community_id) {
     return await CommunityClass.getCommunityByID(community_id);
   }
+  static async getCommunitiesByUserID(user_id) {
+    return await CommunityClass.getCommunitiesByUserID(user_id);
+  }
 }
 
 export default CommunityService;

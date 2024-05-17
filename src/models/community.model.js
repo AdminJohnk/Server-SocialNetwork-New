@@ -26,7 +26,6 @@ const CommunitySchema = new Schema(
       type: String,
       required: true
     },
-    cover_image: String,
     about: {
       type: String,
       required: true
@@ -72,7 +71,7 @@ const CommunitySchema = new Schema(
       type: [{ type: ObjectId, ref: 'Post' }],
       default: [],
       select: false
-    },
+    }
 
     // Number
     // post_number: { type: Number, default: 0 },
@@ -206,6 +205,28 @@ class CommunityClass {
   }
   static async getCommunityByID(community_id) {
     return await CommunityModel.findById(community_id)
+      .select('+admins +waitlist_users +waitlist_posts')
+      .populate('creator', getSelectData(se_UserDefault))
+      .populate({
+        path: 'posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
+      .populate('members')
+      .populate('recently_joined')
+      .populate('admins')
+      .populate('waitlist_users')
+      .populate('waitlist_posts')
+      .lean();
+  }
+  static async getCommunitiesByUserID(user_id) {
+    return await CommunityModel.find({ members: user_id })
       .select('+admins +waitlist_users +waitlist_posts')
       .populate('creator', getSelectData(se_UserDefault))
       .populate({

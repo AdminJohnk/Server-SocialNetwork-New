@@ -9,6 +9,9 @@ import { authentication } from '../auth/authUtils.js';
 router.use(authentication);
 
 /// GET //
+// Get communities by user_id
+router.get('/user/:user_id', asyncHandler(CommunityController.getCommunitiesByUserID));
+
 // Search member by keySearch (name, email)
 router.get('/members/search/:community_id', asyncHandler(CommunityController.searchMember));
 
