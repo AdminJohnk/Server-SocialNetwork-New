@@ -151,7 +151,8 @@ class CommunityService {
     tags,
     members,
     admins,
-    rules
+    rules,
+    image
   }) => {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
@@ -159,7 +160,7 @@ class CommunityService {
     if (community.admins.findIndex((admin) => admin.toString() === author) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
-    const payload = { name, description, about, tags, members, admins, rules };
+    const payload = { name, description, about, tags, members, admins, rules, image };
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };
