@@ -5,6 +5,36 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class SeriesController {
+  // Comment Post
+  static commentPost = async (req, res, next) => {
+    new OK({
+      message: 'Comment Post Successfully',
+      metadata: await SeriesService.commentPost({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  }
+  // Delete Review
+  static deleteReview = async (req, res, next) => {
+    new OK({
+      message: 'Delete Review Successfully',
+      metadata: await SeriesService.deleteReview({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Review Series
+  static reviewSeries = async (req, res, next) => {
+    new OK({
+      message: 'Review Series Successfully',
+      metadata: await SeriesService.reviewSeries({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
   // Delete Series
   static deleteSeries = async (req, res, next) => {
     new OK({
