@@ -10,7 +10,7 @@ const HashTagsSchema = new Schema(
   {
     name: { type: String, required: true },
     posts: {
-      type: [{ type: String }],
+      type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     }
   },
@@ -33,11 +33,11 @@ class HashTagsClass {
     if (foundHashTag) {
       if (is_removed) {
         // remove post_id from posts
-        foundHashTag.posts = foundHashTag.posts.filter((post) => post != post_id);
+        foundHashTag.posts = foundHashTag.posts.filter((post) => post.toString() != post_id.toString());
         return await foundHashTag.save();
       }
-      if (foundHashTag.posts.includes(post_id)) return foundHashTag;
-      foundHashTag.posts.push(post_id);
+      if (foundHashTag.posts.some((post) => post.toString() == post_id.toString())) return foundHashTag;
+      foundHashTag.posts.push(new ObjectId(post_id));
       return await foundHashTag.save();
     }
     return await HashTagsModel.create({ name, posts: [post_id] });
@@ -45,7 +45,7 @@ class HashTagsClass {
   static async deletePostHashTags({ name, post_id }) {
     const foundHashTag = await HashTagsModel.findOne({ name });
     if (!foundHashTag) return false;
-    foundHashTag.posts = foundHashTag.posts.filter((post) => post != post_id);
+    foundHashTag.posts = foundHashTag.posts.filter((post) => post.toString() != post_id.toString());
     return await foundHashTag.save();
   }
 }
