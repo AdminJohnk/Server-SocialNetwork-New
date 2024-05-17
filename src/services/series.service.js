@@ -9,8 +9,39 @@ import {
 } from '../core/error.response.js';
 
 import { SeriesClass } from '../models/series.model.js';
+import { UserClass } from '../models/user.model.js';
 
 class SeriesService {
+  static commentPost = async ({ series_id, post_id, user, content }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+    
+    return await SeriesClass.commentPost({ series_id, post_id, user, content });
+  };
+  static deleteReview = async ({ series_id, review_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const review = series.reviews.find(review => review._id == review_id);
+    if (!review) throw new NotFoundError('Review not found');
+
+    if (review.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this review');
+
+    return await SeriesClass.deleteReview({ series_id, review_id });
+  };
+  static reviewSeries = async ({ user, series_id, rating, content }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    if (!rating) throw new BadRequestError('Rating number is required');
+    if (!content) throw new BadRequestError('Content is required');
+
+    return await SeriesClass.reviewSeries({ user, series_id, rating, content });
+  };
   static deleteSeries = async ({ series_id, user }) => {
     const series = await SeriesClass.checkExist({ _id: series_id, user });
     if (!series) throw new ForbiddenError('Unauthorized to delete this series');

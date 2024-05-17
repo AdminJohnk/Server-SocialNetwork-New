@@ -27,12 +27,11 @@ const SeriesSchema = new Schema(
     posts: {
       type: [
         {
-          _id: { type: ObjectId, auto: true },
           title: { type: String, required: true },
           description: { type: String, default: '' },
           cover_image: { type: String, required: true },
           content: { type: String, required: true },
-          read_time: { type: String, default: '2 minutes' },
+          read_time: { type: Number, default: 2 },
           likes: {
             type: [{ type: ObjectId, ref: 'User' }]
           },
@@ -45,10 +44,6 @@ const SeriesSchema = new Schema(
                 _id: ObjectId,
                 user: { type: ObjectId, ref: 'User' },
                 content: String,
-                like: {
-                  type: [{ type: ObjectId, ref: 'User' }]
-                },
-                createdAt: { type: Date, default: Date.now },
                 child: [
                   {
                     _id: ObjectId,
@@ -57,7 +52,11 @@ const SeriesSchema = new Schema(
                     like_number: { type: Number, default: 0 },
                     createdAt: { type: Date, default: Date.now }
                   }
-                ]
+                ],
+                like: {
+                  type: [{ type: ObjectId, ref: 'User' }]
+                },
+                createdAt: { type: Date, default: Date.now }
               }
             ]
           },
@@ -119,6 +118,74 @@ SeriesSchema.index({ _id: 1, user: 1 }, { unique: true });
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async commentPost({ series_id, post_id, user, content }) {
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id, 'posts._id': post_id },
+      {
+        $push: {
+          'posts.$.comments': { user, content }
+        }
+      },
+      { new: true }
+    ).lean();
+  }
+  static async deleteReview({ series_id, review_id }) {
+    // update star and avg
+    const series = await SeriesModel.findOne({ _id: series_id }).lean();
+    const review = series.reviews.find(review => review._id == review_id);
+    const rating_star = `rating.star_${review.rating}`;
+    const rating_avg = 'rating.avg';
+    const rating_star_number = series.rating[`star_${review.rating}`] - 1;
+    const rating_avg_number =
+      (series.rating.avg * series.reviews.length - review.rating) /
+      (series.reviews.length - 1);
+
+    await SeriesModel.findOneAndUpdate(
+      { _id: series_id },
+      {
+        $set: {
+          [rating_star]: rating_star_number,
+          [rating_avg]: rating_avg_number
+        }
+      }
+    );
+
+    // delete review
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id },
+      { $pull: { reviews: { _id: review_id } } },
+      { new: true }
+    ).lean();
+  }
+  static async reviewSeries({ user, series_id, rating, content }) {
+    const series = await SeriesModel.findOne({ _id: series_id }).lean();
+    const rating_star = `rating.star_${rating}`;
+    const rating_avg = 'rating.avg';
+    const rating_star_number = series.rating[`star_${rating}`] + 1;
+    const rating_avg_number =
+      (series.rating.avg * series.reviews.length + rating) /
+      (series.reviews.length + 1);
+
+    await SeriesModel.findOneAndUpdate(
+      { _id: series_id },
+      {
+        $set: {
+          [rating_star]: rating_star_number,
+          [rating_avg]: rating_avg_number
+        }
+      }
+    );
+
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id },
+      {
+        $push: {
+          reviews: { user, rating, content }
+        }
+      },
+      { new: true }
+    ).lean();
+  }
   static async deleteSeries({ series_id, user }) {
     return await SeriesModel.findOneAndDelete({ _id: series_id, user }).lean();
   }

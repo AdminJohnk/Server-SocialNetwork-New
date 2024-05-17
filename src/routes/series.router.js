@@ -56,6 +56,9 @@ router.delete('/delete/:series_id', asyncHandler(SeriesController.deleteSeries))
 // Delete Post
 router.delete('/delete-post/:series_id/:post_id', asyncHandler(SeriesController.deletePost));
 
+// Delete Review
+router.delete('/delete-review', asyncHandler(SeriesController.deleteReview));
+
 // =========================================================
 
 export default router;
