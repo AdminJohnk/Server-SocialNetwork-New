@@ -156,7 +156,7 @@ class CommunityClass {
       join_number = -1;
       result = await CommunityModel.findByIdAndUpdate(
         community_id,
-        { $pull: { members: user_id }, $inc: { member_number: -1 } },
+        { $pull: { members: user_id, admins: user_id }, $inc: { member_number: -1 } },
         { new: true }
       ).lean();
 
