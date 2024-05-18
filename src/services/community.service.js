@@ -139,7 +139,7 @@ class CommunityService {
       community_id,
       user_id
     });
-  }
+  };
   static joinCommunity = async ({ community_id, user_id }) => {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
@@ -165,7 +165,7 @@ class CommunityService {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
 
-    if (community.creator.includes(me_id) === -1)
+    if (community.creator.toString().includes(me_id) === -1)
       throw new ForbiddenError('You are not creator of this community');
 
     if (community.members.findIndex((member) => member.toString() === admin_id) === -1)
@@ -181,7 +181,7 @@ class CommunityService {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
 
-    if (community.creator.includes(me_id) === -1)
+    if (community.creator.toString().includes(me_id) === -1)
       throw new ForbiddenError('You are not creator of this community');
 
     if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
