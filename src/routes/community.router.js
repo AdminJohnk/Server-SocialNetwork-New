@@ -40,6 +40,9 @@ router.put('/update/:community_id', asyncHandler(CommunityController.updateCommu
 // Accept join request  --> ADMIN_COMMUNITY
 router.put('/accept/:community_id', asyncHandler(CommunityController.acceptJoinRequest));
 
+// Reject join request  --> ADMIN_COMMUNITY
+router.put('/reject/:community_id', asyncHandler(CommunityController.rejectJoinRequest));
+
 // Accept post --> ADMIN_COMMUNITY
 router.put('/accept-post/:community_id', asyncHandler(CommunityController.acceptPost));
 
@@ -48,6 +51,12 @@ router.put('/add-members/:community_id', asyncHandler(CommunityController.addMem
 
 // Delete member from community --> ADMIN_COMMUNITY
 router.put('/delete-members/:community_id', asyncHandler(CommunityController.deleteMemberFromCommunity));
+
+// Promote admin --> ADMIN_COMMUNITY
+router.put('/promote-admin/:community_id', asyncHandler(CommunityController.promoteAdmin));
+
+// Revoke admin --> ADMIN_COMMUNITY`
+router.put('/revoke-admin/:community_id', asyncHandler(CommunityController.revokeAdmin));
 
 // =========================================================
 

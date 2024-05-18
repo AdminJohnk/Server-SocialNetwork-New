@@ -159,6 +159,11 @@ class CommunityClass {
         { $pull: { members: user_id }, $inc: { member_number: -1 } },
         { new: true }
       ).lean();
+
+      return {
+        result,
+        join_number
+      };
     }
 
     // Member đã là nằm trong waitlist của community thì xóa đi
@@ -166,11 +171,15 @@ class CommunityClass {
       result = await CommunityModel.findByIdAndUpdate(
         community_id,
         {
-          $pull: { waitlist_users: user_id },
-          $inc: { waitlist_user_number: -1 }
+          $pull: { waitlist_users: user_id }
         },
         { new: true }
       ).lean();
+
+      return {
+        result,
+        join_number
+      };
     }
 
     // Member chưa là thành viên của community thì thêm vào waitlist
@@ -188,6 +197,25 @@ class CommunityClass {
       join_number
     };
   }
+
+  static async promoteAdmin({ community_id, admin_id }) {
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      {
+        $addToSet: { admins: admin_id },
+      }
+    ).lean();
+  }
+
+  static async revokeAdmin({ community_id, admin_id }) {
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      {
+        $pull: { admins: admin_id },
+      }
+    ).lean();
+  }
+
   static async updateCommunity({ community_id, ...payload }) {
     return await CommunityModel.findByIdAndUpdate(community_id, { ...payload }, { new: true }).lean();
   }

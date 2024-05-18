@@ -62,12 +62,42 @@ class CommunityController {
       })
     }).send(res);
   };
+  static rejectJoinRequest = async (req, res, next) => {
+    new OK({
+      message: 'Reject Join Request Successfully',
+      metadata: await CommunityService.rejectJoinRequest({
+        ...req.body,
+        community_id: req.params.community_id,
+        admin_id: req.user.userId
+      })
+    }).send(res);
+  }
   static joinCommunity = async (req, res, next) => {
     new OK({
       message: 'Join Community Successfully',
       metadata: await CommunityService.joinCommunity({
         community_id: req.params.community_id,
         user_id: req.user.userId
+      })
+    }).send(res);
+  };
+  static promoteAdmin = async (req, res, next) => {
+    new OK({
+      message: 'Promote Admin Successfully',
+      metadata: await CommunityService.promoteAdmin({
+        community_id: req.params.community_id,
+        admin_id: req.body.user_id,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  };
+  static revokeAdmin = async (req, res, next) => {
+    new OK({
+      message: 'Revoke Admin Successfully',
+      metadata: await CommunityService.revokeAdmin({
+        community_id: req.params.community_id,
+        admin_id: req.body.user_id,
+        me_id: req.user.userId
       })
     }).send(res);
   };
