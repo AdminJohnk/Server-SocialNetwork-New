@@ -33,7 +33,10 @@ router.post(
 router.put('/update/:series_id', asyncHandler(SeriesController.updateSeries));
 
 // Update Post
-router.put('/update-post/:series_id', asyncHandler(SeriesController.updatePost));
+router.put(
+  '/update-post/:series_id',
+  asyncHandler(SeriesController.updatePost)
+);
 
 // Review Series
 router.put('/review', asyncHandler(SeriesController.reviewSeries));
@@ -44,6 +47,30 @@ router.put('/like-post', asyncHandler(SeriesController.likePost));
 // Comment Post
 router.put('/comment-post', asyncHandler(SeriesController.commentPost));
 
+// Update Comment
+router.put(
+  '/update-comment-post',
+  asyncHandler(SeriesController.updateComment)
+);
+
+// Reply Comment
+router.put('/reply-comment-post', asyncHandler(SeriesController.replyComment));
+
+// Update Reply Comment
+router.put(
+  '/update-reply-comment-post',
+  asyncHandler(SeriesController.updateReplyComment)
+);
+
+// Like Comment
+router.put('/like-comment-post', asyncHandler(SeriesController.likeComment));
+
+// Like Reply Comment
+router.put(
+  '/like-reply-comment-post',
+  asyncHandler(SeriesController.likeReplyComment)
+);
+
 // Save Post
 router.put('/save-post', asyncHandler(SeriesController.savePost));
 
@@ -51,13 +78,31 @@ router.put('/save-post', asyncHandler(SeriesController.savePost));
 
 /// DELETE //
 // Delete Series
-router.delete('/delete/:series_id', asyncHandler(SeriesController.deleteSeries));
+router.delete(
+  '/delete/:series_id',
+  asyncHandler(SeriesController.deleteSeries)
+);
 
 // Delete Post
-router.delete('/delete-post/:series_id/:post_id', asyncHandler(SeriesController.deletePost));
+router.delete(
+  '/delete-post/:series_id/:post_id',
+  asyncHandler(SeriesController.deletePost)
+);
 
 // Delete Review
 router.delete('/delete-review', asyncHandler(SeriesController.deleteReview));
+
+// Delete Comment
+router.delete(
+  '/delete-comment-post',
+  asyncHandler(SeriesController.deleteComment)
+);
+
+// Delete Reply Comment
+router.delete(
+  '/delete-reply-comment-post',
+  asyncHandler(SeriesController.deleteReplyComment)
+);
 
 // =========================================================
 

@@ -5,6 +5,96 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class SeriesController {
+  // Savw Post
+  static savePost = async (req, res, next) => {
+    new OK({
+      message: 'Save Post Successfully',
+      metadata: await SeriesService.savePost({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Like Reply Comment
+  static likeReplyComment = async (req, res, next) => {
+    new OK({
+      message: 'Like Reply Comment Successfully',
+      metadata: await SeriesService.likeReplyComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Like Comment
+  static likeComment = async (req, res, next) => {
+    new OK({
+      message: 'Like Comment Successfully',
+      metadata: await SeriesService.likeComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Like Post
+  static likePost = async (req, res, next) => {
+    new OK({
+      message: 'Like Post Successfully',
+      metadata: await SeriesService.likePost({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Delete Reply Comment
+  static deleteReplyComment = async (req, res, next) => {
+    new OK({
+      message: 'Delete Reply Comment Successfully',
+      metadata: await SeriesService.deleteReplyComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Update Reply Comment
+  static updateReplyComment = async (req, res, next) => {
+    new OK({
+      message: 'Update Reply Comment Successfully',
+      metadata: await SeriesService.updateReplyComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Reply Comment
+  static replyComment = async (req, res, next) => {
+    new OK({
+      message: 'Reply Comment Successfully',
+      metadata: await SeriesService.replyComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Delete Comment
+  static deleteComment = async (req, res, next) => {
+    new OK({
+      message: 'Delete Comment Successfully',
+      metadata: await SeriesService.deleteComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Update Comment
+  static updateComment = async (req, res, next) => {
+    new OK({
+      message: 'Update Comment Successfully',
+      metadata: await SeriesService.updateComment({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
   // Comment Post
   static commentPost = async (req, res, next) => {
     new OK({
@@ -14,7 +104,7 @@ class SeriesController {
         user: req.user.userId
       })
     }).send(res);
-  }
+  };
   // Delete Review
   static deleteReview = async (req, res, next) => {
     new OK({
