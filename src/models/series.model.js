@@ -41,15 +41,15 @@ const SeriesSchema = new Schema(
           comments: {
             type: [
               {
-                _id: ObjectId,
                 user: { type: ObjectId, ref: 'User' },
                 content: String,
                 child: [
                   {
-                    _id: ObjectId,
                     user: { type: ObjectId, ref: 'User' },
                     content: String,
-                    like_number: { type: Number, default: 0 },
+                    like: {
+                      type: [{ type: ObjectId, ref: 'User' }]
+                    },
                     createdAt: { type: Date, default: Date.now }
                   }
                 ],
@@ -118,6 +118,204 @@ SeriesSchema.index({ _id: 1, user: 1 }, { unique: true });
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async savePost({ series_id, post_id, user }) {
+    // check if user already save, then add or remove from saves
+    const series = await SeriesModel.findOne({
+      _id: series_id,
+      'posts._id': post_id
+    }).lean();
+    const post = series.posts.find(post => post._id == post_id);
+    const saves = post.saves.map(save => save.toString());
+    const index = saves.indexOf(user);
+    if (index === -1) {
+      // add save
+      post.saves.push(user);
+    } else {
+      // remove save
+      post.saves.splice(index, 1);
+    }
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id, 'posts._id': post_id },
+      { $set: { 'posts.$': post } },
+      { new: true }
+    ).lean();
+  }
+  static async likeReplyComment({
+    series_id,
+    post_id,
+    comment_id,
+    child_id,
+    user
+  }) {
+    // check if user already like, then add or remove from likes
+    const series = await SeriesModel.findOne({
+      _id: series_id,
+      'posts._id': post_id,
+      'posts.comments._id': comment_id,
+      'posts.comments.child._id': child_id
+    }).lean();
+    const post = series.posts.find(post => post._id == post_id);
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    const child = comment.child.find(child => child._id == child_id);
+    const likes = child.like.map(like => like.toString());
+    const index = likes.indexOf(user);
+    if (index === -1) {
+      // add like
+      child.like.push(user);
+    } else {
+      // remove like
+      child.like.splice(index, 1);
+    }
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id,
+        'posts.comments._id': comment_id,
+        'posts.comments.child._id': child_id
+      },
+      { $set: { 'posts.$': post } },
+      { new: true }
+    ).lean();
+  }
+  static async likeComment({ series_id, post_id, comment_id, user }) {
+    // check if user already like, then add or remove from likes
+    const series = await SeriesModel.findOne({
+      _id: series_id,
+      'posts._id': post_id,
+      'posts.comments._id': comment_id
+    }).lean();
+    const post = series.posts.find(post => post._id == post_id);
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    const likes = comment.like.map(like => like.toString());
+    const index = likes.indexOf(user);
+    if (index === -1) {
+      // add like
+      comment.like.push(user);
+    } else {
+      // remove like
+      comment.like.splice(index, 1);
+    }
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id,
+        'posts.comments._id': comment_id
+      },
+      { $set: { 'posts.$': post } },
+      { new: true }
+    ).lean();
+  }
+  static async likePost({ series_id, post_id, user }) {
+    // check if user already like, then add or remove from likes
+    const series = await SeriesModel.findOne({
+      _id: series_id,
+      'posts._id': post_id
+    }).lean();
+    const post = series.posts.find(post => post._id == post_id);
+    const likes = post.likes.map(like => like.toString());
+    const index = likes.indexOf(user);
+    if (index === -1) {
+      // add like
+      post.likes.push(user);
+    } else {
+      // remove like
+      post.likes.splice(index, 1);
+    }
+    return await SeriesModel.findOneAndUpdate(
+      { _id: series_id, 'posts._id': post_id },
+      { $set: { 'posts.$': post } },
+      { new: true }
+    ).lean();
+  }
+  static async deleteReplyComment({
+    series_id,
+    post_id,
+    comment_id,
+    child_id
+  }) {
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id,
+        'posts.comments._id': comment_id
+      },
+      {
+        $pull: {
+          'posts.$.comments.$[outer].child': { _id: child_id }
+        }
+      },
+      { arrayFilters: [{ 'outer._id': comment_id }], new: true }
+    ).lean();
+  }
+  static async updateReplyComment({
+    series_id,
+    post_id,
+    comment_id,
+    child_id,
+    content
+  }) {
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id,
+        'posts.comments._id': comment_id,
+        'posts.comments.child._id': child_id
+      },
+      {
+        $set: {
+          'posts.$.comments.$[outer].child.$[inner].content': content
+        }
+      },
+      {
+        arrayFilters: [{ 'outer._id': comment_id }, { 'inner._id': child_id }],
+        new: true
+      }
+    ).lean();
+  }
+  static async replyComment({ series_id, post_id, comment_id, user, content }) {
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id,
+        'posts.comments._id': comment_id
+      },
+      {
+        $push: {
+          'posts.$.comments.$[outer].child': { user, content }
+        }
+      },
+      { arrayFilters: [{ 'outer._id': comment_id }], new: true }
+    ).lean();
+  }
+  static async deleteComment({ series_id, post_id, comment_id }) {
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id
+      },
+      {
+        $pull: {
+          'posts.$.comments': { _id: comment_id }
+        }
+      },
+      { new: true }
+    ).lean();
+  }
+  static async updateComment({ series_id, post_id, comment_id, content }) {
+    return await SeriesModel.findOneAndUpdate(
+      {
+        _id: series_id,
+        'posts._id': post_id,
+        'posts.comments._id': comment_id
+      },
+      {
+        $set: {
+          'posts.$.comments.$[outer].content': content
+        }
+      },
+      { arrayFilters: [{ 'outer._id': comment_id }], new: true }
+    ).lean();
+  }
   static async commentPost({ series_id, post_id, user, content }) {
     return await SeriesModel.findOneAndUpdate(
       { _id: series_id, 'posts._id': post_id },
@@ -287,6 +485,8 @@ class SeriesClass {
       .populate('user', pp_UserMore)
       .populate('posts.comments.user', pp_UserDefault)
       .populate('posts.comments.child.user', pp_UserDefault)
+      .populate('posts.comments.child.like', pp_UserDefault)
+      .populate('posts.comments.like', pp_UserDefault)
       .populate('posts.likes', pp_UserDefault)
       .populate('posts.saves', pp_UserDefault)
       .populate('reviews.user', pp_UserDefault)

@@ -2,7 +2,12 @@
 
 import { model, Schema, Types } from 'mongoose';
 import { unGetSelectData, getSelectData } from '../utils/functions.js';
-import { avt_default, se_UserDefault, RoleUser, se_UserAdmin } from '../utils/constants.js';
+import {
+  avt_default,
+  se_UserDefault,
+  RoleUser,
+  se_UserAdmin
+} from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
 import { UserIncrClass } from './user_incr.model.js';
 
@@ -37,6 +42,13 @@ const UserSchema = new Schema(
     tags: [{ type: String }],
     alias: { type: String, trim: true, default: '' },
     about: String,
+    post_series: { type: Array, default: [] },
+    /*
+      {
+        series_id: ObjectId,
+        post_id: ObjectId
+      }
+    */
     experiences: { type: Array, default: [] },
     /* 
       {
@@ -111,7 +123,7 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 
-const getFirstElement = (attribute) => {
+const getFirstElement = attribute => {
   return {
     $addFields: {
       [attribute]: {
@@ -122,6 +134,22 @@ const getFirstElement = (attribute) => {
 };
 
 class UserClass {
+  static async savePostSeries({ user_id, series_id, post_id }) {
+    const isExist = await UserModel.findOne({
+      _id: user_id,
+      post_series: { $elemMatch: { series_id, post_id } }
+    });
+
+    const operator = isExist ? '$pull' : '$push';
+
+    return await UserModel.findByIdAndUpdate(
+      user_id,
+      {
+        [operator]: { post_series: { series_id, post_id } }
+      },
+      { new: true }
+    );
+  }
   static async SearchUserInCommunity({ community_id, key_search }) {
     const regexSearch = new RegExp(key_search, 'i');
 
@@ -156,7 +184,10 @@ class UserClass {
             {
               $match: {
                 $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                  $and: [
+                    { $eq: ['$user', '$$id'] },
+                    { $in: [new ObjectId(me_id), '$friends'] }
+                  ]
                 }
               }
             }
@@ -166,7 +197,13 @@ class UserClass {
       },
       {
         $addFields: {
-          is_friend: { $cond: { if: { $gt: [{ $size: '$friend' }, 0] }, then: true, else: false } }
+          is_friend: {
+            $cond: {
+              if: { $gt: [{ $size: '$friend' }, 0] },
+              then: true,
+              else: false
+            }
+          }
         }
       },
       {
@@ -185,7 +222,9 @@ class UserClass {
     return users;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
+    return await UserModel.findOne({ _id: user_id })
+      .select(getSelectData(select))
+      .lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -206,7 +245,11 @@ class UserClass {
     };
   }
   static async updateUser({ email, payload }) {
-    return await UserModel.findOneAndUpdate({ email }, { $set: { payload } }, { new: true }).lean();
+    return await UserModel.findOneAndUpdate(
+      { email },
+      { $set: { payload } },
+      { new: true }
+    ).lean();
   }
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
@@ -228,7 +271,10 @@ class UserClass {
             {
               $match: {
                 $expr: {
-                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
+                  $and: [
+                    { $eq: ['$user', '$$id'] },
+                    { $in: [new ObjectId(me_id), '$friends'] }
+                  ]
                 }
               }
             }
@@ -255,10 +301,20 @@ class UserClass {
     return result[0];
   }
   static async findByEmail({ email }) {
-    return await UserModel.findOne({ email }).select({ password: 1, email: 1, name: 1, user_image: 1 });
+    return await UserModel.findOne({ email }).select({
+      password: 1,
+      email: 1,
+      name: 1,
+      user_image: 1
+    });
   }
   static async findByAlias({ alias }) {
-    return await UserModel.findOne({ alias }).select({ password: 1, email: 1, name: 1, user_image: 1 });
+    return await UserModel.findOne({ alias }).select({
+      password: 1,
+      email: 1,
+      name: 1,
+      user_image: 1
+    });
   }
   static async deleteUser({ user_id }) {
     const user = await UserModel.findByIdAndDelete(user_id).lean();
@@ -323,9 +379,19 @@ class UserClass {
   static findUserById_admin = async ({ user_id }) => {
     return await UserModel.findById(user_id).lean();
   };
-  static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
+  static getAllUsers_admin = async ({
+    limit,
+    page,
+    sort,
+    select = se_UserAdmin
+  }) => {
     const skip = (page - 1) * limit;
-    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
+    return await UserModel.find()
+      .limit(limit)
+      .skip(skip)
+      .select(getSelectData(select))
+      .sort(sort)
+      .lean();
   };
   static updateUser_admin = async ({ user_id, payload }) => {
     return await UserModel.findByIdAndUpdate(user_id, payload, {

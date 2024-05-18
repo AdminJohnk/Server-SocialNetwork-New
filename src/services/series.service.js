@@ -12,13 +12,205 @@ import { SeriesClass } from '../models/series.model.js';
 import { UserClass } from '../models/user.model.js';
 
 class SeriesService {
+  static savePost = async ({ series_id, post_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const result = await SeriesClass.savePost({ series_id, post_id, user });
+    UserClass.savePostSeries({ user_id: user, series_id, post_id });
+
+    return result;
+  };
+  static likeReplyComment = async ({
+    series_id,
+    post_id,
+    comment_id,
+    child_id,
+    user
+  }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    const reply = comment.child.find(reply => reply._id == child_id);
+    if (!reply) throw new NotFoundError('Reply not found');
+
+    return await SeriesClass.likeReplyComment({
+      series_id,
+      post_id,
+      comment_id,
+      child_id,
+      user
+    });
+  };
+  static likeComment = async ({ series_id, post_id, comment_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    return await SeriesClass.likeComment({
+      series_id,
+      post_id,
+      comment_id,
+      user
+    });
+  };
+  static likePost = async ({ series_id, post_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    return await SeriesClass.likePost({ series_id, post_id, user });
+  };
+  static deleteReplyComment = async ({
+    series_id,
+    post_id,
+    comment_id,
+    child_id,
+    user
+  }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    const reply = comment.child.find(reply => reply._id == child_id);
+    if (!reply) throw new NotFoundError('Reply not found');
+
+    if (reply.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this reply comment');
+
+    return await SeriesClass.deleteReplyComment({
+      series_id,
+      post_id,
+      comment_id,
+      child_id
+    });
+  };
+
+  static updateReplyComment = async ({
+    series_id,
+    post_id,
+    comment_id,
+    child_id,
+    user,
+    content
+  }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    const reply = comment.child.find(reply => reply._id == child_id);
+    if (!reply) throw new NotFoundError('Reply not found');
+
+    if (reply.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to update this reply comment');
+
+    return await SeriesClass.updateReplyComment({
+      series_id,
+      post_id,
+      comment_id,
+      child_id,
+      content
+    });
+  };
+
+  static replyComment = async ({
+    series_id,
+    post_id,
+    comment_id,
+    user,
+    content
+  }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    return await SeriesClass.replyComment({
+      series_id,
+      post_id,
+      comment_id,
+      user,
+      content
+    });
+  };
+  static deleteComment = async ({ series_id, post_id, comment_id, user }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    if (comment.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this comment');
+
+    return await SeriesClass.deleteComment({ series_id, post_id, comment_id });
+  };
+  static updateComment = async ({
+    series_id,
+    post_id,
+    comment_id,
+    user,
+    content
+  }) => {
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
+
+    const post = series.posts.find(post => post._id == post_id);
+    if (!post) throw new NotFoundError('Post not found');
+
+    const comment = post.comments.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    if (comment.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to update this comment');
+
+    return await SeriesClass.updateComment({
+      series_id,
+      post_id,
+      comment_id,
+      content
+    });
+  };
   static commentPost = async ({ series_id, post_id, user, content }) => {
     const series = await SeriesClass.checkExist({ _id: series_id });
     if (!series) throw new NotFoundError('Series not found');
 
     const post = series.posts.find(post => post._id == post_id);
     if (!post) throw new NotFoundError('Post not found');
-    
+
     return await SeriesClass.commentPost({ series_id, post_id, user, content });
   };
   static deleteReview = async ({ series_id, review_id, user }) => {
