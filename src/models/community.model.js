@@ -199,21 +199,15 @@ class CommunityClass {
   }
 
   static async promoteAdmin({ community_id, admin_id }) {
-    return await CommunityModel.findByIdAndUpdate(
-      community_id,
-      {
-        $addToSet: { admins: admin_id },
-      }
-    ).lean();
+    return await CommunityModel.findByIdAndUpdate(community_id, {
+      $addToSet: { admins: admin_id }
+    }).lean();
   }
 
   static async revokeAdmin({ community_id, admin_id }) {
-    return await CommunityModel.findByIdAndUpdate(
-      community_id,
-      {
-        $pull: { admins: admin_id },
-      }
-    ).lean();
+    return await CommunityModel.findByIdAndUpdate(community_id, {
+      $pull: { admins: admin_id }
+    }).lean();
   }
 
   static async updateCommunity({ community_id, ...payload }) {
@@ -263,7 +257,17 @@ class CommunityClass {
       .populate('recently_joined')
       .populate('admins')
       .populate('waitlist_users')
-      .populate('waitlist_posts')
+      .populate({
+        path: 'waitlist_posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
       .lean();
   }
   static async getCommunitiesByUserID(user_id) {
@@ -285,7 +289,17 @@ class CommunityClass {
       .populate('recently_joined')
       .populate('admins')
       .populate('waitlist_users')
-      .populate('waitlist_posts')
+      .populate({
+        path: 'waitlist_posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
       .lean();
   }
 }

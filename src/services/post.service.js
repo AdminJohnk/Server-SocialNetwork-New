@@ -344,7 +344,7 @@ class PostService {
       'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
-    const { numDeleteShare } = await PostClass.deleteSharePost({ user, post, shared_post });
+    await PostClass.deleteSharePost({ user, post, shared_post });
 
     return true;
   }
@@ -379,12 +379,26 @@ class PostService {
 
     // Thêm post trong community
     if (scope === 'Community') {
-      await CommunityClass.changeToArrayCommunity({
-        community_id: community,
-        type: 'waitlist_post',
-        itemID: result._id,
-        number: 1
-      });
+      const foundCommunity = await CommunityClass.checkExist({ _id: community });
+
+      if (!foundCommunity) throw new NotFoundError('Community not found');
+
+      const isAdmin = foundCommunity.admins.some((admin) => admin.toString() === user);
+
+      if (!isAdmin)
+        await CommunityClass.changeToArrayCommunity({
+          community_id: community,
+          type: 'waitlist_post',
+          itemID: result._id,
+          number: 1
+        });
+      else
+        await CommunityClass.changeToArrayCommunity({
+          community_id: community,
+          type: 'post',
+          itemID: result._id,
+          number: 1
+        });
 
       // Add notification for all member in community
     }
