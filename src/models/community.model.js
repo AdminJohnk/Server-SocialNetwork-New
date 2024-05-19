@@ -1,6 +1,7 @@
 import { model, Schema, Types } from 'mongoose';
 import { se_UserDefault, pp_UserDefault } from '../utils/constants.js';
 import { getSelectData } from '../utils/functions.js';
+import { PostClass } from './post.model.js';
 
 const ObjectId = Schema.Types.ObjectId;
 
@@ -96,6 +97,17 @@ class CommunityClass {
         $pull: { waitlist_posts: post_id },
         $addToSet: { posts: post_id },
         $inc: { post_number: 1, waitlist_post_number: -1 }
+      },
+      { new: true }
+    ).lean();
+  }
+  static async rejectPost({ community_id, post_id }) {
+    PostClass.deletePost({ post_id });
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      {
+        $pull: { waitlist_posts: post_id },
+        $inc: { waitlist_post_number: -1 }
       },
       { new: true }
     ).lean();

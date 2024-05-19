@@ -26,7 +26,17 @@ class CommunityController {
     new OK({
       message: 'Accept Post Successfully',
       metadata: await CommunityService.acceptPost({
-        ...req.body,
+        post_id: req.body.post_id,
+        community_id: req.params.community_id,
+        admin_id: req.user.userId
+      })
+    }).send(res);
+  };
+  static rejectPost = async (req, res, next) => {
+    new OK({
+      message: 'Reject Post Successfully',
+      metadata: await CommunityService.rejectPost({
+        post_id: req.body.post_id,
         community_id: req.params.community_id,
         admin_id: req.user.userId
       })
@@ -71,7 +81,7 @@ class CommunityController {
         admin_id: req.user.userId
       })
     }).send(res);
-  }
+  };
   static joinCommunity = async (req, res, next) => {
     new OK({
       message: 'Join Community Successfully',

@@ -49,6 +49,25 @@ class CommunityService {
 
     return await CommunityClass.acceptPost({ community_id, post_id });
   }
+  static async rejectPost({ community_id, admin_id, post_id }) {
+    // Check Community
+    const community = await CommunityClass.checkExist({ _id: community_id });
+    if (!community) throw new NotFoundError('Community not found');
+
+    // Check is Admin?
+    if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
+      throw new ForbiddenError('You are not admin of this community');
+
+    // Check Post
+    const post = await PostClass.checkExist({ _id: post_id });
+    if (!post) throw new NotFoundError('Post not found');
+
+    // Check Post in wait list?
+    if (community.waitlist_posts.findIndex((post) => post.toString() === post_id) === -1)
+      throw new NotFoundError('Post not found in wait list');
+
+    return await CommunityClass.rejectPost({ community_id, post_id });
+  }
   static deleteMemberFromCommunity = async ({ community_id, admin_id, user_id }) => {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
