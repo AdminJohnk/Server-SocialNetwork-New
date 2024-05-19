@@ -14,6 +14,7 @@ import ImageRouter from './image.router.js';
 import SearchLogRouter from './searchLog.router.js';
 import AdminRouter from './admin.router.js';
 import SeriesRouter from './series.router.js';
+import QuestionRouter from './question.router.js';
 import { checkApiKey, checkPermission } from '../auth/checkAuth.js';
 import { pushToLogDiscord } from '../middlewares/logger.middleware.js';
 
@@ -37,5 +38,6 @@ router.use('/posts', limiter, postRouter);
 router.use('/users', limiter, userRouter);
 router.use('/searchlog', limiter, SearchLogRouter);
 router.use('/series', limiter, SeriesRouter);
+router.use('/questions', limiter, QuestionRouter);
 
 export default router;
