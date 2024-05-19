@@ -16,6 +16,18 @@ import { UserClass } from '../models/user.model.js';
 import { PostClass } from '../models/post.model.js';
 
 class CommunityService {
+  static async cedeCreator({ community_id, me_id, new_creator_id }) {
+    const community = await CommunityClass.checkExist({ _id: community_id });
+    if (!community) throw new NotFoundError('Community not found');
+
+    if (community.creator.toString() !== me_id)
+      throw new ForbiddenError('You are not creator of this community');
+
+    if (community.members.findIndex((member) => member.toString() === new_creator_id) === -1)
+      throw new NotFoundError('User not found in community');
+
+    return await CommunityClass.cedeCreator({ community_id, new_creator_id });
+  }
   static async searchMember({ community_id, key_search }) {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
@@ -113,21 +125,23 @@ class CommunityService {
       throw new ForbiddenError('You are not admin of this community');
 
     // Remove member is exist in members list
-    member_ids = member_ids.filter(member_id => community.members.findIndex((member) => member.toString() === member_id) === -1);
+    member_ids = member_ids.filter(
+      (member_id) => community.members.findIndex((member) => member.toString() === member_id) === -1
+    );
 
     const result = await CommunityClass.addMemberToCommunity({
       community_id,
       member_ids
     });
 
-    member_ids.map(member_id => {
+    member_ids.map((member_id) => {
       UserClass.changeToArrayUser({
         user_id: member_id,
         type: 'community',
         item_id: community_id,
         number: 1
       });
-    })
+    });
 
     return result;
   };
@@ -241,8 +255,8 @@ class CommunityService {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
 
-    if (community.admins.findIndex((admin) => admin.toString() === author) === -1)
-      throw new ForbiddenError('You are not admin of this community');
+    if (community.creator.toString() !== author)
+      throw new ForbiddenError('You are not creator of this community');
 
     const payload = { name, description, about, tags, members, admins, rules, image };
 

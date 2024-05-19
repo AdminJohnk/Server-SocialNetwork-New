@@ -4,6 +4,16 @@ import CommunityService from '../services/community.service.js';
 import { OK, CREATED } from '../core/success.response.js';
 
 class CommunityController {
+  static cedeCreator = async (req, res, next) => {
+    new OK({
+      message: 'Cede Creator Successfully',
+      metadata: await CommunityService.cedeCreator({
+        community_id: req.params.community_id,
+        new_creator_id: req.body.user_id,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  };
   static searchMember = async (req, res, next) => {
     new OK({
       message: 'Search Member Successfully',

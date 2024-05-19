@@ -90,6 +90,13 @@ const CommunitySchema = new Schema(
 const CommunityModel = model(DOCUMENT_NAME, CommunitySchema);
 
 class CommunityClass {
+  static async cedeCreator({ community_id, new_creator_id }) {
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      { creator: new_creator_id, $addToSet: { admins: new_creator_id } },
+      { new: true }
+    ).lean();
+  }
   static async acceptPost({ community_id, post_id }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
