@@ -46,6 +46,9 @@ router.put('/reject/:community_id', asyncHandler(CommunityController.rejectJoinR
 // Accept post --> ADMIN_COMMUNITY
 router.put('/accept-post/:community_id', asyncHandler(CommunityController.acceptPost));
 
+// Reject post --> ADMIN_COMMUNITY
+router.put('/reject-post/:community_id', asyncHandler(CommunityController.rejectPost));
+
 // Add member to community --> ADMIN_COMMUNITY
 router.put('/add-members/:community_id', asyncHandler(CommunityController.addMemberToCommunity));
 
