@@ -43,6 +43,9 @@ router.put('/follow/:community_id', asyncHandler(CommunityController.followCommu
 // Chỉ có thể update các trường: name, description, about, tags, rules
 router.put('/update/:community_id', asyncHandler(CommunityController.updateCommunity));
 
+// Cede creator --> ADMIN_COMMUNITY
+router.put('/cede-creator/:community_id', asyncHandler(CommunityController.cedeCreator));
+
 // Accept join request  --> ADMIN_COMMUNITY
 router.put('/accept/:community_id', asyncHandler(CommunityController.acceptJoinRequest));
 
