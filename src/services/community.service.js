@@ -58,6 +58,18 @@ class CommunityService {
     if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
+    // Check User in members list?
+    if (community.members.findIndex((member) => member.toString() === user_id) === -1)
+      throw new NotFoundError('User not found in community');
+
+    // Check User is Admin?
+    if (community.admins.findIndex((admin) => admin.toString() === user_id) !== -1) {
+      // Check admin is creator?
+      if (community.creator.toString() === admin_id) {
+        await CommunityClass.revokeAdmin({ community_id, admin_id: user_id });
+      }
+    }
+
     const result = await CommunityClass.deleteMemberFromCommunity({
       community_id,
       user_id
@@ -72,7 +84,7 @@ class CommunityService {
 
     return result;
   };
-  static addMemberToCommunity = async ({ community_id, admin_id, member_id }) => {
+  static addMemberToCommunity = async ({ community_id, admin_id, member_ids }) => {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
@@ -81,17 +93,22 @@ class CommunityService {
     if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
+    // Remove member is exist in members list
+    member_ids = member_ids.filter(member_id => community.members.findIndex((member) => member.toString() === member_id) === -1);
+
     const result = await CommunityClass.addMemberToCommunity({
       community_id,
-      member_id
+      member_ids
     });
 
-    UserClass.changeToArrayUser({
-      user_id: member_id,
-      type: 'community',
-      item_id: community_id,
-      number: 1
-    });
+    member_ids.map(member_id => {
+      UserClass.changeToArrayUser({
+        user_id: member_id,
+        type: 'community',
+        item_id: community_id,
+        number: 1
+      });
+    })
 
     return result;
   };

@@ -110,12 +110,11 @@ class CommunityClass {
       { new: true }
     ).lean();
   }
-  static async addMemberToCommunity({ community_id, member_id }) {
+  static async addMemberToCommunity({ community_id, member_ids }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
       {
-        $addToSet: { members: member_id },
-        $inc: { member_number: 1 }
+        $addToSet: { members: member_ids }
       },
       { new: true }
     ).lean();
