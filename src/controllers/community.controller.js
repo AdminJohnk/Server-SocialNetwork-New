@@ -91,6 +91,24 @@ class CommunityController {
       })
     }).send(res);
   };
+  static cancelJoinCommunity = async (req, res, next) => {
+    new OK({
+      message: 'Cancel Join Community Successfully',
+      metadata: await CommunityService.cancelJoinCommunity({
+        community_id: req.params.community_id,
+        user_id: req.user.userId
+      })
+    }).send(res);
+  }
+  static leaveCommunity = async (req, res, next) => {
+    new OK({
+      message: 'Leave Community Successfully',
+      metadata: await CommunityService.leaveCommunity({
+        community_id: req.params.community_id,
+        user_id: req.user.userId
+      })
+    }).send(res);
+  }
   static promoteAdmin = async (req, res, next) => {
     new OK({
       message: 'Promote Admin Successfully',

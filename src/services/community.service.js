@@ -131,7 +131,7 @@ class CommunityService {
 
     return result;
   };
-  static acceptJoinRequest = async ({ community_id, admin_id, user_id }) => {
+  static acceptJoinRequest = async ({ community_id, admin_id, user_ids }) => {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
@@ -140,25 +140,31 @@ class CommunityService {
     if (community.admins.findIndex((admin) => admin.toString() === admin_id) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
+    // Remove user is exist in members list
+    user_ids = user_ids.filter(user_id => community.members.findIndex((member) => member.toString() === user_id) === -1);
+    if (user_ids.length === 0) throw new ConflictRequestError('User is already member of this community');
+
     // Check User in wait list?
-    if (community.waitlist_users.findIndex((user) => user.toString() === user_id) === -1)
-      throw new NotFoundError('User not found in wait list');
+    user_ids = user_ids.filter(user_id => community.waitlist_users.findIndex((user) => user.toString() === user_id) !== -1);
+    if (user_ids.length === 0) throw new NotFoundError('User not found in wait list');
 
     const result = await CommunityClass.acceptJoinRequest({
       community_id,
-      user_id
+      user_ids
     });
 
-    UserClass.changeToArrayUser({
-      user_id,
-      type: 'community',
-      item_id: community_id,
-      number: 1
-    });
+    user_ids.map(user_id => {
+      UserClass.changeToArrayUser({
+        user_id,
+        type: 'community',
+        item_id: community_id,
+        number: 1
+      });
+    })
 
     return result;
   };
-  static rejectJoinRequest = async ({ community_id, admin_id, user_id }) => {
+  static rejectJoinRequest = async ({ community_id, admin_id, user_ids }) => {
     // Check Community
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
@@ -168,12 +174,12 @@ class CommunityService {
       throw new ForbiddenError('You are not admin of this community');
 
     // Check User in wait list?
-    if (community.waitlist_users.findIndex((user) => user.toString() === user_id) === -1)
-      throw new NotFoundError('User not found in wait list');
+    user_ids = user_ids.filter(user_id => community.waitlist_users.findIndex((user) => user.toString() === user_id) !== -1);
+    if (user_ids.length === 0) throw new NotFoundError('User not found in wait list');
 
     return await CommunityClass.rejectJoinRequest({
       community_id,
-      user_id
+      user_ids
     });
   };
   static joinCommunity = async ({ community_id, user_id }) => {
@@ -196,6 +202,41 @@ class CommunityService {
 
     return result;
   };
+
+  static async cancelJoinCommunity({ community_id, user_id }) {
+    const community = await CommunityClass.checkExist({ _id: community_id });
+    if (!community) throw new NotFoundError('Community not found');
+
+    if (community.waitlist_users.findIndex((member) => member.toString() === user_id) === -1)
+      throw new NotFoundError('User is not in wait list of this community');
+
+    return await CommunityClass.cancelJoinCommunity({ community_id, user_id });
+  }
+
+  static async leaveCommunity({ community_id, user_id }) {
+    const community = await CommunityClass.checkExist({ _id: community_id });
+    if (!community) throw new NotFoundError('Community not found');
+
+    if (community.members.findIndex((member) => member.toString() === user_id) === -1)
+      throw new NotFoundError('User is not member of this community');
+
+    if (community.creator.toString() === user_id)
+      throw new ConflictRequestError('You are creator of this community');
+
+    const result = await CommunityClass.leaveCommunity({
+      community_id,
+      user_id
+    });
+
+    UserClass.changeToArrayUser({
+      user_id,
+      type: 'community',
+      item_id: community_id,
+      number: -1
+    });
+
+    return result;
+  }
 
   static async promoteAdmin({ community_id, me_id, admin_id }) {
     const community = await CommunityClass.checkExist({ _id: community_id });
@@ -230,7 +271,6 @@ class CommunityService {
     community_id,
     author,
     name,
-    description,
     about,
     tags,
     members,
@@ -244,14 +284,13 @@ class CommunityService {
     if (community.admins.findIndex((admin) => admin.toString() === author) === -1)
       throw new ForbiddenError('You are not admin of this community');
 
-    const payload = { name, description, about, tags, members, admins, rules, image };
+    const payload = { name, about, tags, members, admins, rules, image };
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };
   static createCommunity = async ({
     author,
     name,
-    description,
     about,
     tags,
     members = [],
@@ -260,12 +299,11 @@ class CommunityService {
     image
   }) => {
     if (!name) throw new BadRequestError('Name is required');
-    if (!description) throw new BadRequestError('Description is required');
     if (!about) throw new BadRequestError('About is required');
     if (!members.includes(author)) members.push(author);
     if (!admins.includes(author)) admins.push(author);
 
-    const payload = { name, description, about, tags, members, admins, rules, creator: author, image };
+    const payload = { name, about, tags, members, admins, rules, creator: author, image };
 
     return await CommunityClass.createCommunity(payload);
   };

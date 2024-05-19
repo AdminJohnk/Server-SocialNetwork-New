@@ -14,10 +14,6 @@ const CommunitySchema = new Schema(
       type: String,
       required: true
     },
-    description: {
-      type: String,
-      required: true
-    },
     creator: {
       type: ObjectId,
       ref: 'User',
@@ -131,70 +127,29 @@ class CommunityClass {
       { new: true }
     ).lean();
   }
-  static async acceptJoinRequest({ community_id, user_id }) {
+  static async acceptJoinRequest({ community_id, user_ids }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
       {
-        $pull: { waitlist_users: user_id },
-        $inc: { waitlist_user_number: -1 },
+        $pull: { waitlist_users: { $in: user_ids } },
 
-        $addToSet: { members: user_id },
-        $inc: { member_number: 1 }
-      },
-      { new: true }
+        $addToSet: { members: user_ids }
+      }
     ).lean();
   }
 
-  static async rejectJoinRequest({ community_id, user_id }) {
+  static async rejectJoinRequest({ community_id, user_ids }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
       {
-        $pull: { waitlist_users: user_id },
-        $inc: { waitlist_user_number: -1 }
-      },
-      { new: true }
+        $pull: { waitlist_users: { $in: user_ids } }
+      }
     ).lean();
   }
 
   static async joinCommunity({ community_id, user_id }) {
-    let result;
-    const community = await CommunityModel.findById(community_id).select('+waitlist_users').lean();
-
-    let join_number;
-
-    // Member đã là thành viên của community thì xóa đi
-    if (community.members.findIndex((member) => member.toString() === user_id) !== -1) {
-      join_number = -1;
-      result = await CommunityModel.findByIdAndUpdate(
-        community_id,
-        { $pull: { members: user_id, admins: user_id }, $inc: { member_number: -1 } },
-        { new: true }
-      ).lean();
-
-      return {
-        result,
-        join_number
-      };
-    }
-
-    // Member đã là nằm trong waitlist của community thì xóa đi
-    if (community.waitlist_users.findIndex((member) => member.toString() === user_id) !== -1) {
-      result = await CommunityModel.findByIdAndUpdate(
-        community_id,
-        {
-          $pull: { waitlist_users: user_id }
-        },
-        { new: true }
-      ).lean();
-
-      return {
-        result,
-        join_number
-      };
-    }
-
     // Member chưa là thành viên của community thì thêm vào waitlist
-    result = await CommunityModel.findByIdAndUpdate(
+    return await CommunityModel.findByIdAndUpdate(
       community_id,
       {
         $addToSet: { waitlist_users: user_id },
@@ -202,11 +157,26 @@ class CommunityClass {
       },
       { new: true }
     ).lean();
+  }
 
-    return {
-      result,
-      join_number
-    };
+  static async cancelJoinCommunity({ community_id, user_id }) {
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      {
+        $pull: { waitlist_users: user_id }
+      }
+    ).lean();
+  }
+
+  static async leaveCommunity({ community_id, user_id }) {
+    return await CommunityModel.findByIdAndUpdate(
+      community_id,
+      {
+        $pull: { members: user_id, admins: user_id },
+        $inc: { member_number: -1 }
+      },
+      { new: true }
+    ).lean();
   }
 
   static async promoteAdmin({ community_id, admin_id }) {

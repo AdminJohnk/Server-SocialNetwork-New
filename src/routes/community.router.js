@@ -30,6 +30,12 @@ router.post('/create', asyncHandler(CommunityController.createCommunity));
 // Join community
 router.put('/join/:community_id', asyncHandler(CommunityController.joinCommunity));
 
+// Cancel join request
+router.put('/cancel-join/:community_id', asyncHandler(CommunityController.cancelJoinCommunity));
+
+// Leave community
+router.put('/leave/:community_id', asyncHandler(CommunityController.leaveCommunity));
+
 // Follow community
 router.put('/follow/:community_id', asyncHandler(CommunityController.followCommunity));
 
