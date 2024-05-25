@@ -428,7 +428,6 @@ class PostService {
       sort
     });
   }
-
   static async getPostByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
     const post_ids = await HashTagService.getHashTagByName({ name: '#' + hashtag });
 

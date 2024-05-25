@@ -23,6 +23,9 @@ const HashTagsSchema = new Schema(
 const HashTagsModel = model(DOCUMENT_NAME, HashTagsSchema);
 
 class HashTagsClass {
+  static async getAllHashTags({ sort }) {
+    return await HashTagsModel.find().sort(sort);
+  }
   static async getHashTagByName({ name }) {
     const foundHashTag = await HashTagsModel.findOne({ name });
     if (!foundHashTag) return false;

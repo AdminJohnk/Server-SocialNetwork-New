@@ -209,7 +209,7 @@ class CommunityClass {
       { new: true }
     ).lean();
   }
-
+  
   // payload: { name,description, about, tags, members, admins, rules }
   static async createCommunity(payload) {
     return await CommunityModel.create(payload);
