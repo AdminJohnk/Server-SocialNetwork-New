@@ -4,6 +4,10 @@ import { HashTagsClass } from '../models/hashtag.model.js';
 import PostService from './post.service.js';
 
 class HashTagService {
+
+  static async getAllHashTags({ sort = { createdAt: -1 } }) {
+    return await HashTagsClass.getAllHashTags({ sort });
+  }
   static async getHashTagByName({ name }) {
     return await HashTagsClass.getHashTagByName({ name });
   }
