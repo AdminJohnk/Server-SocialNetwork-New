@@ -155,11 +155,15 @@ class CommunityService {
       throw new ForbiddenError('You are not admin of this community');
 
     // Remove user is exist in members list
-    user_ids = user_ids.filter(user_id => community.members.findIndex((member) => member.toString() === user_id) === -1);
+    user_ids = user_ids.filter(
+      (user_id) => community.members.findIndex((member) => member.toString() === user_id) === -1
+    );
     if (user_ids.length === 0) throw new ConflictRequestError('User is already member of this community');
 
     // Check User in wait list?
-    user_ids = user_ids.filter(user_id => community.waitlist_users.findIndex((user) => user.toString() === user_id) !== -1);
+    user_ids = user_ids.filter(
+      (user_id) => community.waitlist_users.findIndex((user) => user.toString() === user_id) !== -1
+    );
     if (user_ids.length === 0) throw new NotFoundError('User not found in wait list');
 
     const result = await CommunityClass.acceptJoinRequest({
@@ -167,14 +171,14 @@ class CommunityService {
       user_ids
     });
 
-    user_ids.map(user_id => {
+    user_ids.map((user_id) => {
       UserClass.changeToArrayUser({
         user_id,
         type: 'community',
         item_id: community_id,
         number: 1
       });
-    })
+    });
 
     return result;
   };
@@ -188,7 +192,9 @@ class CommunityService {
       throw new ForbiddenError('You are not admin of this community');
 
     // Check User in wait list?
-    user_ids = user_ids.filter(user_id => community.waitlist_users.findIndex((user) => user.toString() === user_id) !== -1);
+    user_ids = user_ids.filter(
+      (user_id) => community.waitlist_users.findIndex((user) => user.toString() === user_id) !== -1
+    );
     if (user_ids.length === 0) throw new NotFoundError('User not found in wait list');
 
     return await CommunityClass.rejectJoinRequest({
@@ -302,16 +308,7 @@ class CommunityService {
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };
-  static createCommunity = async ({
-    author,
-    name,
-    about,
-    tags,
-    members = [],
-    admins = [],
-    rules,
-    image
-  }) => {
+  static createCommunity = async ({ author, name, about, tags, members = [], admins = [], rules, image }) => {
     if (!name) throw new BadRequestError('Name is required');
     if (!about) throw new BadRequestError('About is required');
     if (!members.includes(author)) members.push(author);
@@ -326,6 +323,18 @@ class CommunityService {
   }
   static async getCommunitiesByUserID(user_id) {
     return await CommunityClass.getCommunitiesByUserID(user_id);
+  }
+  static async getAllImagesByCommunityID(community_id) {
+    return await CommunityClass.getAllImagesByCommunityID(community_id);
+  }
+  static async getAllCommunitiesYouManage({ user_id, page }) {
+    return await CommunityClass.getAllCommunitiesYouManage(user_id, page);
+  }
+  static async getPostByID({ community_id, post_id }) {
+    return await CommunityClass.getPostByID({ community_id, post_id });
+  }
+  static async getPostsByCommunityID({ community_id, page }) {
+    return await CommunityClass.getPostsByCommunityID({ community_id, page });
   }
 }
 

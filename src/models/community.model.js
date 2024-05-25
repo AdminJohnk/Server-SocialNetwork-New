@@ -135,23 +135,17 @@ class CommunityClass {
     ).lean();
   }
   static async acceptJoinRequest({ community_id, user_ids }) {
-    return await CommunityModel.findByIdAndUpdate(
-      community_id,
-      {
-        $pull: { waitlist_users: { $in: user_ids } },
+    return await CommunityModel.findByIdAndUpdate(community_id, {
+      $pull: { waitlist_users: { $in: user_ids } },
 
-        $addToSet: { members: user_ids }
-      }
-    ).lean();
+      $addToSet: { members: user_ids }
+    }).lean();
   }
 
   static async rejectJoinRequest({ community_id, user_ids }) {
-    return await CommunityModel.findByIdAndUpdate(
-      community_id,
-      {
-        $pull: { waitlist_users: { $in: user_ids } }
-      }
-    ).lean();
+    return await CommunityModel.findByIdAndUpdate(community_id, {
+      $pull: { waitlist_users: { $in: user_ids } }
+    }).lean();
   }
 
   static async joinCommunity({ community_id, user_id }) {
@@ -167,12 +161,9 @@ class CommunityClass {
   }
 
   static async cancelJoinCommunity({ community_id, user_id }) {
-    return await CommunityModel.findByIdAndUpdate(
-      community_id,
-      {
-        $pull: { waitlist_users: user_id }
-      }
-    ).lean();
+    return await CommunityModel.findByIdAndUpdate(community_id, {
+      $pull: { waitlist_users: user_id }
+    }).lean();
   }
 
   static async leaveCommunity({ community_id, user_id }) {
@@ -230,17 +221,6 @@ class CommunityClass {
     return await CommunityModel.findById(community_id)
       .select('+admins +waitlist_users +waitlist_posts')
       .populate('creator', getSelectData(se_UserDefault))
-      .populate({
-        path: 'posts',
-        populate: {
-          path: 'post_attributes',
-          populate: [
-            { path: 'user', select: pp_UserDefault },
-            { path: 'owner_post', select: pp_UserDefault },
-            { path: 'post' }
-          ]
-        }
-      })
       .populate('members')
       .populate('recently_joined')
       .populate('admins')
@@ -262,17 +242,6 @@ class CommunityClass {
     return await CommunityModel.find({ members: user_id })
       .select('+admins +waitlist_users +waitlist_posts')
       .populate('creator', getSelectData(se_UserDefault))
-      .populate({
-        path: 'posts',
-        populate: {
-          path: 'post_attributes',
-          populate: [
-            { path: 'user', select: pp_UserDefault },
-            { path: 'owner_post', select: pp_UserDefault },
-            { path: 'post' }
-          ]
-        }
-      })
       .populate('members')
       .populate('recently_joined')
       .populate('admins')
@@ -289,6 +258,77 @@ class CommunityClass {
         }
       })
       .lean();
+  }
+  static async getAllImagesByCommunityID(community_id) {
+    const community = await CommunityModel.findById(community_id).populate('posts').lean();
+
+    return community.posts.map((post) => post.post_attributes.images).flat();
+  }
+  static async getAllCommunitiesYouManage(user_id, page) {
+    const limit = 9;
+    const skip = (parseInt(page) - 1) * limit;
+
+    return await CommunityModel.find({ admins: user_id })
+      .select('+admins +waitlist_users +waitlist_posts')
+      .populate('creator', getSelectData(se_UserDefault))
+      .populate('members')
+      .populate('recently_joined')
+      .populate('admins')
+      .populate('waitlist_users')
+      .populate({
+        path: 'waitlist_posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+  }
+  static async getPostByID({ community_id, post_id }) {
+    const community = await CommunityModel.findById(community_id)
+      .populate({
+        match: { _id: post_id },
+        path: 'posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
+      .lean();
+
+    return community.posts[0];
+  }
+  static async getPostsByCommunityID({ community_id, page }) {
+    const limit = 5;
+    const skip = (parseInt(page) - 1) * limit;
+
+    const community = await CommunityModel.findById(community_id)
+      .populate({
+        path: 'posts',
+        populate: {
+          path: 'post_attributes',
+          populate: [
+            { path: 'user', select: pp_UserDefault },
+            { path: 'owner_post', select: pp_UserDefault },
+            { path: 'post' }
+          ]
+        }
+      })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    return community.posts;
   }
 }
 

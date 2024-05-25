@@ -15,8 +15,20 @@ router.get('/user/:user_id', asyncHandler(CommunityController.getCommunitiesByUs
 // Search member by keySearch (name, email)
 router.get('/members/search/:community_id', asyncHandler(CommunityController.searchMember));
 
+// Get all communities you manage
+router.get('/manage', asyncHandler(CommunityController.getAllCommunitiesYouManage));
+
 // Get community by id
 router.get('/:community_id', asyncHandler(CommunityController.getCommunityByID));
+
+// Get all posts of community
+router.get('/:community_id/posts', asyncHandler(CommunityController.getPostsByCommunityID));
+
+// Get post of community by post_id
+router.get('/:community_id/post/:post_id', asyncHandler(CommunityController.getPostByID));
+
+// Get all images of community
+router.get('/images/:community_id', asyncHandler(CommunityController.getAllImagesByCommunityID));
 
 // =========================================================
 

@@ -109,7 +109,7 @@ class CommunityController {
         user_id: req.user.userId
       })
     }).send(res);
-  }
+  };
   static leaveCommunity = async (req, res, next) => {
     new OK({
       message: 'Leave Community Successfully',
@@ -118,7 +118,7 @@ class CommunityController {
         user_id: req.user.userId
       })
     }).send(res);
-  }
+  };
   static promoteAdmin = async (req, res, next) => {
     new OK({
       message: 'Promote Admin Successfully',
@@ -168,6 +168,36 @@ class CommunityController {
     new OK({
       message: 'Get Community Successfully',
       metadata: await CommunityService.getCommunitiesByUserID(req.user.userId)
+    }).send(res);
+  };
+  static getAllImagesByCommunityID = async (req, res, next) => {
+    new OK({
+      message: 'Get All Images By Community ID Successfully',
+      metadata: await CommunityService.getAllImagesByCommunityID(req.params.community_id)
+    }).send(res);
+  };
+  static getAllCommunitiesYouManage = async (req, res, next) => {
+    new OK({
+      message: 'Get All Communities You Manage Successfully',
+      metadata: await CommunityService.getAllCommunitiesYouManage({
+        user_id: req.user.userId,
+        ...req.query
+      })
+    }).send(res);
+  };
+  static getPostByID = async (req, res, next) => {
+    new OK({
+      message: 'Get Post Successfully',
+      metadata: await CommunityService.getPostByID(req.params)
+    }).send(res);
+  };
+  static getPostsByCommunityID = async (req, res, next) => {
+    new OK({
+      message: 'Get Posts By Community ID Successfully',
+      metadata: await CommunityService.getPostsByCommunityID({
+        community_id: req.params.community_id,
+        ...req.query
+      })
     }).send(res);
   };
 }
