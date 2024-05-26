@@ -243,8 +243,6 @@ class ConversationClass {
           .populate('seen', pp_UserDefault)
           .lean();
 
-        console.log('message', message);
-
         result[index] = {
           ...item,
           lastMessage: message
