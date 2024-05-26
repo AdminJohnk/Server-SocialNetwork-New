@@ -14,7 +14,7 @@ import {
 import { CommunityClass } from '../models/community.model.js';
 import { UserClass } from '../models/user.model.js';
 import { PostClass } from '../models/post.model.js';
-import { removeFalsyFields } from '../utils/functions.js';
+import { removeFalsyFields, updateNestedObjectParser } from '../utils/functions.js';
 
 class CommunityService {
   static async cedeCreator({ community_id, me_id, new_creator_id }) {
@@ -305,7 +305,7 @@ class CommunityService {
     if (community.creator.toString() !== author)
       throw new ForbiddenError('You are not creator of this community');
 
-    const payload = removeFalsyFields({
+    const payload = updateNestedObjectParser(removeFalsyFields({
       name,
       about,
       tags,
@@ -313,7 +313,7 @@ class CommunityService {
       admins: [...new Set(admins)],
       rules,
       image
-    });
+    }));
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };

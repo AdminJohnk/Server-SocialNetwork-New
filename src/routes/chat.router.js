@@ -77,6 +77,9 @@ router.put('/conversations/:conversation_id/admins', asyncHandler(ChatController
 // Remove admin role for group conversation
 router.put('/conversations/:conversation_id/admins/remove', asyncHandler(ChatController.removeAdmin));
 
+// Delete conversation
+router.put('/conversations/:conversation_id/delete', asyncHandler(ChatController.deleteConversation));
+
 // =========================================================
 
 /// DELETE //
@@ -86,7 +89,7 @@ router.delete(
   asyncHandler(ChatController.deleteMemberFromConversation)
 );
 
-// Delete Conversation
+// Dissolve group
 router.delete('/conversations/:conversation_id', asyncHandler(ChatController.dissolveGroup));
 
 // =========================================================

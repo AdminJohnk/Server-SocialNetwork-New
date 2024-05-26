@@ -2,6 +2,7 @@
 
 import { model, Schema, Types } from 'mongoose';
 import { pp_UserDefault } from '../utils/constants.js';
+import { ConversationClass } from './conversation.model.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Message';
@@ -56,16 +57,58 @@ class MessageClass {
   static async deleteMessagesByConversationId({ conversation_id }) {
     return await MessageModel.deleteMany({ conversation_id });
   }
-  static async getMessagesByConversationId({ conversation_id, limit, page, sort, extend }) {
+  static async getMessagesByConversationId({ conversation_id, limit, page, sort, extend, user }) {
     const skip = (page - 1) * limit + extend;
-    const result = await MessageModel.find({ conversation_id })
-      .populate('sender', pp_UserDefault)
-      .populate('target', pp_UserDefault)
-      .populate('seen', pp_UserDefault)
-      .skip(skip)
-      .limit(limit)
-      .sort(sort)
-      .lean();
+    const conversation = await ConversationClass.checkExist({ _id: conversation_id });
+    // const result = await MessageModel.find({ conversation_id })
+    //   .populate('sender', pp_UserDefault)
+    //   .populate('target', pp_UserDefault)
+    //   .populate('seen', pp_UserDefault)
+    //   .skip(skip)
+    //   .limit(limit)
+    //   .sort(sort)
+    //   .lean();
+
+    let result;
+
+    if (conversation.deleteTime.some((time) => time.user.toString() == user.toString())) {
+      const deleteTime = conversation.deleteTime.find(
+        (time) => time.user.toString() == user.toString()
+      ).delete;
+      result = await MessageModel.find({
+        conversation_id,
+        createdAt: { $gt: deleteTime }
+      })
+        .populate('sender', pp_UserDefault)
+        .populate('target', pp_UserDefault)
+        .populate('seen', pp_UserDefault)
+        .skip(skip)
+        .limit(limit)
+        .sort(sort)
+        .lean();
+
+      if (result.length == 0) {
+        result = [
+          await MessageModel.findOne({
+            conversation_id: conversation._id,
+            content: 'created this conversation'
+          })
+            .populate('sender', pp_UserDefault)
+            .populate('target', pp_UserDefault)
+            .populate('seen', pp_UserDefault)
+            .lean()
+        ];
+      }
+    } else {
+      result = await MessageModel.find({ conversation_id })
+        .populate('sender', pp_UserDefault)
+        .populate('target', pp_UserDefault)
+        .populate('seen', pp_UserDefault)
+        .skip(skip)
+        .limit(limit)
+        .sort(sort)
+        .lean();
+    }
 
     return result.reverse() || [];
   }

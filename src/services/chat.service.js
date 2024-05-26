@@ -97,15 +97,20 @@ class ChatService {
 
     if (!isAdmin) throw new ForbiddenError('You are not admin');
 
-    const result = await ConversationClass.deleteConversation({
-      conversation_id
-    });
+    const result = await ConversationClass.dissolveGroup({ conversation_id });
 
     // Delete all messages
     await MessageClass.deleteMessagesByConversationId({ conversation_id });
 
     return result;
   };
+
+  static async deleteConversation({ conversation_id, user_id }) {
+    const foundConversation = await ConversationClass.checkExist({ _id: conversation_id });
+    if (!foundConversation) throw new NotFoundError('Conversation not found');
+
+    return await ConversationClass.deleteConversation({ conversation_id, user_id });
+  }
   static changeConversationCoverImage = async ({ conversation_id, image, user, type }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
@@ -251,7 +256,8 @@ class ChatService {
     limit = 30,
     page = 1,
     extend = 0,
-    sort = { createdAt: -1 }
+    sort = { createdAt: -1 },
+    user
   }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
@@ -263,7 +269,8 @@ class ChatService {
       limit,
       page,
       sort,
-      extend
+      extend,
+      user
     });
   };
   static getImageMessageByConversationId = async ({
@@ -284,13 +291,13 @@ class ChatService {
       extend
     });
   };
-  static getConversationById = async ({ conversation_id }) => {
+  static getConversationById = async ({ conversation_id,user_id }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
     });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
 
-    return await ConversationClass.getConversationById({ conversation_id });
+    return await ConversationClass.getConversationById({ conversation_id,user_id });
   };
   static createConverSation = async ({ type, name, members, user }) => {
     // check exist all members

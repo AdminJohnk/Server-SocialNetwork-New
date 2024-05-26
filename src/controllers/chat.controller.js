@@ -48,8 +48,8 @@ class ChatController {
     }).send(res);
   };
   /* 
-    Get All Conversations By User ID
-    Link: http://localhost:4052/api/v1/chat/conversations
+    Dissolve Group
+    Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id
   */
   static dissolveGroup = async (req, res, next) => {
     new OK({
@@ -57,6 +57,19 @@ class ChatController {
       metadata: await ChatService.dissolveGroup({
         conversation_id: req.params.conversation_id,
         user: req.user.userId
+      })
+    }).send(res);
+  };
+  /*
+    Delete Conversation
+    Link: http://localhost:4052/api/v1/chat/conversations/:conversation_id/delete
+  */
+  static deleteConversation = async (req, res, next) => {
+    new OK({
+      message: 'Delete Conversation Successfully',
+      metadata: await ChatService.deleteConversation({
+        conversation_id: req.params.conversation_id,
+        user_id: req.user.userId
       })
     }).send(res);
   };
@@ -183,7 +196,8 @@ class ChatController {
       metadata: await ChatService.getMessagesByConversationId({
         conversation_id: req.params.conversation_id,
         page: req.query.page,
-        extend: parseInt(req.query.extend)
+        extend: parseInt(req.query.extend),
+        user: req.user.userId
       })
     }).send(res);
   };
@@ -209,7 +223,8 @@ class ChatController {
     new OK({
       message: 'Get Conversation Successfully',
       metadata: await ChatService.getConversationById({
-        conversation_id: req.params.conversation_id
+        conversation_id: req.params.conversation_id,
+        user_id: req.user.userId
       })
     }).send(res);
   };

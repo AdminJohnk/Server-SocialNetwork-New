@@ -35,9 +35,12 @@ const updateNestedObjectParser = (obj) => {
 };
 
 const removeFalsyFields = (obj) => {
+  if (Array.isArray(obj)) return obj.filter(Boolean);
+
   Object.keys(obj).forEach((k) => {
     if (!obj[k] || !obj[k]?.length) delete obj[k];
   });
+  
   return obj;
 };
 
