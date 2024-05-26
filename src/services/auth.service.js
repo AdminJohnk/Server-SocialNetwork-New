@@ -86,7 +86,6 @@ class AuthService {
   static loginService = async ({ email, password, refreshToken = null }) => {
     // 1 - Check email exist
     const foundUser = await UserClass.findByEmail({ email });
-    console.log('foundUser', foundUser);
     if (!foundUser) throw new BadRequestError('Email not exists!');
 
     // 2 - Match password
