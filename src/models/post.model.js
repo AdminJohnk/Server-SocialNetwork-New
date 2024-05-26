@@ -323,6 +323,7 @@ class PostClass {
       numShare
     };
   }
+  
   static async deleteSharePost({ type = 'Share', user, post, shared_post }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({

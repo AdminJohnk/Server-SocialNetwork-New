@@ -39,6 +39,17 @@ class HashTagService {
     }
     return true;
   }
+
+  static async deleteSharePostHashTags({ user, post, shared_post }) {
+    // Kiểm tra xem đã share bài viết này chưa
+    const foundPost = await PostService.checkSharePostExist({ user, post, shared_post });
+    if (!foundPost) return false;
+    const hashTags = foundPost.post_attributes.hashtags || [];
+    for (let name of hashTags) {
+      await HashTagsClass.deletePostHashTags({ name, post_id: shared_post });
+    }
+    return true;
+  }
 }
 
 export default HashTagService;
