@@ -14,7 +14,7 @@ import {
 import { CommunityClass } from '../models/community.model.js';
 import { UserClass } from '../models/user.model.js';
 import { PostClass } from '../models/post.model.js';
-import { removeUndefinedFields } from '../utils/functions.js';
+import { removeFalsyFields } from '../utils/functions.js';
 
 class CommunityService {
   static async cedeCreator({ community_id, me_id, new_creator_id }) {
@@ -305,7 +305,7 @@ class CommunityService {
     if (community.creator.toString() !== author)
       throw new ForbiddenError('You are not creator of this community');
 
-    const payload = removeUndefinedFields({
+    const payload = removeFalsyFields({
       name,
       about,
       tags,

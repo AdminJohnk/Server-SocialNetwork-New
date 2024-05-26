@@ -34,13 +34,10 @@ const updateNestedObjectParser = (obj) => {
   return final;
 };
 
-const removeUndefinedFields = (obj) => {
-  //   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v != null));
-  // console.log('obj1::', obj);
+const removeFalsyFields = (obj) => {
   Object.keys(obj).forEach((k) => {
-    if (obj[k] === null || obj[k] === undefined) delete obj[k];
+    if (!obj[k] || !obj[k]?.length) delete obj[k];
   });
-  // console.log('obj2::', obj);
   return obj;
 };
 
@@ -70,7 +67,7 @@ export {
   getInfoData,
   getSelectData,
   unGetSelectData,
-  removeUndefinedFields,
+  removeFalsyFields,
   updateNestedObjectParser,
   convertToObjectIDMongoDB
 };

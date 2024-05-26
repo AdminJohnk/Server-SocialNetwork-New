@@ -10,7 +10,7 @@ import {
 import { hash } from 'bcrypt';
 import { UserClass, RoleUser } from '../models/user.model.js';
 import { PostClass } from '../models/post.model.js';
-import { removeUndefinedFields, updateNestedObjectParser } from '../utils/functions.js';
+import { removeFalsyFields, updateNestedObjectParser } from '../utils/functions.js';
 import { ParentCommentClass } from '../models/parentComment.model.js';
 import { ChildCommentClass } from '../models/childComment.model.js';
 import NotificationService from './notification.service.js';
@@ -206,7 +206,7 @@ class AdminService {
     if (!foundPost) throw new NotFoundError('Post not found');
 
     let post_attributes = { content, title, images };
-    post_attributes = removeUndefinedFields(post_attributes);
+    post_attributes = removeFalsyFields(post_attributes);
 
     return await PostClass.updatePost_admin({
       post_id,

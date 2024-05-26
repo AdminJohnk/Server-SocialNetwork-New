@@ -7,12 +7,7 @@ import {
   NotFoundError,
   ForbiddenError
 } from '../core/error.response.js';
-import {
-  getInfoData,
-  limitData,
-  removeUndefinedFields,
-  updateNestedObjectParser
-} from '../utils/functions.js';
+import { getInfoData, limitData, removeFalsyFields, updateNestedObjectParser } from '../utils/functions.js';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { RoleUser } from '../utils/constants.js';
@@ -225,7 +220,7 @@ class PostService {
       'post_attributes.user': user_id
     });
     if (!foundPost) throw new NotFoundError('Post not found');
-    post_attributes = removeUndefinedFields(post_attributes);
+    post_attributes = removeFalsyFields(post_attributes);
 
     // Check xem user có thể chỉnh sửa post hay không? (user là người tạo post)
     if (foundPost.post_attributes.user.toString() !== user_id)
