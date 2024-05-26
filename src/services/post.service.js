@@ -333,12 +333,24 @@ class PostService {
     return true;
   }
 
+  static async checkSharePostExist({ user, post, shared_post }) {
+    return await PostClass.checkExist({
+      _id: shared_post,
+      'post_attributes.user': user,
+      'post_attributes.post': post,
+      type: 'Share'
+    });
+  }
+
   static async deleteSharePost({ user, post, owner_post, shared_post }) {
     const foundPost = await PostClass.checkExist({
       _id: post,
       'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
+    // Xóa hash tag
+    await HashTagService.deleteSharePostHashTags({ post, user, shared_post });
+
     await PostClass.deleteSharePost({ user, post, shared_post });
 
     return true;
