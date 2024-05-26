@@ -305,7 +305,15 @@ class CommunityService {
     if (community.creator.toString() !== author)
       throw new ForbiddenError('You are not creator of this community');
 
-    const payload = removeUndefinedFields({ name, about, tags, members, admins, rules, image });
+    const payload = removeUndefinedFields({
+      name,
+      about,
+      tags,
+      members: [...new Set(members)],
+      admins: [...new Set(admins)],
+      rules,
+      image
+    });
 
     return await CommunityClass.updateCommunity({ community_id, ...payload });
   };
