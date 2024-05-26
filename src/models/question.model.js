@@ -3,7 +3,6 @@
 import { model, mongo, Mongoose, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
 import { FriendClass } from './friend.model.js';
-import { type } from 'os';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Question';
@@ -15,7 +14,21 @@ const QuestionSchema = new Schema(
     title: { type: String, required: true },
     problem: { type: String, required: true },
     expect: { type: String, required: true },
-    hashtags: { type: [String], default: [] },
+    hashtags: { type: [String], required: true },
+    view: { type: Number, default: 0 },
+    vote_up: { type: [ObjectId], ref: 'User', default: [] },
+    vote_down: { type: [ObjectId], ref: 'User', default: [] },
+    vote_score: { type: Number, default: 0 },
+    update_at: { type: Date, default: Date.now },
+    comment: {
+      type: [
+        {
+          user: { type: ObjectId, ref: 'User', required: true },
+          content: { type: String, required: true }
+        }
+      ],
+      default: []
+    },
     answers: {
       type: [
         {
@@ -46,6 +59,64 @@ const QuestionSchema = new Schema(
 const QuestionModel = model(DOCUMENT_NAME, QuestionSchema);
 
 class QuestionClass {
+  static async deleteQuestion(question_id) {
+    return await QuestionModel.findByIdAndDelete(question_id);
+  }
+  static async updateQuestion({
+    question_id,
+    title,
+    problem,
+    expect,
+    hashtags
+  }) {
+    return await QuestionModel.findOneAndUpdate(
+      { _id: question_id },
+      { title, problem, expect, hashtags },
+      { new: true }
+    ).lean();
+  }
+  static async voteQuestion({ question_id, type, user }) {
+    let question;
+    if (type === 'up') {
+      question = await QuestionModel.findOneAndUpdate(
+        { _id: question_id },
+        { $pull: { vote_down: user }, $push: { vote_up: user } },
+        { new: true }
+      );
+    } else if (type === 'down') {
+      question = await QuestionModel.findOneAndUpdate(
+        { _id: question_id },
+        { $pull: { vote_up: user }, $push: { vote_down: user } },
+        { new: true }
+      );
+    } else if (type === 'cancel') {
+      question = await QuestionModel.findOneAndUpdate(
+        { _id: question_id },
+        { $pull: { vote_up: user, vote_down: user } },
+        { new: true }
+      );
+    }
+
+    // vote_score
+    const vote_score = question.vote_up.length - question.vote_down.length;
+    await QuestionModel.findOneAndUpdate(
+      { _id: question_id },
+      { $set: { vote_score } }
+    );
+    return true;
+  }
+  static async viewQuestion({ question_id }) {
+    return await QuestionModel.findOneAndUpdate(
+      { _id: question_id },
+      { $inc: { view: 1 } },
+      { new: true }
+    ).lean();
+  }
+  static async getQuestionById(question_id) {
+    return await QuestionModel.findById(question_id)
+      .populate('user', pp_UserMore)
+      .lean();
+  }
   static async createQuestion({ user, title, problem, expect, hashtags }) {
     return await QuestionModel.create({
       user,
