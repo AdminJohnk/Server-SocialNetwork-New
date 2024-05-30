@@ -45,8 +45,11 @@ router.get('/images/:user_id', asyncHandler(PostController.getAllImage));
 // Link Preview
 router.get('/link-preview', asyncHandler(PostController.linkPreview));
 
-// Get All Post By Hashtag
-router.get('/hashtag/:hashtag', asyncHandler(PostController.getPostByHashtag));
+// Get Normal Post By Hashtag
+router.get('/hashtag/normal/:hashtag', asyncHandler(PostController.getNormalPostByHashtag));
+
+// Get Community Post By Hashtag
+router.get('/hashtag/community/:hashtag', asyncHandler(PostController.getCommunityPostByHashtag));
 
 // =========================================================
 

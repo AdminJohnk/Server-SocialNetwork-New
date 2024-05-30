@@ -305,12 +305,12 @@ class PostClass {
 
     return result[0];
   }
-  static async sharePost({ type = 'Share', user, post, owner_post, content }) {
-    const post_attributes = { user, post, owner_post, content };
+  static async sharePost({ type = 'Share', user, post, owner_post, content, hashtags }) {
+    const post_attributes = { user, post, owner_post, content, hashtags };
 
     let numShare = 1;
 
-    await PostModel.create({ type, post_attributes });
+    const postShare = await PostModel.create({ type, post_attributes });
 
     this.changeToArrayPost({
       post_id: post,
@@ -320,10 +320,11 @@ class PostClass {
     });
 
     return {
-      numShare
+      numShare,
+      postShare
     };
   }
-  
+
   static async deleteSharePost({ type = 'Share', user, post, shared_post }) {
     // Kiểm tra xem đã share bài viết này chưa
     const sharedPost = await this.checkExist({

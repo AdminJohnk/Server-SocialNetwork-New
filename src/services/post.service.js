@@ -180,7 +180,7 @@ class PostService {
     } // Xóa ảnh trong S3
 
     // Xóa hash tag
-    await HashTagService.deletePostHashTags({ post_id, user: user_id, scope });
+    await HashTagService.deletePostHashTags({ post_id, scope });
 
     const result = await PostClass.deletePost({ post_id });
 
@@ -251,7 +251,7 @@ class PostService {
       })
     });
 
-    await HashTagService.createOrUpdateHashTag({ rmHashtags, post_id, user: user_id, scope });
+    await HashTagService.createOrUpdateHashTag({ rmHashtags, post_id, scope });
 
     return updatePost;
   }
@@ -296,6 +296,7 @@ class PostService {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
+    console.log('foundPost', foundPost)
     let isFullSearch = false;
 
     if (user === foundPost.post_attributes.user.toString()) {
@@ -305,21 +306,24 @@ class PostService {
     return await PostClass.findByID({ post_id, user, scope, isFullSearch });
   }
 
-  static async sharePost({ user, post, owner_post, content }) {
+  static async sharePost({ user, post, owner_post, content, hashtags }) {
     const foundPost = await PostClass.checkExist({
       _id: post,
       'post_attributes.user': owner_post
     });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    const { numShare } = await PostClass.sharePost({
+    const { numShare, postShare } = await PostClass.sharePost({
       user,
       post,
       owner_post,
-      content
+      content,
+      hashtags
     });
 
     if (user !== owner_post && numShare === 1) {
+      HashTagService.createOrUpdateHashTag({ post_id: postShare._id });
+
       const msg = NotificationService.createMsgToPublish({
         type: SHAREPOST_001,
         sender: user,
@@ -330,16 +334,8 @@ class PostService {
       PublisherService.publishNotify(msg);
     }
 
-    return true;
-  }
 
-  static async checkSharePostExist({ user, post, shared_post }) {
-    return await PostClass.checkExist({
-      _id: shared_post,
-      'post_attributes.user': user,
-      'post_attributes.post': post,
-      type: 'Share'
-    });
+    return true;
   }
 
   static async deleteSharePost({ user, post, owner_post, shared_post }) {
@@ -411,7 +407,7 @@ class PostService {
     }
 
     // Thêm post vào hash tag
-    HashTagService.createOrUpdateHashTag({ post_id: result._id, user, scope });
+    HashTagService.createOrUpdateHashTag({ post_id: result._id, scope });
 
     return result;
   }
@@ -435,8 +431,8 @@ class PostService {
       sort
     });
   }
-  static async getPostByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
-    const post_ids = await HashTagService.getHashTagByName({ name: '#' + hashtag });
+  static async getNormalPostByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    const post_ids = await HashTagService.getNormalPostByHashtag({ name: '#' + hashtag });
 
     if (!post_ids) return [];
     const posts = await Promise.all(
@@ -445,6 +441,29 @@ class PostService {
       })
     );
     return posts;
+  }
+  static async getCommunityPostByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    const post_ids = await HashTagService.getCommunityPostByHashtag({ name: '#' + hashtag });
+
+    if (!post_ids) return [];
+    const posts = await Promise.all(
+      post_ids.map(async (post_id) => {
+        return await PostClass.findByID({ post_id, user: user_id });
+      })
+    );
+    return posts;
+  }
+  static async getQuestionByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+    const post_ids = await HashTagService.getQuestionByHashtag({ name: '#' + hashtag });
+
+    // if (!post_ids) return [];
+    // const posts = await Promise.all(
+    //   post_ids.map(async (post_id) => {
+    //     return await PostClass.findByID({ post_id, user: user_id });
+    //   })
+    // );
+    // return posts;
+    return post_ids;
   }
 }
 

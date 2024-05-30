@@ -135,6 +135,7 @@ class PostController {
     }
   */
   static updatePost = async (req, res, next) => {
+    console.log(req.body)
     new OK({
       message: 'Update Post Successfully',
       metadata: await PostService.updatePost({
@@ -248,10 +249,21 @@ class PostController {
     }).send(res);
   };
 
-  static getPostByHashtag = async (req, res, next) => {
+  static getNormalPostByHashtag = async (req, res, next) => {
     new OK({
       message: 'Get Post By Hashtag Successfully',
-      metadata: await PostService.getPostByHashtag({
+      metadata: await PostService.getNormalPostByHashtag({
+        hashtag: req.params.hashtag,
+        page: req.query.page,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  }
+
+  static getCommunityPostByHashtag = async (req, res, next) => {
+    new OK({
+      message: 'Get Post By Hashtag Successfully',
+      metadata: await PostService.getCommunityPostByHashtag({
         hashtag: req.params.hashtag,
         page: req.query.page,
         me_id: req.user.userId
