@@ -24,8 +24,6 @@ class HashTagService {
     question_id,
     scope = 'Normal'
   }) {
-    // console.log(question_id);
-    // return;
     let hashTags;
 
     if (scope === 'Normal' || scope === 'Community') {
@@ -46,6 +44,7 @@ class HashTagService {
           name,
           post_id,
           is_removed: true,
+          question_id,
           scope
         });
       }
@@ -53,7 +52,12 @@ class HashTagService {
 
     if (hashTags.length > 0) {
       for (let name of hashTags) {
-        await HashTagsClass.createOrUpdateHashTag({ name, post_id, scope });
+        await HashTagsClass.createOrUpdateHashTag({
+          name,
+          post_id,
+          question_id,
+          scope
+        });
       }
     }
 

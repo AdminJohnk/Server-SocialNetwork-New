@@ -259,13 +259,24 @@ class QuestionService {
     if (foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to update this question');
 
-    return await QuestionClass.updateQuestion({
+    const oldHashTag = foundQuestion.hashtags;
+    const rmHashtags = oldHashTag.filter(oldTag => !hashtags.includes(oldTag));
+
+    const question = await QuestionClass.updateQuestion({
       question_id,
       title,
       problem,
       expect,
       hashtags
     });
+
+    HashTagService.createOrUpdateHashTag({
+      rmHashtags,
+      question_id,
+      scope: 'Question'
+    });
+
+    return question;
   };
   static voteQuestion = async ({ question_id, type, user }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });

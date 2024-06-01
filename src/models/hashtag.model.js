@@ -47,10 +47,23 @@ class HashTagsClass {
   static async createOrUpdateHashTag({
     name,
     post_id,
+    question_id,
     is_removed = false,
     scope
   }) {
     const foundHashTag = await HashTagsModel.findOne({ name });
+
+    const removeHashTag = async foundHashTag => {
+      if (
+        foundHashTag.posts.length === 0 &&
+        foundHashTag.communities.length === 0 &&
+        foundHashTag.questions.length === 0
+      ) {
+        console.log('foundHashTag::: ', foundHashTag);
+        await HashTagsModel.findOneAndDelete({ name: foundHashTag.name });
+      }
+    };
+
     if (foundHashTag) {
       if (scope === 'Community') {
         if (is_removed) {
@@ -58,7 +71,9 @@ class HashTagsClass {
           foundHashTag.communities = foundHashTag.communities.filter(
             post => post.toString() != post_id.toString()
           );
-          return await foundHashTag.save();
+          await foundHashTag.save();
+          await removeHashTag(foundHashTag);
+          return true;
         }
         if (
           foundHashTag.communities.some(
@@ -71,24 +86,29 @@ class HashTagsClass {
         if (is_removed) {
           // remove post_id from questions
           foundHashTag.questions = foundHashTag.questions.filter(
-            post => post.toString() != post_id.toString()
+            question => question.toString() != question_id.toString()
           );
-          return await foundHashTag.save();
+          await foundHashTag.save();
+          await removeHashTag(foundHashTag);
+          return true;
         }
         if (
           foundHashTag.questions.some(
-            post => post.toString() == post_id.toString()
+            question => question.toString() == question_id.toString()
           )
-        )
+        ) {
           return foundHashTag;
-        foundHashTag.questions.push(new ObjectId(post_id));
+        }
+        foundHashTag.questions.push(new ObjectId(question_id));
       } else {
         if (is_removed) {
           // remove post_id from posts
           foundHashTag.posts = foundHashTag.posts.filter(
             post => post.toString() != post_id.toString()
           );
-          return await foundHashTag.save();
+          await foundHashTag.save();
+          await removeHashTag(foundHashTag);
+          return true;
         }
         if (
           foundHashTag.posts.some(post => post.toString() == post_id.toString())
@@ -96,6 +116,7 @@ class HashTagsClass {
           return foundHashTag;
         foundHashTag.posts.push(new ObjectId(post_id));
       }
+
       return await foundHashTag.save();
     }
 
@@ -103,7 +124,7 @@ class HashTagsClass {
     if (scope === 'Community') {
       newHashTag.communities.push(new ObjectId(post_id));
     } else if (scope === 'Question') {
-      newHashTag.questions.push(new ObjectId(post_id));
+      newHashTag.questions.push(new ObjectId(question_id));
     } else {
       newHashTag.posts.push(new ObjectId(post_id));
     }
