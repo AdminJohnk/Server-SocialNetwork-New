@@ -284,7 +284,7 @@ class PostService {
       })
     });
 
-    await HashTagService.createOrUpdateHashTag({ rmHashtags, post_id, scope });
+    HashTagService.createOrUpdateHashTag({ rmHashtags, post_id, scope });
 
     return updatePost;
   }
@@ -450,8 +450,6 @@ class PostService {
 
       // Add notification for all member in community
     }
-
-    // Thêm post vào hash tag
     HashTagService.createOrUpdateHashTag({ post_id: result._id, scope });
 
     return result;

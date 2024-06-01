@@ -21,8 +21,11 @@ class HashTagService {
   static async createOrUpdateHashTag({
     rmHashtags = [],
     post_id,
+    question_id,
     scope = 'Normal'
   }) {
+    // console.log(question_id);
+    // return;
     let hashTags;
 
     if (scope === 'Normal' || scope === 'Community') {
@@ -30,7 +33,9 @@ class HashTagService {
       if (!foundPost) throw new NotFoundError('Post not found');
       hashTags = foundPost.post_attributes.hashtags || [];
     } else if (scope === 'Question') {
-      const foundQuestion = await QuestionClass.checkExist({ _id: post_id });
+      const foundQuestion = await QuestionClass.checkExist({
+        _id: question_id
+      });
       if (!foundQuestion) throw new NotFoundError('Question not found');
       hashTags = foundQuestion.hashtags || [];
     }
@@ -54,7 +59,7 @@ class HashTagService {
 
     return true;
   }
-  static async deletePostHashTags({ post_id, scope = 'Normal' }) {
+  static async deletePostHashTags({ post_id, question_id, scope = 'Normal' }) {
     let hashTags;
 
     if (scope === 'Normal' || scope === 'Community') {
@@ -62,7 +67,9 @@ class HashTagService {
       if (!foundPost) throw new NotFoundError('Post not found');
       hashTags = foundPost.post_attributes.hashtags || [];
     } else if (scope === 'Question') {
-      const foundQuestion = await QuestionClass.checkExist({ _id: post_id });
+      const foundQuestion = await QuestionClass.checkExist({
+        _id: question_id
+      });
       if (!foundQuestion) throw new NotFoundError('Question not found');
       hashTags = foundQuestion.hashtags || [];
     }

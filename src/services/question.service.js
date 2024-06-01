@@ -10,6 +10,7 @@ import {
 
 import { QuestionClass } from '../models/question.model.js';
 import { UserClass } from '../models/user.model.js';
+import HashTagService from './hashtag.service.js';
 
 class QuestionService {
   static saveQuestion = async ({ user, question_id }) => {
@@ -296,13 +297,20 @@ class QuestionService {
     if (!expect) throw new BadRequestError('Expect is required');
     if (!hashtags) throw new BadRequestError('Hashtags is required');
 
-    return await QuestionClass.createQuestion({
+    const result = await QuestionClass.createQuestion({
       user,
       title,
       problem,
       expect,
       hashtags
     });
+
+    HashTagService.createOrUpdateHashTag({
+      question_id: result._id.toString(),
+      scope: 'Question'
+    });
+
+    return result;
   };
 }
 
