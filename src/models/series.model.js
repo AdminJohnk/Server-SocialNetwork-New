@@ -16,7 +16,7 @@ const SeriesSchema = new Schema(
       required: true
     },
     title: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String, default: '' },
     introduction: { type: String, required: true },
     visibility: {
       type: String,

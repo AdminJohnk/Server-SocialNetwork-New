@@ -11,7 +11,7 @@ class SeriesService {
     const isView = await redis.get(`series:${series_id}:user:${me_id}:view`);
     if (isView) return true;
 
-    redis.setex(`series:${series_id}:user:${me_id}:view`, 30 * 60, 1);
+    redis.setex(`series:${series_id}:user:${me_id}:view`, 10 * 60, 1);
 
     return await SeriesClass.increaseView({ series_id });
   };
