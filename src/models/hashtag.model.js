@@ -36,21 +36,12 @@ class HashTagsClass {
     return hashtags.sort((a, b) => b.posts.length - a.posts.length);
   }
   static async getNormalPostByHashtag({ name }) {
-    // const foundHashTag = await HashTagsModel.findOne({ name });
-    // if (!foundHashTag) return false;
-    // return foundHashTag.posts;
     return await HashTagsModel.findOne({ name }).select('posts').lean();
   }
   static async getCommunityPostByHashtag({ name }) {
-    // const foundHashTag = await HashTagsModel.findOne({ name });
-    // if (!foundHashTag) return false;
-    // return foundHashTag.communities;
     return await HashTagsModel.findOne({ name }).select('communities').lean();
   }
   static async getQuestionByHashtag({ name }) {
-    // const foundHashTag = await HashTagsModel.findOne({ name });
-    // if (!foundHashTag) return false;
-    // return foundHashTag.questions;
     return await HashTagsModel.findOne({ name }).select('questions').lean();
   }
   static async createOrUpdateHashTag({
