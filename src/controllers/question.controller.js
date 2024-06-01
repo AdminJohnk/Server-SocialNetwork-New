@@ -5,6 +5,139 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Vote Answer
+  static voteAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Vote Answer Successfully',
+      metadata: await QuestionService.voteAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  }
+  // Vote Comment Answer
+  static voteCommentAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Vote Comment Answer Successfully',
+      metadata: await QuestionService.voteCommentAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+
+  // Update Comment Answer
+  static updateCommentAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Update Comment Answer Successfully',
+      metadata: await QuestionService.updateCommentAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Comment Answer
+  static commentAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Comment Answer Successfully',
+      metadata: await QuestionService.commentAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Delete Answer
+  static deleteAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Delete Answer Successfully',
+      metadata: await QuestionService.deleteAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Update Answer
+  static updateAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Update Answer Successfully',
+      metadata: await QuestionService.updateAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Delete Comment Answer
+  static deleteCommentAnswer = async (req, res, next) => {
+    new OK({
+      message: 'Delete Answer Comment Successfully',
+      metadata: await QuestionService.deleteCommentAnswer({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Answer Question
+  static answerQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Answer Question Successfully',
+      metadata: await QuestionService.answerQuestion({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Vote Comment Question
+  static voteCommentQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Vote Comment Question Successfully',
+      metadata: await QuestionService.voteCommentQuestion({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Delete Comment Question
+  static deleteCommentQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Delete Question Comment Successfully',
+      metadata: await QuestionService.deleteCommentQuestion({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Update Comment Question
+  static updateCommentQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Update Comment Question Successfully',
+      metadata: await QuestionService.updateCommentQuestion({
+        user: req.user.userId,
+        question_id: req.params.question_id,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Comment Question
+  static commentQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Comment Question Successfully',
+      metadata: await QuestionService.commentQuestion({
+        question_id: req.params.question_id,
+        user: req.user.userId,
+        ...req.body
+      })
+    }).send(res);
+  };
   // Delete Question
   static deleteQuestion = async (req, res, next) => {
     new OK({
