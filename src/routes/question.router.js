@@ -89,6 +89,9 @@ router.put(
   asyncHandler(QuestionController.voteAnswer)
 );
 
+// Save Question
+router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
+
 // =========================================================
 
 /// DELETE //

@@ -12,6 +12,14 @@ import { QuestionClass } from '../models/question.model.js';
 import { UserClass } from '../models/user.model.js';
 
 class QuestionService {
+  static saveQuestion = async ({ user, question_id }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    await UserClass.saveQuestion({ user, question_id });
+
+    return await QuestionClass.saveQuestion({ user, question_id });
+  };
   static voteAnswer = async ({ user, question_id, answer_id, type }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');

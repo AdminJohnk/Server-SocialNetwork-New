@@ -7,7 +7,12 @@ import {
   NotFoundError,
   ForbiddenError
 } from '../core/error.response.js';
-import { getInfoData, limitData, removeFalsyFields, updateNestedObjectParser } from '../utils/functions.js';
+import {
+  getInfoData,
+  limitData,
+  removeFalsyFields,
+  updateNestedObjectParser
+} from '../utils/functions.js';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { RoleUser } from '../utils/constants.js';
@@ -25,27 +30,37 @@ const { CREATEPOST_001, SHAREPOST_001 } = Notification;
 
 class PostService {
   static async linkPreview({ url }) {
-    const extractMetaTags = async (url) => {
+    const extractMetaTags = async url => {
       try {
         const response = await axios.get(url);
         const dom = new JSDOM(response.data);
         const document = dom.window.document;
-        const metaTags = Array.from(document.querySelectorAll('meta')).reduce((tags, meta) => {
-          const name =
-            meta.getAttribute('name') || meta.getAttribute('property') || meta.getAttribute('itemprop');
-          const content = meta.getAttribute('content');
+        const metaTags = Array.from(document.querySelectorAll('meta')).reduce(
+          (tags, meta) => {
+            const name =
+              meta.getAttribute('name') ||
+              meta.getAttribute('property') ||
+              meta.getAttribute('itemprop');
+            const content = meta.getAttribute('content');
 
-          if (name && content) {
-            tags[name] = content;
-          }
+            if (name && content) {
+              tags[name] = content;
+            }
 
-          return tags;
-        }, {});
+            return tags;
+          },
+          {}
+        );
 
         return {
-          title: document.title || metaTags['og:title'] || metaTags['twitter:title'],
-          description: metaTags.description || metaTags['og:description'] || metaTags['twitter:description'],
-          image: metaTags.image || metaTags['og:image'] || metaTags['twitter:image']
+          title:
+            document.title || metaTags['og:title'] || metaTags['twitter:title'],
+          description:
+            metaTags.description ||
+            metaTags['og:description'] ||
+            metaTags['twitter:description'],
+          image:
+            metaTags.image || metaTags['og:image'] || metaTags['twitter:image']
         };
       } catch (error) {
         console.error('Error fetching Open Graph details', error);
@@ -102,7 +117,13 @@ class PostService {
       scope
     });
   }
-  static async getAllUserSavePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getAllUserSavePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -119,7 +140,13 @@ class PostService {
       sort
     });
   }
-  static async getAllUserSharePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getAllUserSharePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -136,7 +163,13 @@ class PostService {
       sort
     });
   }
-  static async getAllUserLikePost({ post, owner_post, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getAllUserLikePost({
+    post,
+    owner_post,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const foundPost = await PostClass.checkExist({
@@ -198,7 +231,7 @@ class PostService {
       user_id,
       type: 'post',
       number: -1
-    }).catch((err) => console.log(err));
+    }).catch(err => console.log(err));
 
     return result;
   }
@@ -296,7 +329,7 @@ class PostService {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    console.log('foundPost', foundPost)
+    console.log('foundPost', foundPost);
     let isFullSearch = false;
 
     if (user === foundPost.post_attributes.user.toString()) {
@@ -334,7 +367,6 @@ class PostService {
       PublisherService.publishNotify(msg);
     }
 
-
     return true;
   }
 
@@ -345,14 +377,23 @@ class PostService {
     });
     if (!foundPost) throw new NotFoundError('Post not found');
     // Xóa hash tag
-    await HashTagService.deleteSharePostHashTags({ post, user, shared_post });
+    await HashTagService.deletePostHashTags({ post_id: shared_post });
 
     await PostClass.deleteSharePost({ user, post, shared_post });
 
     return true;
   }
 
-  static async createPost({ type = 'Post', user, content, images, hashtags, scope, community, visibility }) {
+  static async createPost({
+    type = 'Post',
+    user,
+    content,
+    images,
+    hashtags,
+    scope,
+    community,
+    visibility
+  }) {
     if (!content) throw new BadRequestError('Post must have title or content');
     const result = await PostClass.createPost({
       type,
@@ -382,11 +423,15 @@ class PostService {
 
     // Thêm post trong community
     if (scope === 'Community') {
-      const foundCommunity = await CommunityClass.checkExist({ _id: community });
+      const foundCommunity = await CommunityClass.checkExist({
+        _id: community
+      });
 
       if (!foundCommunity) throw new NotFoundError('Community not found');
 
-      const isAdmin = foundCommunity.admins.some((admin) => admin.toString() === user);
+      const isAdmin = foundCommunity.admins.some(
+        admin => admin.toString() === user
+      );
 
       if (!isAdmin)
         await CommunityClass.changeToArrayCommunity({
@@ -411,13 +456,24 @@ class PostService {
 
     return result;
   }
-  static async getSavedPosts({ user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async getSavedPosts({
+    user_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     return await PostClass.getSavedPosts({ user_id, limit, skip, sort });
   }
 
-  static async searchPosts({ search, me_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
+  static async searchPosts({
+    search,
+    me_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
     const skip = (page - 1) * limit;
 
     const isFullSearch = true;
@@ -431,30 +487,54 @@ class PostService {
       sort
     });
   }
-  static async getNormalPostByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
-    const post_ids = await HashTagService.getNormalPostByHashtag({ name: '#' + hashtag });
+  static async getNormalPostByHashtag({
+    hashtag,
+    user_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
+    const post_ids = await HashTagService.getNormalPostByHashtag({
+      name: '#' + hashtag
+    });
 
     if (!post_ids) return [];
     const posts = await Promise.all(
-      post_ids.map(async (post_id) => {
+      post_ids.map(async post_id => {
         return await PostClass.findByID({ post_id, user: user_id });
       })
     );
     return posts;
   }
-  static async getCommunityPostByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
-    const post_ids = await HashTagService.getCommunityPostByHashtag({ name: '#' + hashtag });
+  static async getCommunityPostByHashtag({
+    hashtag,
+    user_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
+    const post_ids = await HashTagService.getCommunityPostByHashtag({
+      name: '#' + hashtag
+    });
 
     if (!post_ids) return [];
     const posts = await Promise.all(
-      post_ids.map(async (post_id) => {
+      post_ids.map(async post_id => {
         return await PostClass.findByID({ post_id, user: user_id });
       })
     );
     return posts;
   }
-  static async getQuestionByHashtag({ hashtag, user_id, limit = 10, page = 1, sort = { createdAt: -1 } }) {
-    const post_ids = await HashTagService.getQuestionByHashtag({ name: '#' + hashtag });
+  static async getQuestionByHashtag({
+    hashtag,
+    user_id,
+    limit = 10,
+    page = 1,
+    sort = { createdAt: -1 }
+  }) {
+    const post_ids = await HashTagService.getQuestionByHashtag({
+      name: '#' + hashtag
+    });
 
     // if (!post_ids) return [];
     // const posts = await Promise.all(
