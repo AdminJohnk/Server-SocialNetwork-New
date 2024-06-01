@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { checkOverLoad } from './src/helpers/check.connect.js';
 import { SenderMailServer } from './src/configs/mailTransport.js';
 import app from './src/app.js';
 
@@ -16,12 +15,6 @@ connectToRabbitMQ().then(({ channel, connection }) => {
   global.__channel = channel;
   global.__connection = connection;
 });
-
-// init redis
-// const RedisInit = require('./database/init.redis');
-// RedisInit.getInstanceRedis().then(redisClient => {
-//   global.__redisClient = redisClient;
-// });
 
 // checkOverLoad();
 

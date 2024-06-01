@@ -16,15 +16,7 @@ const avt_default = 'default_avatar.png';
 const pp_UserDefault = '_id name email user_image last_online';
 const pp_UserMore = '_id name email user_image last_online experiences';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image', 'last_online'];
-const se_UserAdmin = [
-  '_id',
-  'name',
-  'email',
-  'user_image',
-  'experiences',
-  'tags',
-  'post_number'
-];
+const se_UserAdmin = ['_id', 'name', 'email', 'user_image', 'experiences', 'tags', 'post_number'];
 
 const se_UserDefaultForPost = [
   '_id',
@@ -50,10 +42,8 @@ const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD } = process.env;
 const objectConnectRedis = {
   username: REDIS_USERNAME,
   password: REDIS_PASSWORD,
-  socket: {
-    host: REDIS_HOST,
-    port: REDIS_PORT
-  }
+  host: REDIS_HOST,
+  port: REDIS_PORT
 };
 
 export {

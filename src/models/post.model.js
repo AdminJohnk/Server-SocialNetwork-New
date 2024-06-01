@@ -633,7 +633,6 @@ class PostClass {
     return await PostModel.findById(post_id);
   }
   static async updatePost_admin({ post_id, visibility, post_attributes }) {
-    console.log('post_attributes:: ', post_attributes);
     return await PostModel.findByIdAndUpdate(
       post_id,
       { visibility, ...post_attributes },

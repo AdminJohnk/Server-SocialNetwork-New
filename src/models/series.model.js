@@ -1,9 +1,8 @@
 'use strict';
 
-import { model, mongo, Mongoose, Schema, Types } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
 import { FriendClass } from './friend.model.js';
-import { de } from '@faker-js/faker';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Series';
@@ -104,7 +103,8 @@ const SeriesSchema = new Schema(
         }
       ],
       default: []
-    }
+    },
+    view: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -118,14 +118,17 @@ SeriesSchema.index({ _id: 1, user: 1 }, { unique: true });
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async increaseView({ series_id }) {
+    return await SeriesModel.findOneAndUpdate({ _id: series_id }, { $inc: { view: 1 } }).lean();
+  }
   static async savePost({ series_id, post_id, user }) {
     // check if user already save, then add or remove from saves
     const series = await SeriesModel.findOne({
       _id: series_id,
       'posts._id': post_id
     }).lean();
-    const post = series.posts.find(post => post._id == post_id);
-    const saves = post.saves.map(save => save.toString());
+    const post = series.posts.find((post) => post._id == post_id);
+    const saves = post.saves.map((save) => save.toString());
     const index = saves.indexOf(user);
     if (index === -1) {
       // add save
@@ -140,13 +143,7 @@ class SeriesClass {
       { new: true }
     ).lean();
   }
-  static async likeReplyComment({
-    series_id,
-    post_id,
-    comment_id,
-    child_id,
-    user
-  }) {
+  static async likeReplyComment({ series_id, post_id, comment_id, child_id, user }) {
     // check if user already like, then add or remove from likes
     const series = await SeriesModel.findOne({
       _id: series_id,
@@ -154,10 +151,10 @@ class SeriesClass {
       'posts.comments._id': comment_id,
       'posts.comments.child._id': child_id
     }).lean();
-    const post = series.posts.find(post => post._id == post_id);
-    const comment = post.comments.find(comment => comment._id == comment_id);
-    const child = comment.child.find(child => child._id == child_id);
-    const likes = child.like.map(like => like.toString());
+    const post = series.posts.find((post) => post._id == post_id);
+    const comment = post.comments.find((comment) => comment._id == comment_id);
+    const child = comment.child.find((child) => child._id == child_id);
+    const likes = child.like.map((like) => like.toString());
     const index = likes.indexOf(user);
     if (index === -1) {
       // add like
@@ -184,9 +181,9 @@ class SeriesClass {
       'posts._id': post_id,
       'posts.comments._id': comment_id
     }).lean();
-    const post = series.posts.find(post => post._id == post_id);
-    const comment = post.comments.find(comment => comment._id == comment_id);
-    const likes = comment.like.map(like => like.toString());
+    const post = series.posts.find((post) => post._id == post_id);
+    const comment = post.comments.find((comment) => comment._id == comment_id);
+    const likes = comment.like.map((like) => like.toString());
     const index = likes.indexOf(user);
     if (index === -1) {
       // add like
@@ -211,8 +208,8 @@ class SeriesClass {
       _id: series_id,
       'posts._id': post_id
     }).lean();
-    const post = series.posts.find(post => post._id == post_id);
-    const likes = post.likes.map(like => like.toString());
+    const post = series.posts.find((post) => post._id == post_id);
+    const likes = post.likes.map((like) => like.toString());
     const index = likes.indexOf(user);
     if (index === -1) {
       // add like
@@ -227,12 +224,7 @@ class SeriesClass {
       { new: true }
     ).lean();
   }
-  static async deleteReplyComment({
-    series_id,
-    post_id,
-    comment_id,
-    child_id
-  }) {
+  static async deleteReplyComment({ series_id, post_id, comment_id, child_id }) {
     return await SeriesModel.findOneAndUpdate(
       {
         _id: series_id,
@@ -247,13 +239,7 @@ class SeriesClass {
       { arrayFilters: [{ 'outer._id': comment_id }], new: true }
     ).lean();
   }
-  static async updateReplyComment({
-    series_id,
-    post_id,
-    comment_id,
-    child_id,
-    content
-  }) {
+  static async updateReplyComment({ series_id, post_id, comment_id, child_id, content }) {
     return await SeriesModel.findOneAndUpdate(
       {
         _id: series_id,
@@ -330,13 +316,12 @@ class SeriesClass {
   static async deleteReview({ series_id, review_id }) {
     // update star and avg
     const series = await SeriesModel.findOne({ _id: series_id }).lean();
-    const review = series.reviews.find(review => review._id == review_id);
+    const review = series.reviews.find((review) => review._id == review_id);
     const rating_star = `rating.star_${review.rating}`;
     const rating_avg = 'rating.avg';
     const rating_star_number = series.rating[`star_${review.rating}`] - 1;
     const rating_avg_number =
-      (series.rating.avg * series.reviews.length - review.rating) /
-      (series.reviews.length - 1);
+      (series.rating.avg * series.reviews.length - review.rating) / (series.reviews.length - 1);
 
     await SeriesModel.findOneAndUpdate(
       { _id: series_id },
@@ -361,8 +346,7 @@ class SeriesClass {
     const rating_avg = 'rating.avg';
     const rating_star_number = series.rating[`star_${rating}`] + 1;
     const rating_avg_number =
-      (series.rating.avg * series.reviews.length + rating) /
-      (series.reviews.length + 1);
+      (series.rating.avg * series.reviews.length + rating) / (series.reviews.length + 1);
 
     await SeriesModel.findOneAndUpdate(
       { _id: series_id },
@@ -492,31 +476,35 @@ class SeriesClass {
       .populate('reviews.user', pp_UserDefault)
       .lean();
   }
-  static async getAllSeries({ user, limit, skip, sort, me_id }) {
+  static async getAllSeriesByUserID({ user, limit, skip, sort, me_id }) {
     const condition = { user };
     if (me_id !== user) {
-      const check = FriendClass.isFriend({ user: me_id, friend: user });
+      const check = await FriendClass.isFriend({ user: me_id, friend: user });
       if (!check) {
         condition.visibility = 'public';
       } else {
         condition.visibility = { $ne: 'private' };
       }
     }
-    return await SeriesModel.find(condition)
+    return await SeriesModel.find(condition).skip(skip).limit(limit).sort(sort).lean();
+  }
+  static async getAllSeries({ limit, skip, sort, me_id }) {
+    const listFriend = await FriendClass.getAllFriends({ user_id: me_id });
+
+    return await SeriesModel.find({
+      $or: [
+        { visibility: 'public' },
+        { visibility: 'friend', user: { $in: listFriend.map((friend) => friend._id.toString()) } },
+        { user: me_id }
+      ]
+    })
       .skip(skip)
       .limit(limit)
+      .populate('user', pp_UserMore)
       .sort(sort)
       .lean();
   }
-  static async createSeries({
-    user,
-    title,
-    description,
-    introduction,
-    level,
-    cover_image,
-    visibility
-  }) {
+  static async createSeries({ user, title, description, introduction, level, cover_image, visibility }) {
     return await SeriesModel.create({
       user,
       title,
