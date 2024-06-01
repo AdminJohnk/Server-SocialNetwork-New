@@ -5,6 +5,17 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class SeriesController {
+  // Increase View
+  static increaseView = async (req, res, next) => {
+    new OK({
+      message: 'Increase View Successfully',
+      metadata: await SeriesService.increaseView({
+        series_id: req.params.series_id,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  };
+
   // Save Post
   static savePost = async (req, res, next) => {
     new OK({
@@ -191,12 +202,23 @@ class SeriesController {
     }).send(res);
   };
 
+  // Get All Series By User ID
+  static getAllSeriesByUserID = async (req, res, next) => {
+    new OK({
+      message: 'Get All Series Successfully',
+      metadata: await SeriesService.getAllSeriesByUserID({
+        user: req.params.profile_id,
+        page: req.query.page,
+        me_id: req.user.userId
+      })
+    }).send(res);
+  };
+
   // Get All Series
   static getAllSeries = async (req, res, next) => {
     new OK({
       message: 'Get All Series Successfully',
       metadata: await SeriesService.getAllSeries({
-        user: req.params.profile_id,
         page: req.query.page,
         me_id: req.user.userId
       })

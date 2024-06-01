@@ -79,11 +79,11 @@ class MessageClass {
         conversation_id,
         createdAt: { $gt: deleteTime }
       })
+        .skip(skip)
+        .limit(limit)
         .populate('sender', pp_UserDefault)
         .populate('target', pp_UserDefault)
         .populate('seen', pp_UserDefault)
-        .skip(skip)
-        .limit(limit)
         .sort(sort)
         .lean();
 
@@ -101,11 +101,11 @@ class MessageClass {
       }
     } else {
       result = await MessageModel.find({ conversation_id })
+        .skip(skip)
+        .limit(limit)
         .populate('sender', pp_UserDefault)
         .populate('target', pp_UserDefault)
         .populate('seen', pp_UserDefault)
-        .skip(skip)
-        .limit(limit)
         .sort(sort)
         .lean();
     }
@@ -115,11 +115,11 @@ class MessageClass {
   static async getImageMessageByConversationId({ conversation_id, limit, page, sort, extend }) {
     const skip = (page - 1) * limit + extend;
     const result = await MessageModel.find({ conversation_id, images: { $gt: [] } })
+      .skip(skip)
+      .limit(limit)
       .populate('sender', pp_UserDefault)
       .populate('target', pp_UserDefault)
       .populate('seen', pp_UserDefault)
-      .skip(skip)
-      .limit(limit)
       .sort(sort)
       .lean();
 

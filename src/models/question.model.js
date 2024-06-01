@@ -1,8 +1,7 @@
 'use strict';
 
-import { model, mongo, Mongoose, Schema, Types } from 'mongoose';
+import { model, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
-import { FriendClass } from './friend.model.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Question';
@@ -111,9 +110,7 @@ class QuestionClass {
     }
 
     // vote_score
-    const answer = question.answers.find(
-      answer => answer._id.toString() === answer_id
-    );
+    const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
     const vote_score = answer.vote_up.length - answer.vote_down.length;
     await QuestionModel.findOneAndUpdate(
       { _id: question_id, 'answers._id': answer_id },
@@ -127,22 +124,15 @@ class QuestionClass {
       'answers._id': answer_id,
       'answers.comment._id': comment_id
     });
-    const answer = question.answers.find(
-      answer => answer._id.toString() === answer_id
-    );
-    const comment = answer.comment.find(
-      comment => comment._id.toString() === comment_id
-    );
+    const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
+    const comment = answer.comment.find((comment) => comment._id.toString() === comment_id);
 
     if (comment.vote.includes(user)) {
       await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         { $pull: { 'answers.$[answer].comment.$[comment].vote': user } },
         {
-          arrayFilters: [
-            { 'answer._id': answer_id },
-            { 'comment._id': comment_id }
-          ]
+          arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }]
         }
       ).lean();
     } else {
@@ -152,21 +142,13 @@ class QuestionClass {
           $push: { 'answers.$[answer].comment.$[comment].vote': user }
         },
         {
-          arrayFilters: [
-            { 'answer._id': answer_id },
-            { 'comment._id': comment_id }
-          ]
+          arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }]
         }
       ).lean();
     }
     return true;
   }
-  static async updateCommentAnswer({
-    question_id,
-    answer_id,
-    comment_id,
-    content
-  }) {
+  static async updateCommentAnswer({ question_id, answer_id, comment_id, content }) {
     return await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
@@ -175,10 +157,7 @@ class QuestionClass {
       },
       { $set: { 'answers.$[answer].comment.$[comment].content': content } },
       {
-        arrayFilters: [
-          { 'answer._id': answer_id },
-          { 'comment._id': comment_id }
-        ],
+        arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }],
         new: true
       },
       { new: true }
@@ -245,9 +224,7 @@ class QuestionClass {
       _id: question_id,
       'comment._id': comment_id
     });
-    const comment = question.comment.find(
-      comment => comment._id.toString() === comment_id
-    );
+    const comment = question.comment.find((comment) => comment._id.toString() === comment_id);
     if (comment.vote.includes(user)) {
       await QuestionModel.findOneAndUpdate(
         {
@@ -306,13 +283,7 @@ class QuestionClass {
   static async deleteQuestion(question_id) {
     return await QuestionModel.findByIdAndDelete(question_id);
   }
-  static async updateQuestion({
-    question_id,
-    title,
-    problem,
-    expect,
-    hashtags
-  }) {
+  static async updateQuestion({ question_id, title, problem, expect, hashtags }) {
     return await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { title, problem, expect, hashtags, update_at: Date.now() },
@@ -343,10 +314,7 @@ class QuestionClass {
 
     // vote_score
     const vote_score = question.vote_up.length - question.vote_down.length;
-    await QuestionModel.findOneAndUpdate(
-      { _id: question_id },
-      { $set: { vote_score } }
-    );
+    await QuestionModel.findOneAndUpdate({ _id: question_id }, { $set: { vote_score } });
     return true;
   }
   static async viewQuestion({ question_id }) {
