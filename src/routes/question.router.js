@@ -35,6 +35,60 @@ router.put('/view/:question_id', asyncHandler(QuestionController.viewQuestion));
 // Vote Question
 router.put('/vote/:question_id', asyncHandler(QuestionController.voteQuestion));
 
+// Update Comment Question
+router.put(
+  '/comment/update/:question_id',
+  asyncHandler(QuestionController.updateCommentQuestion)
+);
+
+// Comment Question
+router.put(
+  '/comment/:question_id',
+  asyncHandler(QuestionController.commentQuestion)
+);
+
+// Vote Comment Question
+router.put(
+  '/comment/vote/:question_id',
+  asyncHandler(QuestionController.voteCommentQuestion)
+);
+
+// Answer Question
+router.put(
+  '/answer/:question_id',
+  asyncHandler(QuestionController.answerQuestion)
+);
+
+// Update Answer
+router.put(
+  '/answer/update/:question_id',
+  asyncHandler(QuestionController.updateAnswer)
+);
+
+// Comment Answer
+router.put(
+  '/answer/comment/:question_id',
+  asyncHandler(QuestionController.commentAnswer)
+);
+
+// Update Comment Answer
+router.put(
+  '/answer/comment/update/:question_id',
+  asyncHandler(QuestionController.updateCommentAnswer)
+);
+
+// Vote Comment Answer
+router.put(
+  '/answer/comment/vote/:question_id',
+  asyncHandler(QuestionController.voteCommentAnswer)
+);
+
+// Vote Answer
+router.put(
+  '/answer/vote/:question_id',
+  asyncHandler(QuestionController.voteAnswer)
+);
+
 // =========================================================
 
 /// DELETE //
@@ -42,6 +96,24 @@ router.put('/vote/:question_id', asyncHandler(QuestionController.voteQuestion));
 router.delete(
   '/delete/:question_id',
   asyncHandler(QuestionController.deleteQuestion)
+);
+
+// Delete Comment Question
+router.delete(
+  '/comment/delete/:question_id',
+  asyncHandler(QuestionController.deleteCommentQuestion)
+);
+
+// Delete Comment Answer
+router.delete(
+  '/answer/comment/delete/:question_id',
+  asyncHandler(QuestionController.deleteCommentAnswer)
+);
+
+// Delete Answer
+router.delete(
+  '/answer/delete/:question_id',
+  asyncHandler(QuestionController.deleteAnswer)
 );
 
 // =========================================================

@@ -12,6 +12,221 @@ import { QuestionClass } from '../models/question.model.js';
 import { UserClass } from '../models/user.model.js';
 
 class QuestionService {
+  static voteAnswer = async ({ user, question_id, answer_id, type }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    return await QuestionClass.voteAnswer({
+      question_id,
+      answer_id,
+      type,
+      user
+    });
+  };
+  static voteCommentAnswer = async ({
+    user,
+    question_id,
+    answer_id,
+    comment_id
+  }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    const comment = answer.comment.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    return await QuestionClass.voteCommentAnswer({
+      question_id,
+      answer_id,
+      comment_id,
+      user
+    });
+  };
+  static updateCommentAnswer = async ({
+    user,
+    question_id,
+    answer_id,
+    comment_id,
+    content
+  }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    const comment = answer.comment.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    if (comment.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to update this comment');
+
+    return await QuestionClass.updateCommentAnswer({
+      question_id,
+      answer_id,
+      comment_id,
+      content
+    });
+  };
+  static commentAnswer = async ({ user, question_id, answer_id, content }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    if (!content) throw new BadRequestError('Content is required');
+
+    return await QuestionClass.commentAnswer({
+      question_id,
+      answer_id,
+      user,
+      content
+    });
+  };
+  static deleteAnswer = async ({ user, question_id, answer_id }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    if (answer.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this answer');
+
+    return await QuestionClass.deleteAnswer({ question_id, answer_id });
+  };
+  static updateAnswer = async ({ user, question_id, answer_id, content }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    if (answer.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to update this answer');
+
+    return await QuestionClass.updateAnswer({
+      question_id,
+      answer_id,
+      content
+    });
+  };
+  static deleteCommentAnswer = async ({
+    user,
+    question_id,
+    answer_id,
+    comment_id
+  }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const answer = foundQuestion.answers.find(
+      answer => answer._id == answer_id
+    );
+    if (!answer) throw new NotFoundError('Answer not found');
+
+    const comment = answer.comment.find(comment => comment._id == comment_id);
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    if (comment.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this comment');
+
+    return await QuestionClass.deleteCommentAnswer({
+      question_id,
+      answer_id,
+      comment_id
+    });
+  };
+  static answerQuestion = async ({ user, question_id, content }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    if (!content) throw new BadRequestError('Content is required');
+
+    return await QuestionClass.answerQuestion({ question_id, user, content });
+  };
+  static voteCommentQuestion = async ({ user, question_id, comment_id }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const comment = foundQuestion.comment.find(
+      comment => comment._id == comment_id
+    );
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    return await QuestionClass.voteCommentQuestion({
+      question_id,
+      comment_id,
+      user
+    });
+  };
+  static deleteCommentQuestion = async ({ user, question_id, comment_id }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const comment = foundQuestion.comment.find(
+      comment => comment._id == comment_id
+    );
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    if (comment.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this comment');
+
+    return await QuestionClass.deleteCommentQuestion({
+      question_id,
+      comment_id
+    });
+  };
+  static updateCommentQuestion = async ({
+    user,
+    question_id,
+    comment_id,
+    content
+  }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const comment = foundQuestion.comment.find(
+      comment => comment._id == comment_id
+    );
+    if (!comment) throw new NotFoundError('Comment not found');
+
+    if (comment.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to update this comment');
+
+    return await QuestionClass.updateCommentQuestion({
+      question_id,
+      comment_id,
+      content
+    });
+  };
+  static commentQuestion = async ({ question_id, user, content }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    if (!content) throw new BadRequestError('Content is required');
+
+    return await QuestionClass.commentQuestion({ question_id, user, content });
+  };
   static deleteQuestion = async ({ question_id, user }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
@@ -81,39 +296,6 @@ class QuestionService {
       hashtags
     });
   };
-
-  //   static updatePost = async ({
-  //     series_id,
-  //     id,
-  //     user,
-  //     title,
-  //     description,
-  //     content,
-  //     cover_image,
-  //     visibility,
-  //     read_time
-  //   }) => {
-  //     const series = await SeriesClass.checkExist({ _id: series_id, user });
-  //     if (!series) throw new ForbiddenError('Unauthorized to update this post');
-  //     const post = series.posts.find(post => post._id == id);
-  //     if (!post) throw new NotFoundError('Post not found');
-  //     if (!title) throw new BadRequestError('Title is required');
-  //     if (!description) throw new BadRequestError('Description is required');
-  //     if (!content) throw new BadRequestError('Content is required');
-  //     if (!cover_image) throw new BadRequestError('Images is required');
-  //     if (!visibility) throw new BadRequestError('Visibility is required');
-  //     if (!read_time) throw new BadRequestError('Read time is required');
-  //     return await SeriesClass.updatePost({
-  //       series_id,
-  //       id,
-  //       title,
-  //       description,
-  //       content,
-  //       cover_image,
-  //       visibility,
-  //       read_time
-  //     });
-  //   };
 }
 
 export default QuestionService;
