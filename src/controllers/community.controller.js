@@ -4,6 +4,14 @@ import CommunityService from '../services/community.service.js';
 import { OK, CREATED } from '../core/success.response.js';
 
 class CommunityController {
+
+  static getAllCommunities = async (req, res, next) => {
+    new OK({
+      message: 'Get All Communities Successfully',
+      metadata: await CommunityService.getAllCommunities()
+    }).send(res);
+  }
+
   static cedeCreator = async (req, res, next) => {
     new OK({
       message: 'Cede Creator Successfully',

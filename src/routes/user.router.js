@@ -9,6 +9,9 @@ import { authentication } from '../auth/authUtils.js';
 router.use(authentication);
 
 /// GET //
+// Get all users
+router.get('/all/:userId', asyncHandler(UserController.getAllUsers));
+
 // Find user by ID
 router.get('/find/:user_id', asyncHandler(UserController.findUserById));
 
