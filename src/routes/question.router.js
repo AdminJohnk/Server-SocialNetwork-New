@@ -14,6 +14,12 @@ router.get(
   asyncHandler(QuestionController.getQuestionById)
 );
 
+// Get All Questions
+router.get('/all', asyncHandler(QuestionController.getAllQuestions));
+
+// Get Number Question
+router.get('/number', asyncHandler(QuestionController.getNumberQuestions));
+
 // =========================================================
 
 /// POST //

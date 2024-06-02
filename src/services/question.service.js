@@ -13,6 +13,13 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static getNumberQuestions = async () => {
+    return await QuestionClass.getNumberQuestions();
+  };
+  static getAllQuestions = async ({ page, limit = 20 }) => {
+    const skip = (page - 1) * limit;
+    return await QuestionClass.getAllQuestions({ skip, limit });
+  };
   static saveQuestion = async ({ user, question_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
@@ -251,6 +258,7 @@ class QuestionService {
     title,
     problem,
     expect,
+    text,
     hashtags
   }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -267,6 +275,7 @@ class QuestionService {
       title,
       problem,
       expect,
+      text,
       hashtags
     });
 
@@ -301,6 +310,7 @@ class QuestionService {
     title,
     problem,
     expect,
+    text,
     hashtags
   }) => {
     if (!title) throw new BadRequestError('Title is required');
@@ -313,6 +323,7 @@ class QuestionService {
       title,
       problem,
       expect,
+      text,
       hashtags
     });
 

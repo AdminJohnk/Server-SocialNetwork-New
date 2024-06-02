@@ -2,6 +2,7 @@
 
 import { model, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
+import { text } from 'stream/consumers';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Question';
@@ -13,6 +14,7 @@ const QuestionSchema = new Schema(
     title: { type: String, required: true },
     problem: { type: String, required: true },
     expect: { type: String, required: true },
+    text: { type: String, required: true },
     hashtags: { type: [String], required: true },
     view: { type: Number, default: 0 },
     vote_up: { type: [ObjectId], ref: 'User', default: [] },
@@ -67,6 +69,38 @@ const QuestionSchema = new Schema(
 const QuestionModel = model(DOCUMENT_NAME, QuestionSchema);
 
 class QuestionClass {
+  static async getNumberQuestions() {
+    return await QuestionModel.countDocuments();
+  }
+  static async getAllQuestions({ limit, skip }) {
+    return await QuestionModel.aggregate([
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          problem: 1,
+          hashtags: 1,
+          text: 1,
+          user: { _id: 1, name: 1, user_image: 1 },
+          vote_score: 1,
+          view: 1,
+          answer_number: { $size: '$answers' },
+          createdAt: 1
+        }
+      }
+    ]);
+  }
   static async saveQuestion({ question_id, user }) {
     const isSaved = await QuestionModel.findOne({
       _id: question_id,
@@ -110,7 +144,9 @@ class QuestionClass {
     }
 
     // vote_score
-    const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
+    const answer = question.answers.find(
+      answer => answer._id.toString() === answer_id
+    );
     const vote_score = answer.vote_up.length - answer.vote_down.length;
     await QuestionModel.findOneAndUpdate(
       { _id: question_id, 'answers._id': answer_id },
@@ -124,15 +160,22 @@ class QuestionClass {
       'answers._id': answer_id,
       'answers.comment._id': comment_id
     });
-    const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
-    const comment = answer.comment.find((comment) => comment._id.toString() === comment_id);
+    const answer = question.answers.find(
+      answer => answer._id.toString() === answer_id
+    );
+    const comment = answer.comment.find(
+      comment => comment._id.toString() === comment_id
+    );
 
     if (comment.vote.includes(user)) {
       await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         { $pull: { 'answers.$[answer].comment.$[comment].vote': user } },
         {
-          arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }]
+          arrayFilters: [
+            { 'answer._id': answer_id },
+            { 'comment._id': comment_id }
+          ]
         }
       ).lean();
     } else {
@@ -142,13 +185,21 @@ class QuestionClass {
           $push: { 'answers.$[answer].comment.$[comment].vote': user }
         },
         {
-          arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }]
+          arrayFilters: [
+            { 'answer._id': answer_id },
+            { 'comment._id': comment_id }
+          ]
         }
       ).lean();
     }
     return true;
   }
-  static async updateCommentAnswer({ question_id, answer_id, comment_id, content }) {
+  static async updateCommentAnswer({
+    question_id,
+    answer_id,
+    comment_id,
+    content
+  }) {
     return await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
@@ -157,7 +208,10 @@ class QuestionClass {
       },
       { $set: { 'answers.$[answer].comment.$[comment].content': content } },
       {
-        arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }],
+        arrayFilters: [
+          { 'answer._id': answer_id },
+          { 'comment._id': comment_id }
+        ],
         new: true
       },
       { new: true }
@@ -224,7 +278,9 @@ class QuestionClass {
       _id: question_id,
       'comment._id': comment_id
     });
-    const comment = question.comment.find((comment) => comment._id.toString() === comment_id);
+    const comment = question.comment.find(
+      comment => comment._id.toString() === comment_id
+    );
     if (comment.vote.includes(user)) {
       await QuestionModel.findOneAndUpdate(
         {
@@ -283,10 +339,17 @@ class QuestionClass {
   static async deleteQuestion(question_id) {
     return await QuestionModel.findByIdAndDelete(question_id);
   }
-  static async updateQuestion({ question_id, title, problem, expect, hashtags }) {
+  static async updateQuestion({
+    question_id,
+    title,
+    problem,
+    expect,
+    text,
+    hashtags
+  }) {
     return await QuestionModel.findOneAndUpdate(
       { _id: question_id },
-      { title, problem, expect, hashtags, update_at: Date.now() },
+      { title, problem, expect, text, hashtags, update_at: Date.now() },
       { new: true }
     ).lean();
   }
@@ -314,7 +377,10 @@ class QuestionClass {
 
     // vote_score
     const vote_score = question.vote_up.length - question.vote_down.length;
-    await QuestionModel.findOneAndUpdate({ _id: question_id }, { $set: { vote_score } });
+    await QuestionModel.findOneAndUpdate(
+      { _id: question_id },
+      { $set: { vote_score } }
+    );
     return true;
   }
   static async viewQuestion({ question_id }) {
@@ -329,14 +395,23 @@ class QuestionClass {
       .populate('user', pp_UserMore)
       .populate('answers.user', pp_UserMore)
       .populate('comment.user', '_id name')
+      .populate('answers.comment.user', '_id name')
       .lean();
   }
-  static async createQuestion({ user, title, problem, expect, hashtags }) {
+  static async createQuestion({
+    user,
+    title,
+    problem,
+    expect,
+    text,
+    hashtags
+  }) {
     return await QuestionModel.create({
       user,
       title,
       problem,
       expect,
+      text,
       hashtags
     });
   }
