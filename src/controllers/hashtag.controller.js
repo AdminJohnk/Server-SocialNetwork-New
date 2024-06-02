@@ -1,7 +1,7 @@
 'use strict';
 
-import { OK } from "../core/success.response.js";
-import HashTagService from "../services/hashtag.service.js";
+import { OK } from '../core/success.response.js';
+import HashTagService from '../services/hashtag.service.js';
 
 class HashTagController {
   static getAllHashtags = async (req, res, next) => {
@@ -11,7 +11,7 @@ class HashTagController {
         ...req.query
       })
     }).send(res);
-  }
+  };
 }
 
 export default HashTagController;

@@ -8,6 +8,21 @@ import HashTagController from '../controllers/hashtag.controller.js';
 // Authentication
 router.use(authentication);
 
+/// GET //
+// Get All Hashtags
 router.get('/all', asyncHandler(HashTagController.getAllHashtags));
+
+
+// =========================================================
+
+/// POST //
+
+// =========================================================
+
+/// PUT //
+
+// =========================================================
+
+/// DELETE //
 
 export default router;
