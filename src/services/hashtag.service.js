@@ -6,6 +6,10 @@ import { PostClass } from '../models/post.model.js';
 import { QuestionClass } from '../models/question.model.js';
 
 class HashTagService {
+  static async getAllHashTagsQuestion({ page, limit = 24 }) {
+    const skip = (page - 1) * 10;
+    return await HashTagsClass.getAllHashTagsQuestion({ skip, limit });
+  }
   static async getAllHashTags({ sort = { createdAt: -1 } }) {
     return await HashTagsClass.getAllHashTags({ sort });
   }

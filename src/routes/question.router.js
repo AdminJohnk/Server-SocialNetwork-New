@@ -17,6 +17,9 @@ router.get(
 // Get All Questions
 router.get('/all', asyncHandler(QuestionController.getAllQuestions));
 
+// Get All Tags
+router.get('/tags/all', asyncHandler(QuestionController.getAllTags));
+
 // Get Number Question
 router.get('/number', asyncHandler(QuestionController.getNumberQuestions));
 

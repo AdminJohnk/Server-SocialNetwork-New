@@ -69,6 +69,9 @@ const QuestionSchema = new Schema(
 const QuestionModel = model(DOCUMENT_NAME, QuestionSchema);
 
 class QuestionClass {
+  static async getAllTags() {
+    
+  }
   static async getNumberQuestions() {
     return await QuestionModel.countDocuments();
   }
@@ -417,6 +420,9 @@ class QuestionClass {
   }
   static async checkExist(select) {
     return await QuestionModel.findOne(select).lean();
+  }
+  static async findConditionQuestions(select) {
+    return await QuestionModel.find(select).lean();
   }
 }
 

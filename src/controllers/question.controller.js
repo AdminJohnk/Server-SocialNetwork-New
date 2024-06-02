@@ -5,6 +5,13 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Get All Tags
+  static getAllTags = async (req, res, next) => {
+    new OK({
+      message: 'Get All Tags Successfully',
+      metadata: await QuestionService.getAllTags({ page: req.query.page })
+    }).send(res);
+  };
   // Get Number Questions
   static getNumberQuestions = async (req, res, next) => {
     new OK({

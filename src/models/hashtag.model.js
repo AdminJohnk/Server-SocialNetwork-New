@@ -31,6 +31,44 @@ const HashTagsSchema = new Schema(
 const HashTagsModel = model(DOCUMENT_NAME, HashTagsSchema);
 
 class HashTagsClass {
+  static async getAllHashTagsQuestion({ skip, limit }) {
+    // get name, question_number if question_number > 0
+    return await HashTagsModel.aggregate([
+      {
+        $project: {
+          name: 1,
+          questions: 1,
+          question_number: { $size: '$questions' }
+        }
+      },
+      { $match: { question_number: { $gt: 0 } } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $lookup: {
+          from: 'questions',
+          localField: 'questions',
+          foreignField: '_id',
+          as: 'questions'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          questions: {
+            $map: {
+              input: '$questions',
+              as: 'question',
+              in: {
+                _id: '$$question._id',
+                createdAt: '$$question.createdAt'
+              }
+            }
+          }
+        }
+      }
+    ]);
+  }
   static async getAllHashTags({ sort }) {
     const hashtags = await HashTagsModel.find().sort(sort);
     return hashtags.sort((a, b) => b.posts.length - a.posts.length);

@@ -14,6 +14,12 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static getAllTags = async ({ page }) => {
+    const HashTags = await HashTagService.getAllHashTagsQuestion({
+      page
+    });
+    return HashTags
+  };
   static getNumberQuestions = async () => {
     return await QuestionClass.getNumberQuestions();
   };
