@@ -501,7 +501,7 @@ class SeriesClass {
       .skip(skip)
       .limit(limit)
       .populate('user', pp_UserMore)
-      .sort(sort)
+      .sort({ view: -1, ...sort })
       .lean();
   }
   static async createSeries({ user, title, description, introduction, level, cover_image, visibility }) {

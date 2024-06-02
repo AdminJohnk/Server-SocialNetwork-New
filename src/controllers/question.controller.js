@@ -201,7 +201,8 @@ class QuestionController {
     new OK({
       message: 'View Question Successfully',
       metadata: await QuestionService.viewQuestion({
-        question_id: req.params.question_id
+        question_id: req.params.question_id,
+        me_id: req.user.userId
       })
     }).send(res);
   };

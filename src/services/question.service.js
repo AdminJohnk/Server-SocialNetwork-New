@@ -7,6 +7,7 @@ import {
   NotFoundError,
   ForbiddenError
 } from '../core/error.response.js';
+import { redis } from '../database/init.redis.js';
 
 import { QuestionClass } from '../models/question.model.js';
 import { UserClass } from '../models/user.model.js';
@@ -32,9 +33,7 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
     return await QuestionClass.voteAnswer({
@@ -44,21 +43,14 @@ class QuestionService {
       user
     });
   };
-  static voteCommentAnswer = async ({
-    user,
-    question_id,
-    answer_id,
-    comment_id
-  }) => {
+  static voteCommentAnswer = async ({ user, question_id, answer_id, comment_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    const comment = answer.comment.find(comment => comment._id == comment_id);
+    const comment = answer.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
     return await QuestionClass.voteCommentAnswer({
@@ -68,26 +60,17 @@ class QuestionService {
       user
     });
   };
-  static updateCommentAnswer = async ({
-    user,
-    question_id,
-    answer_id,
-    comment_id,
-    content
-  }) => {
+  static updateCommentAnswer = async ({ user, question_id, answer_id, comment_id, content }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    const comment = answer.comment.find(comment => comment._id == comment_id);
+    const comment = answer.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to update this comment');
+    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to update this comment');
 
     return await QuestionClass.updateCommentAnswer({
       question_id,
@@ -100,9 +83,7 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
     if (!content) throw new BadRequestError('Content is required');
@@ -118,13 +99,10 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    if (answer.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to delete this answer');
+    if (answer.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this answer');
 
     return await QuestionClass.deleteAnswer({ question_id, answer_id });
   };
@@ -132,13 +110,10 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    if (answer.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to update this answer');
+    if (answer.user.toString() !== user) throw new ForbiddenError('Unauthorized to update this answer');
 
     return await QuestionClass.updateAnswer({
       question_id,
@@ -146,25 +121,17 @@ class QuestionService {
       content
     });
   };
-  static deleteCommentAnswer = async ({
-    user,
-    question_id,
-    answer_id,
-    comment_id
-  }) => {
+  static deleteCommentAnswer = async ({ user, question_id, answer_id, comment_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const answer = foundQuestion.answers.find(
-      answer => answer._id == answer_id
-    );
+    const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    const comment = answer.comment.find(comment => comment._id == comment_id);
+    const comment = answer.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to delete this comment');
+    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this comment');
 
     return await QuestionClass.deleteCommentAnswer({
       question_id,
@@ -184,9 +151,7 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const comment = foundQuestion.comment.find(
-      comment => comment._id == comment_id
-    );
+    const comment = foundQuestion.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
     return await QuestionClass.voteCommentQuestion({
@@ -199,35 +164,24 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const comment = foundQuestion.comment.find(
-      comment => comment._id == comment_id
-    );
+    const comment = foundQuestion.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to delete this comment');
+    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this comment');
 
     return await QuestionClass.deleteCommentQuestion({
       question_id,
       comment_id
     });
   };
-  static updateCommentQuestion = async ({
-    user,
-    question_id,
-    comment_id,
-    content
-  }) => {
+  static updateCommentQuestion = async ({ user, question_id, comment_id, content }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    const comment = foundQuestion.comment.find(
-      comment => comment._id == comment_id
-    );
+    const comment = foundQuestion.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to update this comment');
+    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to update this comment');
 
     return await QuestionClass.updateCommentQuestion({
       question_id,
@@ -252,15 +206,7 @@ class QuestionService {
 
     return await QuestionClass.deleteQuestion(question_id);
   };
-  static updateQuestion = async ({
-    question_id,
-    user,
-    title,
-    problem,
-    expect,
-    text,
-    hashtags
-  }) => {
+  static updateQuestion = async ({ question_id, user, title, problem, expect, text, hashtags }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
@@ -268,7 +214,7 @@ class QuestionService {
       throw new ForbiddenError('Unauthorized to update this question');
 
     const oldHashTag = foundQuestion.hashtags;
-    const rmHashtags = oldHashTag.filter(oldTag => !hashtags.includes(oldTag));
+    const rmHashtags = oldHashTag.filter((oldTag) => !hashtags.includes(oldTag));
 
     const question = await QuestionClass.updateQuestion({
       question_id,
@@ -293,9 +239,14 @@ class QuestionService {
 
     return await QuestionClass.voteQuestion({ question_id, type, user });
   };
-  static viewQuestion = async ({ question_id }) => {
+  static viewQuestion = async ({ question_id, me_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    const isViewed = await redis.get(`question:${question_id}:user:${me_id}:view`);
+    if (isViewed) return true;
+
+    await redis.setex(`question:${question_id}:user:${me_id}:view`, 5 * 60, 1);
 
     await QuestionClass.viewQuestion({ question_id });
     return true;
@@ -305,14 +256,7 @@ class QuestionService {
     if (!question) throw new NotFoundError('Question not found');
     return question;
   };
-  static createQuestion = async ({
-    user,
-    title,
-    problem,
-    expect,
-    text,
-    hashtags
-  }) => {
+  static createQuestion = async ({ user, title, problem, expect, text, hashtags }) => {
     if (!title) throw new BadRequestError('Title is required');
     if (!problem) throw new BadRequestError('Problem is required');
     if (!expect) throw new BadRequestError('Expect is required');
