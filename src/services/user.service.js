@@ -19,6 +19,11 @@ import { Notification } from '../utils/notificationType.js';
 const { LIKEPOST_001, SENDFRIENDREQUEST_001, ACCEPTFRIENDREQUEST_001 } = Notification;
 
 class UserService {
+
+  static getAllUsers = async ({ me_id }) => {
+    return await UserClass.getAllUsers({ me_id });
+  }
+
   static checkExistEmail = async ({ email }) => {
     const check = await UserClass.checkExist({
       email

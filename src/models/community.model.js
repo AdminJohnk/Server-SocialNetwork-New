@@ -86,6 +86,13 @@ const CommunitySchema = new Schema(
 const CommunityModel = model(DOCUMENT_NAME, CommunitySchema);
 
 class CommunityClass {
+  static async getAllCommunities() {
+    return await CommunityModel.find()
+      .select('+admins +waitlist_users +waitlist_posts')
+      .populate('members')
+      .populate('waitlist_users')
+      .lean();
+  }
   static async cedeCreator({ community_id, new_creator_id }) {
     return await CommunityModel.findByIdAndUpdate(
       community_id,
@@ -209,7 +216,7 @@ class CommunityClass {
       { new: true }
     ).lean();
   }
-  
+
   // payload: { name,description, about, tags, members, admins, rules }
   static async createCommunity(payload) {
     return await CommunityModel.create(payload);

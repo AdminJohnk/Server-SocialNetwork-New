@@ -17,6 +17,11 @@ import { PostClass } from '../models/post.model.js';
 import { removeFalsyFields, updateNestedObjectParser } from '../utils/functions.js';
 
 class CommunityService {
+
+  static async getAllCommunities() {
+    return await CommunityClass.getAllCommunities();
+  }
+
   static async cedeCreator({ community_id, me_id, new_creator_id }) {
     const community = await CommunityClass.checkExist({ _id: community_id });
     if (!community) throw new NotFoundError('Community not found');
