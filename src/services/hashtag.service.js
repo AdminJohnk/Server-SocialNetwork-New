@@ -1,11 +1,11 @@
 'use strict';
 
+import { NotFoundError } from '../core/error.response.js';
 import { HashTagsClass } from '../models/hashtag.model.js';
 import { PostClass } from '../models/post.model.js';
-import PostService from './post.service.js';
+import { QuestionClass } from '../models/question.model.js';
 
 class HashTagService {
-
   static async getAllHashTags({ sort = { createdAt: -1 } }) {
     return await HashTagsClass.getAllHashTags({ sort });
   }
@@ -18,51 +18,66 @@ class HashTagService {
   static async getQuestionByHashtag({ name }) {
     return await HashTagsClass.getQuestionByHashtag({ name });
   }
-  static async createOrUpdateHashTag({ rmHashtags = [], post_id, scope = 'Normal' }) {
-    const foundPost = await PostClass.checkExist({ _id: post_id });
-    if (!foundPost) return false;
-    const hashTags = foundPost.post_attributes.hashtags || [];
+  static async createOrUpdateHashTag({
+    rmHashtags = [],
+    post_id,
+    question_id,
+    scope = 'Normal'
+  }) {
+    let hashTags;
 
-    if (rmHashtags.length !== 0) {
+    if (scope === 'Normal' || scope === 'Community') {
+      const foundPost = await PostClass.checkExist({ _id: post_id });
+      if (!foundPost) throw new NotFoundError('Post not found');
+      hashTags = foundPost.post_attributes.hashtags || [];
+    } else if (scope === 'Question') {
+      const foundQuestion = await QuestionClass.checkExist({
+        _id: question_id
+      });
+      if (!foundQuestion) throw new NotFoundError('Question not found');
+      hashTags = foundQuestion.hashtags || [];
+    }
+
+    if (rmHashtags.length > 0) {
       for (let name of rmHashtags) {
-        await HashTagsClass.createOrUpdateHashTag({ name, post_id, is_removed: true, scope });
+        await HashTagsClass.createOrUpdateHashTag({
+          name,
+          post_id,
+          is_removed: true,
+          question_id,
+          scope
+        });
       }
     }
 
-    if (hashTags.length !== 0) {
+    if (hashTags.length > 0) {
       for (let name of hashTags) {
-        await HashTagsClass.createOrUpdateHashTag({ name, post_id, scope });
+        await HashTagsClass.createOrUpdateHashTag({
+          name,
+          post_id,
+          question_id,
+          scope
+        });
       }
     }
 
     return true;
   }
-  static async deletePostHashTags({ post_id, scope = 'Normal' }) {
-    const foundPost = await PostClass.checkExist({ _id: post_id });
-    if (!foundPost) return false;
+  static async deletePostHashTags({ post_id, question_id, scope = 'Normal' }) {
+    let hashTags;
 
-    const hashTags = foundPost.post_attributes.hashtags || [];
-    for (let name of hashTags) {
-      await HashTagsClass.deletePostHashTags({ name, post_id, scope });
+    if (scope === 'Normal' || scope === 'Community') {
+      const foundPost = await PostClass.checkExist({ _id: post_id });
+      if (!foundPost) throw new NotFoundError('Post not found');
+      hashTags = foundPost.post_attributes.hashtags || [];
+    } else if (scope === 'Question') {
+      const foundQuestion = await QuestionClass.checkExist({
+        _id: question_id
+      });
+      if (!foundQuestion) throw new NotFoundError('Question not found');
+      hashTags = foundQuestion.hashtags || [];
     }
-    return true;
-  }
-
-  static async deleteSharePostHashTags({ user, post, shared_post }) {
-    // Kiểm tra xem đã share bài viết này chưa
-    const foundPost = await PostClass.checkExist({
-      _id: shared_post,
-      'post_attributes.user': user,
-      'post_attributes.post': post,
-      type: 'Share'
-    });
-
-    if (!foundPost) return false;
-    const hashTags = foundPost.post_attributes.hashtags || [];
-    for (let name of hashTags) {
-      await HashTagsClass.deletePostHashTags({ name, post_id: shared_post });
-    }
-    return true;
+    return await HashTagsClass.deletePostHashTags({ post_id, hashTags, scope });
   }
 }
 

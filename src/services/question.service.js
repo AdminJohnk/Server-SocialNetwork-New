@@ -10,8 +10,24 @@ import {
 
 import { QuestionClass } from '../models/question.model.js';
 import { UserClass } from '../models/user.model.js';
+import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static getNumberQuestions = async () => {
+    return await QuestionClass.getNumberQuestions();
+  };
+  static getAllQuestions = async ({ page, limit = 20 }) => {
+    const skip = (page - 1) * limit;
+    return await QuestionClass.getAllQuestions({ skip, limit });
+  };
+  static saveQuestion = async ({ user, question_id }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    await UserClass.saveQuestion({ user, question_id });
+
+    return await QuestionClass.saveQuestion({ user, question_id });
+  };
   static voteAnswer = async ({ user, question_id, answer_id, type }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
@@ -242,6 +258,7 @@ class QuestionService {
     title,
     problem,
     expect,
+    text,
     hashtags
   }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -250,13 +267,25 @@ class QuestionService {
     if (foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to update this question');
 
-    return await QuestionClass.updateQuestion({
+    const oldHashTag = foundQuestion.hashtags;
+    const rmHashtags = oldHashTag.filter(oldTag => !hashtags.includes(oldTag));
+
+    const question = await QuestionClass.updateQuestion({
       question_id,
       title,
       problem,
       expect,
+      text,
       hashtags
     });
+
+    HashTagService.createOrUpdateHashTag({
+      rmHashtags,
+      question_id,
+      scope: 'Question'
+    });
+
+    return question;
   };
   static voteQuestion = async ({ question_id, type, user }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -281,6 +310,7 @@ class QuestionService {
     title,
     problem,
     expect,
+    text,
     hashtags
   }) => {
     if (!title) throw new BadRequestError('Title is required');
@@ -288,13 +318,21 @@ class QuestionService {
     if (!expect) throw new BadRequestError('Expect is required');
     if (!hashtags) throw new BadRequestError('Hashtags is required');
 
-    return await QuestionClass.createQuestion({
+    const result = await QuestionClass.createQuestion({
       user,
       title,
       problem,
       expect,
+      text,
       hashtags
     });
+
+    HashTagService.createOrUpdateHashTag({
+      question_id: result._id.toString(),
+      scope: 'Question'
+    });
+
+    return result;
   };
 }
 

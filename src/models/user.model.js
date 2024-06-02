@@ -77,6 +77,10 @@ const UserSchema = new Schema(
       type: [{ type: ObjectId, ref: 'Post' }],
       default: []
     },
+    favorite_questions: {
+      type: [{ type: ObjectId, ref: 'Question' }],
+      default: []
+    },
     communities: {
       type: [{ type: ObjectId, ref: 'Community' }],
       default: []
@@ -134,6 +138,22 @@ const getFirstElement = attribute => {
 };
 
 class UserClass {
+  static async saveQuestion({ user, question_id }) {
+    const isSaved = await UserModel.findOne({
+      _id: user,
+      favorite_questions: question_id
+    });
+
+    const operator = isSaved ? '$pull' : '$addToSet';
+
+    return await UserModel.findByIdAndUpdate(
+      user,
+      {
+        [operator]: { favorite_questions: question_id }
+      },
+      { new: true }
+    ).lean();
+  }
   static async savePostSeries({ user_id, series_id, post_id }) {
     const isExist = await UserModel.findOne({
       _id: user_id,
@@ -148,7 +168,7 @@ class UserClass {
         [operator]: { post_series: { series_id, post_id } }
       },
       { new: true }
-    );
+    ).lean();
   }
   static async SearchUserInCommunity({ community_id, key_search }) {
     const regexSearch = new RegExp(key_search, 'i');
@@ -238,7 +258,7 @@ class UserClass {
 
     await UserModel.findByIdAndUpdate(user, {
       [operant]: { favorites: post }
-    });
+    }).lean();
 
     return {
       numSave

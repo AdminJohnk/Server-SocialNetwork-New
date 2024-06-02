@@ -14,6 +14,12 @@ router.get(
   asyncHandler(QuestionController.getQuestionById)
 );
 
+// Get All Questions
+router.get('/all', asyncHandler(QuestionController.getAllQuestions));
+
+// Get Number Question
+router.get('/number', asyncHandler(QuestionController.getNumberQuestions));
+
 // =========================================================
 
 /// POST //
@@ -88,6 +94,9 @@ router.put(
   '/answer/vote/:question_id',
   asyncHandler(QuestionController.voteAnswer)
 );
+
+// Save Question
+router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
 
 // =========================================================
 

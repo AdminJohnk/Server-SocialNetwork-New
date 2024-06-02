@@ -5,6 +5,32 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Get Number Questions
+  static getNumberQuestions = async (req, res, next) => {
+    new OK({
+      message: 'Get Number Questions Successfully',
+      metadata: await QuestionService.getNumberQuestions()
+    }).send(res);
+  };
+  // Get All Questions
+  static getAllQuestions = async (req, res, next) => {
+    new OK({
+      message: 'Get All Questions Successfully',
+      metadata: await QuestionService.getAllQuestions({
+        page: req.query.page
+      })
+    }).send(res);
+  };
+  // Save Question
+  static saveQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Save Question Successfully',
+      metadata: await QuestionService.saveQuestion({
+        user: req.user.userId,
+        question_id: req.params.question_id
+      })
+    }).send(res);
+  };
   // Vote Answer
   static voteAnswer = async (req, res, next) => {
     new OK({
@@ -15,7 +41,7 @@ class QuestionController {
         ...req.body
       })
     }).send(res);
-  }
+  };
   // Vote Comment Answer
   static voteCommentAnswer = async (req, res, next) => {
     new OK({
