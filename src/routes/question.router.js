@@ -23,6 +23,9 @@ router.get('/tags/all', asyncHandler(QuestionController.getAllTags));
 // Get Number Question
 router.get('/number', asyncHandler(QuestionController.getNumberQuestions));
 
+// Get Number Tag Question
+router.get('/tags/number', asyncHandler(QuestionController.getNumberTagsQuestion));
+
 // =========================================================
 
 /// POST //

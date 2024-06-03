@@ -31,17 +31,12 @@ const HashTagsSchema = new Schema(
 const HashTagsModel = model(DOCUMENT_NAME, HashTagsSchema);
 
 class HashTagsClass {
-  static async getAllHashTagsQuestion({ skip, limit }) {
-    // get name, question_number if question_number > 0
+  static async getNumberTagsQuestion() {
+    return await HashTagsModel.countDocuments({ questions: { $ne: [] } });
+  }
+  static async getAllHashTagsQuestion({ skip, limit, sort }) {
     return await HashTagsModel.aggregate([
-      {
-        $project: {
-          name: 1,
-          questions: 1,
-          question_number: { $size: '$questions' }
-        }
-      },
-      { $match: { question_number: { $gt: 0 } } },
+      { $match: { questions: { $ne: [] } } }, // Lọc trước khi lookup
       { $skip: skip },
       { $limit: limit },
       {
@@ -53,20 +48,51 @@ class HashTagsClass {
         }
       },
       {
-        $project: {
-          name: 1,
-          questions: {
-            $map: {
-              input: '$questions',
-              as: 'question',
+        $addFields: {
+          counts: {
+            $reduce: {
+              // Sử dụng $reduce để tính toán số lượng câu hỏi
+              input: '$questions.createdAt',
+              initialValue: { today: 0, thisWeek: 0 },
               in: {
-                _id: '$$question._id',
-                createdAt: '$$question.createdAt'
+                $cond: [
+                  {
+                    $gte: ['$$this', new Date(new Date() - 24 * 60 * 60 * 1000)]
+                  },
+                  {
+                    today: { $add: ['$$value.today', 1] },
+                    thisWeek: { $add: ['$$value.thisWeek', 1] }
+                  },
+                  {
+                    $cond: [
+                      {
+                        $gte: [
+                          '$$this',
+                          new Date(new Date() - 7 * 24 * 60 * 60 * 1000)
+                        ]
+                      },
+                      {
+                        today: '$$value.today',
+                        thisWeek: { $add: ['$$value.thisWeek', 1] }
+                      },
+                      '$$value' // Không thay đổi nếu createdAt không thuộc khoảng thời gian
+                    ]
+                  }
+                ]
               }
             }
           }
         }
-      }
+      },
+      {
+        $project: {
+          name: 1,
+          question_number: { $size: '$questions' }, // Tính question_number sau khi lookup
+          number_today: '$counts.today',
+          number_this_week: '$counts.thisWeek'
+        }
+      },
+      { $sort: sort }
     ]);
   }
   static async getAllHashTags({ sort }) {

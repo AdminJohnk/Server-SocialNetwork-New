@@ -5,11 +5,21 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Get Number Tags Questions
+  static getNumberTagsQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Get Number Tags Questions Successfully',
+      metadata: await QuestionService.getNumberTagsQuestion()
+    }).send(res);
+  };
   // Get All Tags
   static getAllTags = async (req, res, next) => {
     new OK({
       message: 'Get All Tags Successfully',
-      metadata: await QuestionService.getAllTags({ page: req.query.page })
+      metadata: await QuestionService.getAllTags({
+        page: req.query.page,
+        sort: req.query.sort
+      })
     }).send(res);
   };
   // Get Number Questions
