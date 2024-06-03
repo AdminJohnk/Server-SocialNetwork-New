@@ -5,6 +5,16 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class UserController {
+
+  static getAllUsers = async (req, res, next) => {
+    new OK({
+      message: 'Get All Users Successfully',
+      metadata: await UserService.getAllUsers({
+        me_id: req.params.userId
+      })
+    }).send(res);
+  }
+
   static checkExistEmail = async (req, res, next) => {
     new OK({
       message: 'Check Exist Email Successfully',

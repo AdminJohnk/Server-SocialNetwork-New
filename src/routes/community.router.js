@@ -9,6 +9,10 @@ import { authentication } from '../auth/authUtils.js';
 router.use(authentication);
 
 /// GET //
+
+// Get all communities
+router.get('/', asyncHandler(CommunityController.getAllCommunities));
+
 // Get communities by user_id
 router.get('/user/:user_id', asyncHandler(CommunityController.getCommunitiesByUserID));
 

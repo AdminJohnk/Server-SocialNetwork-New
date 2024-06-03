@@ -8,12 +8,16 @@ import { UserClass } from '../models/user.model.js';
 
 class SeriesService {
   static increaseView = async ({ series_id, me_id }) => {
-    const isView = await redis.get(`series:${series_id}:user:${me_id}:view`);
-    if (isView) return true;
+    const series = await SeriesClass.checkExist({ _id: series_id });
+    if (!series) throw new NotFoundError('Series not found');
 
-    redis.setex(`series:${series_id}:user:${me_id}:view`, 30 * 60, 1);
+    const isViewed = await redis.get(`series:${series_id}:user:${me_id}:view`);
+    if (isViewed) return true;
 
-    return await SeriesClass.increaseView({ series_id });
+    await redis.setex(`series:${series_id}:user:${me_id}:view`, 5 * 60, 1);
+
+    await SeriesClass.increaseView({ series_id });
+    return true;
   };
   static savePost = async ({ series_id, post_id, user }) => {
     const series = await SeriesClass.checkExist({ _id: series_id });

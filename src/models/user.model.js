@@ -154,6 +154,9 @@ class UserClass {
       { new: true }
     ).lean();
   }
+  static async getAllUsers({ me_id }) {
+    return await UserModel.find({ _id: { $ne: me_id } }).lean();
+  }
   static async savePostSeries({ user_id, series_id, post_id }) {
     const isExist = await UserModel.findOne({
       _id: user_id,

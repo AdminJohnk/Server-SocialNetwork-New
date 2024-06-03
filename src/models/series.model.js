@@ -16,7 +16,7 @@ const SeriesSchema = new Schema(
       required: true
     },
     title: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String, default: '' },
     introduction: { type: String, required: true },
     visibility: {
       type: String,
@@ -501,7 +501,7 @@ class SeriesClass {
       .skip(skip)
       .limit(limit)
       .populate('user', pp_UserMore)
-      .sort(sort)
+      .sort({ view: -1, ...sort })
       .lean();
   }
   static async createSeries({ user, title, description, introduction, level, cover_image, visibility }) {
