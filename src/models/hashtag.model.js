@@ -36,9 +36,7 @@ class HashTagsClass {
   }
   static async getAllHashTagsQuestion({ skip, limit, sort }) {
     return await HashTagsModel.aggregate([
-      { $match: { questions: { $ne: [] } } }, // Lọc trước khi lookup
-      { $skip: skip },
-      { $limit: limit },
+      { $match: { questions: { $ne: [] } } },
       {
         $lookup: {
           from: 'questions',
@@ -49,9 +47,23 @@ class HashTagsClass {
       },
       {
         $addFields: {
+          question_number: { $size: '$questions' }
+        }
+      },
+      {
+        $sort:
+          sort === 'popular'
+            ? { question_number: -1 }
+            : sort === 'name'
+            ? { name: 1 }
+            : { createdAt: -1 }
+      },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $addFields: {
           counts: {
             $reduce: {
-              // Sử dụng $reduce để tính toán số lượng câu hỏi
               input: '$questions.createdAt',
               initialValue: { today: 0, thisWeek: 0 },
               in: {
@@ -66,16 +78,13 @@ class HashTagsClass {
                   {
                     $cond: [
                       {
-                        $gte: [
-                          '$$this',
-                          new Date(new Date() - 7 * 24 * 60 * 60 * 1000)
-                        ]
+                        $gte: ['$$this', new Date(new Date() - 7 * 24 * 60 * 60 * 1000)]
                       },
                       {
                         today: '$$value.today',
                         thisWeek: { $add: ['$$value.thisWeek', 1] }
                       },
-                      '$$value' // Không thay đổi nếu createdAt không thuộc khoảng thời gian
+                      '$$value'
                     ]
                   }
                 ]
@@ -87,12 +96,11 @@ class HashTagsClass {
       {
         $project: {
           name: 1,
-          question_number: { $size: '$questions' }, // Tính question_number sau khi lookup
+          question_number: 1, // Tính question_number sau khi lookup
           number_today: '$counts.today',
           number_this_week: '$counts.thisWeek'
         }
-      },
-      { $sort: sort }
+      }
     ]);
   }
   static async getAllHashTags({ sort }) {
@@ -108,16 +116,10 @@ class HashTagsClass {
   static async getQuestionByHashtag({ name }) {
     return await HashTagsModel.findOne({ name }).select('questions').lean();
   }
-  static async createOrUpdateHashTag({
-    name,
-    post_id,
-    question_id,
-    is_removed = false,
-    scope
-  }) {
+  static async createOrUpdateHashTag({ name, post_id, question_id, is_removed = false, scope }) {
     const foundHashTag = await HashTagsModel.findOne({ name });
 
-    const removeHashTag = async foundHashTag => {
+    const removeHashTag = async (foundHashTag) => {
       if (
         foundHashTag.posts.length === 0 &&
         foundHashTag.communities.length === 0 &&
@@ -133,51 +135,38 @@ class HashTagsClass {
         if (is_removed) {
           // remove post_id from communities
           foundHashTag.communities = foundHashTag.communities.filter(
-            post => post.toString() != post_id.toString()
+            (post) => post.toString() != post_id.toString()
           );
           await foundHashTag.save();
           await removeHashTag(foundHashTag);
           return true;
         }
-        if (
-          foundHashTag.communities.some(
-            post => post.toString() == post_id.toString()
-          )
-        )
+        if (foundHashTag.communities.some((post) => post.toString() == post_id.toString()))
           return foundHashTag;
         foundHashTag.communities.push(new ObjectId(post_id));
       } else if (scope === 'Question') {
         if (is_removed) {
           // remove post_id from questions
           foundHashTag.questions = foundHashTag.questions.filter(
-            question => question.toString() != question_id.toString()
+            (question) => question.toString() != question_id.toString()
           );
           await foundHashTag.save();
           await removeHashTag(foundHashTag);
           return true;
         }
-        if (
-          foundHashTag.questions.some(
-            question => question.toString() == question_id.toString()
-          )
-        ) {
+        if (foundHashTag.questions.some((question) => question.toString() == question_id.toString())) {
           return foundHashTag;
         }
         foundHashTag.questions.push(new ObjectId(question_id));
       } else {
         if (is_removed) {
           // remove post_id from posts
-          foundHashTag.posts = foundHashTag.posts.filter(
-            post => post.toString() != post_id.toString()
-          );
+          foundHashTag.posts = foundHashTag.posts.filter((post) => post.toString() != post_id.toString());
           await foundHashTag.save();
           await removeHashTag(foundHashTag);
           return true;
         }
-        if (
-          foundHashTag.posts.some(post => post.toString() == post_id.toString())
-        )
-          return foundHashTag;
+        if (foundHashTag.posts.some((post) => post.toString() == post_id.toString())) return foundHashTag;
         foundHashTag.posts.push(new ObjectId(post_id));
       }
 
@@ -201,16 +190,9 @@ class HashTagsClass {
         name
       });
       if (!foundHashTag) continue;
-      const type =
-        scope === 'Community'
-          ? 'communities'
-          : scope === 'Question'
-          ? 'questions'
-          : 'posts';
+      const type = scope === 'Community' ? 'communities' : scope === 'Question' ? 'questions' : 'posts';
 
-      foundHashTag[type] = foundHashTag[type].filter(
-        post => post.toString() != post_id.toString()
-      );
+      foundHashTag[type] = foundHashTag[type].filter((post) => post.toString() != post_id.toString());
       await foundHashTag.save();
 
       if (

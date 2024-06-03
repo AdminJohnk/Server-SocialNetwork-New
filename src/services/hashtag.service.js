@@ -10,20 +10,12 @@ class HashTagService {
     return await HashTagsClass.getNumberTagsQuestion();
   }
   static async getAllHashTagsQuestion({ page, sort, limit = 24 }) {
-    const skip = (page - 1) * 10;
-
-    let sortBy;
-    if (sort === 'popular') {
-      sortBy = { question_number: -1 };
-    } else if (sort === 'name') {
-      sortBy = { name: 1 };
-    } else if (sort === 'new') {
-      sortBy = { createdAt: -1 };
-    }
+    const skip = (page - 1) * limit;
+    
     return await HashTagsClass.getAllHashTagsQuestion({
       skip,
       limit,
-      sort: sortBy
+      sort
     });
   }
   static async getAllHashTags({ sort = { createdAt: -1 } }) {
