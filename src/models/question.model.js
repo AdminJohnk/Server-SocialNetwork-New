@@ -69,14 +69,23 @@ const QuestionSchema = new Schema(
 const QuestionModel = model(DOCUMENT_NAME, QuestionSchema);
 
 class QuestionClass {
-  static async getAllTags() {
-    
-  }
   static async getNumberQuestions() {
     return await QuestionModel.countDocuments();
   }
-  static async getAllQuestions({ limit, skip }) {
+  static async getAllQuestions({ skip, limit, sort }) {
     return await QuestionModel.aggregate([
+      {
+        $sort:
+          sort === 'score'
+            ? { vote_score: -1 }
+            : sort === 'latest'
+            ? { createdAt: -1 }
+            : sort === 'oldest'
+            ? { createdAt: 1 }
+            : sort === 'frequent'
+            ? { view: -1 }
+            : { createdAt: -1 }
+      },
       { $skip: skip },
       { $limit: limit },
       {
@@ -101,6 +110,9 @@ class QuestionClass {
           answer_number: { $size: '$answers' },
           createdAt: 1
         }
+      },
+      {
+        $match: sort === 'unanswered' ? { answer_number: 0 } : {}
       }
     ]);
   }
@@ -147,9 +159,7 @@ class QuestionClass {
     }
 
     // vote_score
-    const answer = question.answers.find(
-      answer => answer._id.toString() === answer_id
-    );
+    const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
     const vote_score = answer.vote_up.length - answer.vote_down.length;
     await QuestionModel.findOneAndUpdate(
       { _id: question_id, 'answers._id': answer_id },
@@ -163,22 +173,15 @@ class QuestionClass {
       'answers._id': answer_id,
       'answers.comment._id': comment_id
     });
-    const answer = question.answers.find(
-      answer => answer._id.toString() === answer_id
-    );
-    const comment = answer.comment.find(
-      comment => comment._id.toString() === comment_id
-    );
+    const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
+    const comment = answer.comment.find((comment) => comment._id.toString() === comment_id);
 
     if (comment.vote.includes(user)) {
       await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         { $pull: { 'answers.$[answer].comment.$[comment].vote': user } },
         {
-          arrayFilters: [
-            { 'answer._id': answer_id },
-            { 'comment._id': comment_id }
-          ]
+          arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }]
         }
       ).lean();
     } else {
@@ -188,21 +191,13 @@ class QuestionClass {
           $push: { 'answers.$[answer].comment.$[comment].vote': user }
         },
         {
-          arrayFilters: [
-            { 'answer._id': answer_id },
-            { 'comment._id': comment_id }
-          ]
+          arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }]
         }
       ).lean();
     }
     return true;
   }
-  static async updateCommentAnswer({
-    question_id,
-    answer_id,
-    comment_id,
-    content
-  }) {
+  static async updateCommentAnswer({ question_id, answer_id, comment_id, content }) {
     return await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
@@ -211,10 +206,7 @@ class QuestionClass {
       },
       { $set: { 'answers.$[answer].comment.$[comment].content': content } },
       {
-        arrayFilters: [
-          { 'answer._id': answer_id },
-          { 'comment._id': comment_id }
-        ],
+        arrayFilters: [{ 'answer._id': answer_id }, { 'comment._id': comment_id }],
         new: true
       },
       { new: true }
@@ -281,9 +273,7 @@ class QuestionClass {
       _id: question_id,
       'comment._id': comment_id
     });
-    const comment = question.comment.find(
-      comment => comment._id.toString() === comment_id
-    );
+    const comment = question.comment.find((comment) => comment._id.toString() === comment_id);
     if (comment.vote.includes(user)) {
       await QuestionModel.findOneAndUpdate(
         {
@@ -342,14 +332,7 @@ class QuestionClass {
   static async deleteQuestion(question_id) {
     return await QuestionModel.findByIdAndDelete(question_id);
   }
-  static async updateQuestion({
-    question_id,
-    title,
-    problem,
-    expect,
-    text,
-    hashtags
-  }) {
+  static async updateQuestion({ question_id, title, problem, expect, text, hashtags }) {
     return await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { title, problem, expect, text, hashtags, update_at: Date.now() },
@@ -380,10 +363,7 @@ class QuestionClass {
 
     // vote_score
     const vote_score = question.vote_up.length - question.vote_down.length;
-    await QuestionModel.findOneAndUpdate(
-      { _id: question_id },
-      { $set: { vote_score } }
-    );
+    await QuestionModel.findOneAndUpdate({ _id: question_id }, { $set: { vote_score } });
     return true;
   }
   static async viewQuestion({ question_id }) {
@@ -401,14 +381,7 @@ class QuestionClass {
       .populate('answers.comment.user', '_id name')
       .lean();
   }
-  static async createQuestion({
-    user,
-    title,
-    problem,
-    expect,
-    text,
-    hashtags
-  }) {
+  static async createQuestion({ user, title, problem, expect, text, hashtags }) {
     return await QuestionModel.create({
       user,
       title,

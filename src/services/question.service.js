@@ -14,6 +14,19 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static getSavedQuestions = async ({ user }) => {
+    return await UserClass.getSavedQuestions({ user });
+  };
+  static getNumberQuestionByTag = async ({ tagname, sort }) => {
+    return await HashTagService.getNumberQuestionByTag({ name: tagname, sort });
+  };
+  static getAllQuestionByTag = async ({ name, page, sort, limit = 20 }) => {
+    const skip = (page - 1) * limit;
+    return await HashTagService.getAllQuestionByTag({ name, limit, skip, sort });
+  };
+  static getAllQuestionByTag = async ({ tagname, page, sort }) => {
+    return await HashTagService.getAllQuestionByTag({ name: tagname, page, sort });
+  };
   static getNumberTagsQuestion = async () => {
     return await HashTagService.getNumberTagsQuestion();
   };
@@ -27,9 +40,9 @@ class QuestionService {
   static getNumberQuestions = async () => {
     return await QuestionClass.getNumberQuestions();
   };
-  static getAllQuestions = async ({ page, limit = 20 }) => {
+  static getAllQuestions = async ({ page, sort, limit = 20 }) => {
     const skip = (page - 1) * limit;
-    return await QuestionClass.getAllQuestions({ skip, limit });
+    return await QuestionClass.getAllQuestions({ skip, limit, sort });
   };
   static saveQuestion = async ({ user, question_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });

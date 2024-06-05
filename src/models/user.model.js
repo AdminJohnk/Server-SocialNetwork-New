@@ -2,12 +2,7 @@
 
 import { model, Schema, Types } from 'mongoose';
 import { unGetSelectData, getSelectData } from '../utils/functions.js';
-import {
-  avt_default,
-  se_UserDefault,
-  RoleUser,
-  se_UserAdmin
-} from '../utils/constants.js';
+import { avt_default, se_UserDefault, RoleUser, se_UserAdmin } from '../utils/constants.js';
 const ObjectId = Types.ObjectId;
 import { UserIncrClass } from './user_incr.model.js';
 
@@ -126,18 +121,48 @@ UserSchema.pre('save', async function (next) {
 UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
-
-const getFirstElement = attribute => {
-  return {
-    $addFields: {
-      [attribute]: {
-        $arrayElemAt: [`$${attribute}`, 0]
-      }
-    }
-  };
-};
-
 class UserClass {
+  static async getSavedQuestions({ user }) {
+    const result = await UserModel.aggregate([
+      { $match: { _id: new ObjectId(user) } },
+      {
+        $lookup: {
+          from: 'questions',
+          localField: 'favorite_questions',
+          foreignField: '_id',
+          as: 'favorite_questions'
+        }
+      },
+      { $unwind: '$favorite_questions' },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'favorite_questions.user',
+          foreignField: '_id',
+          as: 'favorite_questions.user'
+        }
+      },
+      { $unwind: '$favorite_questions.user' },
+      {
+        $project: {
+          _id: 0,
+          favorite_questions: {
+            _id: 1,
+            title: 1,
+            problem: 1,
+            hashtags: 1,
+            text: 1,
+            user: { _id: 1, name: 1, user_image: 1 },
+            vote_score: 1,
+            view: 1,
+            answer_number: { $size: '$favorite_questions.answers' },
+            createdAt: 1
+          }
+        }
+      }
+    ]);
+    return result.map((item) => item.favorite_questions);
+  }
   static async saveQuestion({ user, question_id }) {
     const isSaved = await UserModel.findOne({
       _id: user,
@@ -207,10 +232,7 @@ class UserClass {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ['$user', '$$id'] },
-                    { $in: [new ObjectId(me_id), '$friends'] }
-                  ]
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
                 }
               }
             }
@@ -245,9 +267,7 @@ class UserClass {
     return users;
   }
   static async getMyInfo({ user_id, select = se_UserDefault }) {
-    return await UserModel.findOne({ _id: user_id })
-      .select(getSelectData(select))
-      .lean();
+    return await UserModel.findOne({ _id: user_id }).select(getSelectData(select)).lean();
   }
   static async savePost({ user, post }) {
     // Kiểm tra xem đã lưu bài viết này chưa
@@ -268,18 +288,18 @@ class UserClass {
     };
   }
   static async updateUser({ email, payload }) {
-    return await UserModel.findOneAndUpdate(
-      { email },
-      { $set: { payload } },
-      { new: true }
-    ).lean();
+    return await UserModel.findOneAndUpdate({ email }, { $set: { payload } }, { new: true }).lean();
   }
   static async updateByID({ user_id, payload }) {
     return await UserModel.findByIdAndUpdate(user_id, payload, {
       new: true
     }).lean();
   }
-  static async findById({ user_id, me_id, unselect = ['password'] }) {
+  static async findById({
+    user_id,
+    me_id,
+    unselect = ['password', 'favorites', 'favorite_questions', 'post_series', 'notifications', 'communities']
+  }) {
     const result = await UserModel.aggregate([
       {
         $match: {
@@ -294,10 +314,7 @@ class UserClass {
             {
               $match: {
                 $expr: {
-                  $and: [
-                    { $eq: ['$user', '$$id'] },
-                    { $in: [new ObjectId(me_id), '$friends'] }
-                  ]
+                  $and: [{ $eq: ['$user', '$$id'] }, { $in: [new ObjectId(me_id), '$friends'] }]
                 }
               }
             }
@@ -402,19 +419,9 @@ class UserClass {
   static findUserById_admin = async ({ user_id }) => {
     return await UserModel.findById(user_id).lean();
   };
-  static getAllUsers_admin = async ({
-    limit,
-    page,
-    sort,
-    select = se_UserAdmin
-  }) => {
+  static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
     const skip = (page - 1) * limit;
-    return await UserModel.find()
-      .limit(limit)
-      .skip(skip)
-      .select(getSelectData(select))
-      .sort(sort)
-      .lean();
+    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
   };
   static updateUser_admin = async ({ user_id, payload }) => {
     return await UserModel.findByIdAndUpdate(user_id, payload, {

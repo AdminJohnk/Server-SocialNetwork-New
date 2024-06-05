@@ -9,10 +9,7 @@ router.use(authentication);
 
 /// GET //
 // Get Question By ID
-router.get(
-  '/find/:question_id',
-  asyncHandler(QuestionController.getQuestionById)
-);
+router.get('/find/:question_id', asyncHandler(QuestionController.getQuestionById));
 
 // Get All Questions
 router.get('/all', asyncHandler(QuestionController.getAllQuestions));
@@ -26,6 +23,15 @@ router.get('/number', asyncHandler(QuestionController.getNumberQuestions));
 // Get Number Tag Question
 router.get('/tags/number', asyncHandler(QuestionController.getNumberTagsQuestion));
 
+// Get All Question By Tag
+router.get('/tags/find/:tagname', asyncHandler(QuestionController.getAllQuestionByTag));
+
+// Get Number Question By Tag
+router.get('/tags/number/:tagname', asyncHandler(QuestionController.getNumberQuestionByTag));
+
+// Get Saved Questions
+router.get('/saved', asyncHandler(QuestionController.getSavedQuestions));
+
 // =========================================================
 
 /// POST //
@@ -36,10 +42,7 @@ router.post('/create', asyncHandler(QuestionController.createQuestion));
 
 /// PUT //
 // Update Question
-router.put(
-  '/update/:question_id',
-  asyncHandler(QuestionController.updateQuestion)
-);
+router.put('/update/:question_id', asyncHandler(QuestionController.updateQuestion));
 
 // View Question
 router.put('/view/:question_id', asyncHandler(QuestionController.viewQuestion));
@@ -48,58 +51,31 @@ router.put('/view/:question_id', asyncHandler(QuestionController.viewQuestion));
 router.put('/vote/:question_id', asyncHandler(QuestionController.voteQuestion));
 
 // Update Comment Question
-router.put(
-  '/comment/update/:question_id',
-  asyncHandler(QuestionController.updateCommentQuestion)
-);
+router.put('/comment/update/:question_id', asyncHandler(QuestionController.updateCommentQuestion));
 
 // Comment Question
-router.put(
-  '/comment/:question_id',
-  asyncHandler(QuestionController.commentQuestion)
-);
+router.put('/comment/:question_id', asyncHandler(QuestionController.commentQuestion));
 
 // Vote Comment Question
-router.put(
-  '/comment/vote/:question_id',
-  asyncHandler(QuestionController.voteCommentQuestion)
-);
+router.put('/comment/vote/:question_id', asyncHandler(QuestionController.voteCommentQuestion));
 
 // Answer Question
-router.put(
-  '/answer/:question_id',
-  asyncHandler(QuestionController.answerQuestion)
-);
+router.put('/answer/:question_id', asyncHandler(QuestionController.answerQuestion));
 
 // Update Answer
-router.put(
-  '/answer/update/:question_id',
-  asyncHandler(QuestionController.updateAnswer)
-);
+router.put('/answer/update/:question_id', asyncHandler(QuestionController.updateAnswer));
 
 // Comment Answer
-router.put(
-  '/answer/comment/:question_id',
-  asyncHandler(QuestionController.commentAnswer)
-);
+router.put('/answer/comment/:question_id', asyncHandler(QuestionController.commentAnswer));
 
 // Update Comment Answer
-router.put(
-  '/answer/comment/update/:question_id',
-  asyncHandler(QuestionController.updateCommentAnswer)
-);
+router.put('/answer/comment/update/:question_id', asyncHandler(QuestionController.updateCommentAnswer));
 
 // Vote Comment Answer
-router.put(
-  '/answer/comment/vote/:question_id',
-  asyncHandler(QuestionController.voteCommentAnswer)
-);
+router.put('/answer/comment/vote/:question_id', asyncHandler(QuestionController.voteCommentAnswer));
 
 // Vote Answer
-router.put(
-  '/answer/vote/:question_id',
-  asyncHandler(QuestionController.voteAnswer)
-);
+router.put('/answer/vote/:question_id', asyncHandler(QuestionController.voteAnswer));
 
 // Save Question
 router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
@@ -108,28 +84,16 @@ router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
 
 /// DELETE //
 // Delete Question
-router.delete(
-  '/delete/:question_id',
-  asyncHandler(QuestionController.deleteQuestion)
-);
+router.delete('/delete/:question_id', asyncHandler(QuestionController.deleteQuestion));
 
 // Delete Comment Question
-router.delete(
-  '/comment/delete/:question_id',
-  asyncHandler(QuestionController.deleteCommentQuestion)
-);
+router.delete('/comment/delete/:question_id', asyncHandler(QuestionController.deleteCommentQuestion));
 
 // Delete Comment Answer
-router.delete(
-  '/answer/comment/delete/:question_id',
-  asyncHandler(QuestionController.deleteCommentAnswer)
-);
+router.delete('/answer/comment/delete/:question_id', asyncHandler(QuestionController.deleteCommentAnswer));
 
 // Delete Answer
-router.delete(
-  '/answer/delete/:question_id',
-  asyncHandler(QuestionController.deleteAnswer)
-);
+router.delete('/answer/delete/:question_id', asyncHandler(QuestionController.deleteAnswer));
 
 // =========================================================
 

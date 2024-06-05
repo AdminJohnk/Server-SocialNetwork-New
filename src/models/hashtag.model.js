@@ -1,6 +1,7 @@
 'use strict';
 
 import { model, Schema, Types } from 'mongoose';
+import path from 'path';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'HashTags';
@@ -27,10 +28,98 @@ const HashTagsSchema = new Schema(
     collection: COLLECTION_NAME
   }
 );
-
 const HashTagsModel = model(DOCUMENT_NAME, HashTagsSchema);
 
 class HashTagsClass {
+  static async getNumberQuestionByTag({ name, sort }) {
+    const result = await HashTagsModel.aggregate([
+      { $match: { name } },
+      { $unwind: '$questions' },
+      {
+        $lookup: {
+          from: 'questions',
+          localField: 'questions',
+          foreignField: '_id',
+          as: 'questions'
+        }
+      },
+      {
+        $project: { _id: 0, questions: 1 }
+      },
+      {
+        $match: sort === 'unanswered' ? { 'questions.answers': { $size: 0 } } : {}
+      },
+      {
+        $count: 'number'
+      }
+    ]);
+
+    return result[0]?.number;
+  }
+  static async getAllQuestionByTag({ name, limit, skip, sort }) {
+    const result = await HashTagsModel.aggregate([
+      { $match: { name } },
+      { $unwind: '$questions' },
+      {
+        $lookup: {
+          from: 'questions',
+          localField: 'questions',
+          foreignField: '_id',
+          as: 'questions'
+        }
+      },
+      {
+        $addFields: {
+          question: { $arrayElemAt: ['$questions', 0] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'question.user',
+          foreignField: '_id',
+          as: 'question.user'
+        }
+      },
+      { $unwind: '$question.user' },
+      {
+        $sort:
+          sort === 'score'
+            ? { 'question.vote_score': -1 }
+            : sort === 'latest'
+            ? { 'question.createdAt': -1 }
+            : sort === 'oldest'
+            ? { 'question.createdAt': 1 }
+            : sort === 'frequent'
+            ? { 'question.view': -1 }
+            : { 'question.createdAt': -1 }
+      },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $project: {
+          _id: 0,
+          question: {
+            _id: 1,
+            title: 1,
+            problem: 1,
+            hashtags: 1,
+            text: 1,
+            user: { _id: 1, name: 1, user_image: 1 },
+            vote_score: 1,
+            view: 1,
+            answer_number: { $size: '$question.answers' },
+            createdAt: 1
+          }
+        }
+      },
+      {
+        $match: sort === 'unanswered' ? { 'question.answers': { $size: 0 } } : {}
+      }
+    ]);
+
+    return result.map((item) => item.question);
+  }
   static async getNumberTagsQuestion() {
     return await HashTagsModel.countDocuments({ questions: { $ne: [] } });
   }
@@ -52,11 +141,7 @@ class HashTagsClass {
       },
       {
         $sort:
-          sort === 'popular'
-            ? { question_number: -1 }
-            : sort === 'name'
-            ? { name: 1 }
-            : { createdAt: -1 }
+          sort === 'popular' ? { question_number: -1 } : sort === 'name' ? { name: 1 } : { createdAt: -1 }
       },
       { $skip: skip },
       { $limit: limit },

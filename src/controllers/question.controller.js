@@ -5,6 +5,36 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Get Saved Questions
+  static getSavedQuestions = async (req, res, next) => {
+    new OK({
+      message: 'Get Saved Questions Successfully',
+      metadata: await QuestionService.getSavedQuestions({
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Get Number Question By Tag
+  static getNumberQuestionByTag = async (req, res, next) => {
+    new OK({
+      message: 'Get Number Question By Tag Successfully',
+      metadata: await QuestionService.getNumberQuestionByTag({
+        tagname: req.params.tagname,
+        sort: req.query.sort
+      })
+    }).send(res);
+  };
+  // Get All Question By Tag
+  static getAllQuestionByTag = async (req, res, next) => {
+    new OK({
+      message: 'Get All Question By Tag Successfully',
+      metadata: await QuestionService.getAllQuestionByTag({
+        tagname: req.params.tagname,
+        page: req.query.page,
+        sort: req.query.sort
+      })
+    }).send(res);
+  };
   // Get Number Tags Questions
   static getNumberTagsQuestion = async (req, res, next) => {
     new OK({
@@ -34,7 +64,8 @@ class QuestionController {
     new OK({
       message: 'Get All Questions Successfully',
       metadata: await QuestionService.getAllQuestions({
-        page: req.query.page
+        page: req.query.page,
+        sort: req.query.sort
       })
     }).send(res);
   };

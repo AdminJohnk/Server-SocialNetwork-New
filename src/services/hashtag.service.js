@@ -6,12 +6,19 @@ import { PostClass } from '../models/post.model.js';
 import { QuestionClass } from '../models/question.model.js';
 
 class HashTagService {
+  static async getNumberQuestionByTag({ name, sort }) {
+    return await HashTagsClass.getNumberQuestionByTag({ name, sort });
+  }
+  static async getAllQuestionByTag({ name, page, sort, limit = 20 }) {
+    const skip = (page - 1) * limit;
+    return await HashTagsClass.getAllQuestionByTag({ name, limit, skip, sort });
+  }
   static async getNumberTagsQuestion() {
     return await HashTagsClass.getNumberTagsQuestion();
   }
   static async getAllHashTagsQuestion({ page, sort, limit = 24 }) {
     const skip = (page - 1) * limit;
-    
+
     return await HashTagsClass.getAllHashTagsQuestion({
       skip,
       limit,
@@ -30,12 +37,7 @@ class HashTagService {
   static async getQuestionByHashtag({ name }) {
     return await HashTagsClass.getQuestionByHashtag({ name });
   }
-  static async createOrUpdateHashTag({
-    rmHashtags = [],
-    post_id,
-    question_id,
-    scope = 'Normal'
-  }) {
+  static async createOrUpdateHashTag({ rmHashtags = [], post_id, question_id, scope = 'Normal' }) {
     let hashTags;
 
     if (scope === 'Normal' || scope === 'Community') {
