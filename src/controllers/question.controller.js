@@ -35,11 +35,24 @@ class QuestionController {
       })
     }).send(res);
   };
+  // Find Tags Question
+  static findTagsQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Find Tags Question Successfully',
+      metadata: await QuestionService.findTagsQuestion({
+        tagname: req.params.tagname,
+        page: req.query.page,
+        sort: req.query.sort
+      })
+    }).send(res);
+  };
   // Get Number Tags Questions
   static getNumberTagsQuestion = async (req, res, next) => {
     new OK({
       message: 'Get Number Tags Questions Successfully',
-      metadata: await QuestionService.getNumberTagsQuestion()
+      metadata: await QuestionService.getNumberTagsQuestion({
+        tag: req.query.tag
+      })
     }).send(res);
   };
   // Get All Tags

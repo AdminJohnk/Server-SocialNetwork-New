@@ -130,19 +130,61 @@ class UserClass {
           from: 'questions',
           localField: 'favorite_questions',
           foreignField: '_id',
-          as: 'favorite_questions'
+          as: 'favorite_questions_arr'
         }
       },
-      { $unwind: '$favorite_questions' },
       {
         $lookup: {
           from: 'users',
-          localField: 'favorite_questions.user',
+          localField: 'favorite_questions_arr.user',
           foreignField: '_id',
-          as: 'favorite_questions.user'
+          as: 'user_arr'
         }
       },
-      { $unwind: '$favorite_questions.user' },
+      {
+        $addFields: {
+          favorite_questions_arr: {
+            $map: {
+              input: '$favorite_questions_arr',
+              as: 'q',
+              in: {
+                $mergeObjects: [
+                  '$$q',
+                  {
+                    user: {
+                      $first: {
+                        $filter: {
+                          input: '$user_arr',
+                          as: 'u',
+                          cond: { $eq: ['$$u._id', '$$q.user'] }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        $addFields: {
+          favorite_questions: {
+            $map: {
+              input: '$favorite_questions',
+              as: 'q',
+              in: {
+                $first: {
+                  $filter: {
+                    input: '$favorite_questions_arr',
+                    cond: { $eq: ['$$q', '$$this._id'] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       {
         $project: {
           _id: 0,
@@ -161,7 +203,7 @@ class UserClass {
         }
       }
     ]);
-    return result.map((item) => item.favorite_questions);
+    return result[0].favorite_questions.reverse();
   }
   static async saveQuestion({ user, question_id }) {
     const isSaved = await UserModel.findOne({

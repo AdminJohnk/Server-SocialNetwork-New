@@ -14,6 +14,9 @@ router.get('/find/:question_id', asyncHandler(QuestionController.getQuestionById
 // Get All Questions
 router.get('/all', asyncHandler(QuestionController.getAllQuestions));
 
+// Find Tags Question
+router.get('/tags/find-tag/:tagname', asyncHandler(QuestionController.findTagsQuestion));
+
 // Get All Tags
 router.get('/tags/all', asyncHandler(QuestionController.getAllTags));
 

@@ -13,8 +13,13 @@ class HashTagService {
     const skip = (page - 1) * limit;
     return await HashTagsClass.getAllQuestionByTag({ name, limit, skip, sort });
   }
-  static async getNumberTagsQuestion() {
-    return await HashTagsClass.getNumberTagsQuestion();
+  static async findTagsQuestion({ tag, page, sort, limit = 24 }) {
+    const skip = (page - 1) * limit;
+
+    return await HashTagsClass.findTagsQuestion({ tag, skip, limit, sort });
+  }
+  static async getNumberTagsQuestion({ tag }) {
+    return await HashTagsClass.getNumberTagsQuestion({ tag });
   }
   static async getAllHashTagsQuestion({ page, sort, limit = 24 }) {
     const skip = (page - 1) * limit;

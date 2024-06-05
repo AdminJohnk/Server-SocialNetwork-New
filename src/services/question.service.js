@@ -27,8 +27,11 @@ class QuestionService {
   static getAllQuestionByTag = async ({ tagname, page, sort }) => {
     return await HashTagService.getAllQuestionByTag({ name: tagname, page, sort });
   };
-  static getNumberTagsQuestion = async () => {
-    return await HashTagService.getNumberTagsQuestion();
+  static findTagsQuestion = async ({ tagname, page, sort }) => {
+    return await HashTagService.findTagsQuestion({ tag: tagname, page, sort });
+  };
+  static getNumberTagsQuestion = async ({ tag }) => {
+    return await HashTagService.getNumberTagsQuestion({ tag });
   };
   static getAllTags = async ({ page, sort }) => {
     const HashTags = await HashTagService.getAllHashTagsQuestion({
@@ -125,7 +128,8 @@ class QuestionService {
     const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    if (answer.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this answer');
+    if (answer.user.toString() !== user && foundQuestion.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this answer');
 
     return await QuestionClass.deleteAnswer({ question_id, answer_id });
   };
@@ -154,7 +158,8 @@ class QuestionService {
     const comment = answer.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this comment');
+    if (comment.user.toString() !== user && foundQuestion.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this comment');
 
     return await QuestionClass.deleteCommentAnswer({
       question_id,
@@ -190,7 +195,8 @@ class QuestionService {
     const comment = foundQuestion.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this comment');
+    if (comment.user.toString() !== user && foundQuestion.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this comment');
 
     return await QuestionClass.deleteCommentQuestion({
       question_id,
@@ -224,7 +230,7 @@ class QuestionService {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    if (foundQuestion.user.toString() !== user)
+    if (foundQuestion.user.toString() !== user && foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to delete this question');
 
     return await QuestionClass.deleteQuestion(question_id);

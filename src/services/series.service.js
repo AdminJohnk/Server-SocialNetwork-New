@@ -91,7 +91,8 @@ class SeriesService {
     const reply = comment.child.find((reply) => reply._id == child_id);
     if (!reply) throw new NotFoundError('Reply not found');
 
-    if (reply.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this reply comment');
+    if (reply.user.toString() !== user && series.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this reply comment');
 
     return await SeriesClass.deleteReplyComment({
       series_id,
@@ -153,7 +154,8 @@ class SeriesService {
     const comment = post.comments.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    if (comment.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this comment');
+    if (comment.user.toString() !== user && series.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this comment');
 
     return await SeriesClass.deleteComment({ series_id, post_id, comment_id });
   };
@@ -192,7 +194,8 @@ class SeriesService {
     const review = series.reviews.find((review) => review._id == review_id);
     if (!review) throw new NotFoundError('Review not found');
 
-    if (review.user.toString() !== user) throw new ForbiddenError('Unauthorized to delete this review');
+    if (review.user.toString() !== user && series.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to delete this review');
 
     return await SeriesClass.deleteReview({ series_id, review_id });
   };

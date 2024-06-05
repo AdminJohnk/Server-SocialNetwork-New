@@ -28,6 +28,9 @@ const HashTagsSchema = new Schema(
     collection: COLLECTION_NAME
   }
 );
+
+HashTagsSchema.index({ name: 'text' });
+
 const HashTagsModel = model(DOCUMENT_NAME, HashTagsSchema);
 
 class HashTagsClass {
@@ -120,8 +123,75 @@ class HashTagsClass {
 
     return result.map((item) => item.question);
   }
-  static async getNumberTagsQuestion() {
-    return await HashTagsModel.countDocuments({ questions: { $ne: [] } });
+  static async findTagsQuestion({ tag, skip, limit, sort }) {
+    return await HashTagsModel.aggregate([
+      { $match: { questions: { $ne: [] }, $text: { $search: tag } } },
+      {
+        $lookup: {
+          from: 'questions',
+          localField: 'questions',
+          foreignField: '_id',
+          as: 'questions'
+        }
+      },
+      {
+        $addFields: {
+          question_number: { $size: '$questions' }
+        }
+      },
+      {
+        $sort:
+          sort === 'popular' ? { question_number: -1 } : sort === 'name' ? { name: 1 } : { createdAt: -1 }
+      },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $addFields: {
+          counts: {
+            $reduce: {
+              input: '$questions.createdAt',
+              initialValue: { today: 0, thisWeek: 0 },
+              in: {
+                $cond: [
+                  {
+                    $gte: ['$$this', new Date(new Date() - 24 * 60 * 60 * 1000)]
+                  },
+                  {
+                    today: { $add: ['$$value.today', 1] },
+                    thisWeek: { $add: ['$$value.thisWeek', 1] }
+                  },
+                  {
+                    $cond: [
+                      {
+                        $gte: ['$$this', new Date(new Date() - 7 * 24 * 60 * 60 * 1000)]
+                      },
+                      {
+                        today: '$$value.today',
+                        thisWeek: { $add: ['$$value.thisWeek', 1] }
+                      },
+                      '$$value'
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          question_number: 1, // Tính question_number sau khi lookup
+          number_today: '$counts.today',
+          number_this_week: '$counts.thisWeek'
+        }
+      }
+    ]);
+  }
+  static async getNumberTagsQuestion({ tag }) {
+    const condition = { questions: { $ne: [] } };
+    if (tag) condition.$text = { $search: tag };
+    return await HashTagsModel.countDocuments(condition);
   }
   static async getAllHashTagsQuestion({ skip, limit, sort }) {
     return await HashTagsModel.aggregate([
