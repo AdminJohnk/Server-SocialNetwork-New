@@ -132,7 +132,7 @@ const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
   static async changeReputation({ user_id, number }) {
     // number có thể là số âm hoặc dương
-    // nếu đủ điểm thì tăng level cho úser
+    // nếu đủ điểm thì tăng level cho user
     // lv1   0
     // lv2   50
     // lv3   150

@@ -120,7 +120,6 @@ class AuthService {
     });
 
     if (!keyStore) throw new BadRequestError("Can't create keyStore!");
-    if (!keyStore) throw new BadRequestError("Can't create keyStore!");
 
     // 5 - Get data return login
     return {

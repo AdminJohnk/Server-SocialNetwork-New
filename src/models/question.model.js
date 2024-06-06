@@ -3,6 +3,7 @@
 import { model, Schema, Types } from 'mongoose';
 import { pp_UserDefault, pp_UserMore, VoteType } from '../utils/constants.js';
 import { text } from 'stream/consumers';
+import { UserClass } from './user.model.js';
 const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Question';
@@ -69,6 +70,27 @@ const QuestionSchema = new Schema(
 const QuestionModel = model(DOCUMENT_NAME, QuestionSchema);
 
 class QuestionClass {
+  static getVoteScore({ old_vote_score, type, old, level }) {
+    if (type === 'up') {
+      if (old === 'down') {
+        return old_vote_score + level * 2;
+      } else if (old === 'cancel') {
+        return old_vote_score + level;
+      }
+    } else if (type === 'down') {
+      if (old === 'up') {
+        return old_vote_score - level * 2;
+      } else if (old === 'cancel') {
+        return old_vote_score - level;
+      }
+    } else if (type === 'cancel') {
+      if (old === 'up') {
+        return old_vote_score - level;
+      } else if (old === 'down') {
+        return old_vote_score + level;
+      }
+    }
+  }
   static async getNumberQuestions() {
     return await QuestionModel.countDocuments();
   }
@@ -178,7 +200,11 @@ class QuestionClass {
 
     // vote_score
     const answer = question.answers.find((answer) => answer._id.toString() === answer_id);
-    const vote_score = answer.vote_up.length - answer.vote_down.length;
+    const { level } = await UserClass.getReputation({ user_id: user });
+    const old_vote_score = answer.vote_score;
+
+    const vote_score = QuestionClass.getVoteScore({ old_vote_score, type, old, level });
+
     await QuestionModel.findOneAndUpdate(
       { _id: question_id, 'answers._id': answer_id },
       { $set: { 'answers.$.vote_score': vote_score } }
@@ -397,7 +423,7 @@ class QuestionClass {
       );
     } else if (type === 'down') {
       if (old === 'up') {
-        vote_score_ = -(VoteType.Question*2);
+        vote_score_ = -(VoteType.Question * 2);
       } else if (old === 'cancel') {
         vote_score_ = -VoteType.Question;
       }
@@ -420,7 +446,11 @@ class QuestionClass {
     }
 
     // vote_score
-    const vote_score = question.vote_up.length - question.vote_down.length;
+    const { level } = await UserClass.getReputation({ user_id: user });
+    const old_vote_score = question.vote_score;
+
+    const vote_score = QuestionClass.getVoteScore({ old_vote_score, type, old, level });
+
     await QuestionModel.findOneAndUpdate({ _id: question_id }, { $set: { vote_score } });
     return vote_score_;
   }
