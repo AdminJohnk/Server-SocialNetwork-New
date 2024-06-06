@@ -27,6 +27,8 @@ const UserSchema = new Schema(
     password: { type: String },
     role: Array,
     last_online: { type: Date, default: Date.now },
+    reputation: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
 
     // ==================================================
 
@@ -120,8 +122,50 @@ UserSchema.pre('save', async function (next) {
 // create index for search
 UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
+// lv1   0
+// lv2   50
+// lv3   150
+// lv4   250
+// lv5   400
+
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
+  static async changeReputation({ user_id, number }) {
+    // number có thể là số âm hoặc dương
+    // nếu đủ điểm thì tăng level cho úser
+    // lv1   0
+    // lv2   50
+    // lv3   150
+    // lv4   250
+    // lv5   400
+    const user = await UserModel.findById(user_id).lean();
+    const newReputation = user.reputation + number;
+    let newLevel = user.level;
+    if (newReputation >= 400) {
+      newLevel = 5;
+    } else if (newReputation >= 250) {
+      newLevel = 4;
+    } else if (newReputation >= 150) {
+      newLevel = 3;
+    } else if (newReputation >= 50) {
+      newLevel = 2;
+    } else {
+      newLevel = 1;
+    }
+    await UserModel.findByIdAndUpdate(
+      user_id,
+      {
+        $inc: { reputation: number },
+        level: newLevel
+      },
+      { new: true }
+    ).lean();
+
+    return true;
+  }
+  static async getReputation({ user_id }) {
+    return await UserModel.findById(user_id).select({ reputation: 1, level: 1 }).lean();
+  }
   static async getSavedQuestions({ user }) {
     const result = await UserModel.aggregate([
       { $match: { _id: new ObjectId(user) } },
