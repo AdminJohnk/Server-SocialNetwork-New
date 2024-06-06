@@ -253,7 +253,8 @@ class QuestionController {
       metadata: await QuestionService.voteQuestion({
         question_id: req.params.question_id,
         type: req.query.type,
-        user: req.user.userId
+        user: req.user.userId,
+        ...req.body
       })
     }).send(res);
   };

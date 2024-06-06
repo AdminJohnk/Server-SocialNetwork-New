@@ -1,5 +1,6 @@
 'use strict';
 
+import { User } from 'discord.js';
 import {
   ConflictRequestError,
   BadRequestError,
@@ -55,19 +56,29 @@ class QuestionService {
 
     return await QuestionClass.saveQuestion({ user, question_id });
   };
-  static voteAnswer = async ({ user, question_id, answer_id, type }) => {
+  static voteAnswer = async ({ user, question_id, answer_id, type, old }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
     const answer = foundQuestion.answers.find((answer) => answer._id == answer_id);
     if (!answer) throw new NotFoundError('Answer not found');
 
-    return await QuestionClass.voteAnswer({
+    const vote_score = await QuestionClass.voteAnswer({
       question_id,
       answer_id,
       type,
+      old,
       user
     });
+
+    const authorAnswer = answer.user.toString();
+
+    // Nếu tự vote cho bản thân thì không thay đổi reputation
+    if (authorAnswer === user) return true;
+
+    UserClass.changeReputation({ user_id: authorAnswer, number: vote_score });
+
+    return true;
   };
   static voteCommentAnswer = async ({ user, question_id, answer_id, comment_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -79,12 +90,21 @@ class QuestionService {
     const comment = answer.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    return await QuestionClass.voteCommentAnswer({
+    const authorComment = comment.user.toString();
+
+    const vote_score = await QuestionClass.voteCommentAnswer({
       question_id,
       answer_id,
       comment_id,
       user
     });
+
+    // Nếu tự vote cho bản thân thì không thay đổi reputation
+    if (authorComment === user) return true;
+
+    UserClass.changeReputation({ user_id: authorComment, number: vote_score });
+
+    return true;
   };
   static updateCommentAnswer = async ({ user, question_id, answer_id, comment_id, content }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -114,12 +134,16 @@ class QuestionService {
 
     if (!content) throw new BadRequestError('Content is required');
 
-    return await QuestionClass.commentAnswer({
+    const result = await QuestionClass.commentAnswer({
       question_id,
       answer_id,
       user,
       content
     });
+
+    UserClass.changeReputation({ user_id: user, number: 0.5 });
+
+    return result;
   };
   static deleteAnswer = async ({ user, question_id, answer_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -131,7 +155,11 @@ class QuestionService {
     if (answer.user.toString() !== user && foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to delete this answer');
 
-    return await QuestionClass.deleteAnswer({ question_id, answer_id });
+    const result = await QuestionClass.deleteAnswer({ question_id, answer_id });
+
+    UserClass.changeReputation({ user_id: user, number: -1 });
+
+    return result;
   };
   static updateAnswer = async ({ user, question_id, answer_id, content }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -161,11 +189,15 @@ class QuestionService {
     if (comment.user.toString() !== user && foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to delete this comment');
 
-    return await QuestionClass.deleteCommentAnswer({
+    const result = await QuestionClass.deleteCommentAnswer({
       question_id,
       answer_id,
       comment_id
     });
+
+    UserClass.changeReputation({ user_id: user, number: -0.5 });
+
+    return result;
   };
   static answerQuestion = async ({ user, question_id, content }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -173,7 +205,9 @@ class QuestionService {
 
     if (!content) throw new BadRequestError('Content is required');
 
-    return await QuestionClass.answerQuestion({ question_id, user, content });
+    const result = await QuestionClass.answerQuestion({ question_id, user, content });
+
+    return result;
   };
   static voteCommentQuestion = async ({ user, question_id, comment_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -182,11 +216,20 @@ class QuestionService {
     const comment = foundQuestion.comment.find((comment) => comment._id == comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
-    return await QuestionClass.voteCommentQuestion({
+    const vote_score = await QuestionClass.voteCommentQuestion({
       question_id,
       comment_id,
       user
     });
+
+    const authorComment = comment.user.toString();
+
+    // Nếu tự vote cho bản thân thì không thay đổi reputation
+    if (authorComment === user) return true;
+
+    UserClass.changeReputation({ user_id: authorComment, number: vote_score });
+
+    return true;
   };
   static deleteCommentQuestion = async ({ user, question_id, comment_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -198,10 +241,14 @@ class QuestionService {
     if (comment.user.toString() !== user && foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to delete this comment');
 
-    return await QuestionClass.deleteCommentQuestion({
+    const result = await QuestionClass.deleteCommentQuestion({
       question_id,
       comment_id
     });
+
+    UserClass.changeReputation({ user_id: user, number: -0.5 });
+
+    return result;
   };
   static updateCommentQuestion = async ({ user, question_id, comment_id, content }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -224,7 +271,11 @@ class QuestionService {
 
     if (!content) throw new BadRequestError('Content is required');
 
-    return await QuestionClass.commentQuestion({ question_id, user, content });
+    const result = await QuestionClass.commentQuestion({ question_id, user, content });
+
+    UserClass.changeReputation({ user_id: user, number: 0.5 });
+
+    return result;
   };
   static deleteQuestion = async ({ question_id, user }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
@@ -262,11 +313,20 @@ class QuestionService {
 
     return question;
   };
-  static voteQuestion = async ({ question_id, type, user }) => {
+  static voteQuestion = async ({ question_id, type, user, old }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    return await QuestionClass.voteQuestion({ question_id, type, user });
+    const vote_score_ = await QuestionClass.voteQuestion({ question_id, type, user, old });
+
+    const authorQuestion = foundQuestion.user.toString();
+
+    // Nếu tự vote cho bản thân thì không thay đổi reputation
+    if (authorQuestion === user) return true;
+
+    UserClass.changeReputation({ user_id: authorQuestion, number: vote_score_ });
+
+    return true;
   };
   static viewQuestion = async ({ question_id, me_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });

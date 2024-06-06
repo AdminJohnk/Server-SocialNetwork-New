@@ -46,6 +46,12 @@ const objectConnectRedis = {
   port: REDIS_PORT
 };
 
+const VoteType = {
+  Comment: 1,
+  Answer: 1.5,
+  Question: 2
+};
+
 export {
   HEADER,
   RoleUser,
@@ -56,5 +62,6 @@ export {
   pp_UserMore,
   se_UserDefaultForPost,
   objectConnectRedis,
-  unSe_PostDefault
+  unSe_PostDefault,
+  VoteType
 };

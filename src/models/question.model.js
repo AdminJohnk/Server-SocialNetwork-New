@@ -1,7 +1,7 @@
 'use strict';
 
 import { model, Schema, Types } from 'mongoose';
-import { pp_UserDefault, pp_UserMore } from '../utils/constants.js';
+import { pp_UserDefault, pp_UserMore, VoteType } from '../utils/constants.js';
 import { text } from 'stream/consumers';
 const ObjectId = Types.ObjectId;
 
@@ -124,15 +124,23 @@ class QuestionClass {
 
     const operator = isSaved ? '$pull' : '$addToSet';
 
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { [operator]: { save: user } },
       { new: true }
     ).lean();
+
+    return true;
   }
-  static async voteAnswer({ question_id, answer_id, user, type }) {
+  static async voteAnswer({ question_id, answer_id, user, type, old }) {
+    let vote_score_;
     let question;
     if (type === 'up') {
+      if (old === 'down') {
+        vote_score_ = VoteType.Answer * 2;
+      } else if (old === 'cancel') {
+        vote_score_ = VoteType.Answer;
+      }
       question = await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         {
@@ -142,6 +150,11 @@ class QuestionClass {
         { new: true }
       );
     } else if (type === 'down') {
+      if (old === 'up') {
+        vote_score_ = -(VoteType.Answer * 2);
+      } else if (old === 'cancel') {
+        vote_score_ = -VoteType.Answer;
+      }
       question = await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         {
@@ -151,6 +164,11 @@ class QuestionClass {
         { new: true }
       );
     } else if (type === 'cancel') {
+      if (old === 'up') {
+        vote_score_ = -VoteType.Answer;
+      } else if (old === 'down') {
+        vote_score_ = VoteType.Answer;
+      }
       question = await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         { $pull: { 'answers.$.vote_up': user, 'answers.$.vote_down': user } },
@@ -165,9 +183,10 @@ class QuestionClass {
       { _id: question_id, 'answers._id': answer_id },
       { $set: { 'answers.$.vote_score': vote_score } }
     );
-    return true;
+    return vote_score_;
   }
   static async voteCommentAnswer({ question_id, answer_id, comment_id, user }) {
+    let vote_score = -VoteType.Comment;
     const question = await QuestionModel.findOne({
       _id: question_id,
       'answers._id': answer_id,
@@ -185,6 +204,7 @@ class QuestionClass {
         }
       ).lean();
     } else {
+      vote_score = VoteType.Comment;
       await QuestionModel.findOneAndUpdate(
         { _id: question_id, 'answers._id': answer_id },
         {
@@ -195,10 +215,10 @@ class QuestionClass {
         }
       ).lean();
     }
-    return true;
+    return vote_score;
   }
   static async updateCommentAnswer({ question_id, answer_id, comment_id, content }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
         'answers._id': answer_id,
@@ -211,9 +231,11 @@ class QuestionClass {
       },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async commentAnswer({ question_id, answer_id, user, content }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
         'answers._id': answer_id
@@ -223,16 +245,20 @@ class QuestionClass {
       },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async deleteAnswer({ question_id, answer_id }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { $pull: { answers: { _id: answer_id } } },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async updateAnswer({ question_id, answer_id, content }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
         'answers._id': answer_id
@@ -245,9 +271,11 @@ class QuestionClass {
       },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async deleteCommentAnswer({ question_id, answer_id, comment_id }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
         'answers._id': answer_id,
@@ -260,15 +288,20 @@ class QuestionClass {
       },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async answerQuestion({ question_id, user, content }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { $push: { answers: { user, content } } },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async voteCommentQuestion({ question_id, comment_id, user }) {
+    let vote_score = -VoteType.Comment;
     const question = await QuestionModel.findOne({
       _id: question_id,
       'comment._id': comment_id
@@ -287,6 +320,7 @@ class QuestionClass {
         }
       ).lean();
     } else {
+      vote_score = VoteType.Comment;
       await QuestionModel.findOneAndUpdate(
         {
           _id: question_id,
@@ -299,17 +333,19 @@ class QuestionClass {
         }
       ).lean();
     }
-    return true;
+    return vote_score;
   }
   static async deleteCommentQuestion({ question_id, comment_id }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { $pull: { comment: { _id: comment_id } } },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async updateCommentQuestion({ question_id, comment_id, content }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       {
         _id: question_id,
         'comment._id': comment_id
@@ -321,39 +357,61 @@ class QuestionClass {
       },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async commentQuestion({ question_id, user, content }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { $push: { comment: { user, content } } },
       { new: true }
     ).lean();
+
+    return true;
   }
   static async deleteQuestion(question_id) {
-    return await QuestionModel.findByIdAndDelete(question_id);
+    await QuestionModel.findByIdAndDelete(question_id);
+    return true;
   }
   static async updateQuestion({ question_id, title, problem, expect, text, hashtags }) {
-    return await QuestionModel.findOneAndUpdate(
+    await QuestionModel.findOneAndUpdate(
       { _id: question_id },
       { title, problem, expect, text, hashtags, update_at: Date.now() },
       { new: true }
     ).lean();
+    return true;
   }
-  static async voteQuestion({ question_id, type, user }) {
+  static async voteQuestion({ question_id, type, user, old }) {
+    let vote_score_;
     let question;
     if (type === 'up') {
+      if (old === 'down') {
+        vote_score_ = VoteType.Question * 2;
+      } else if (old === 'cancel') {
+        vote_score_ = VoteType.Question;
+      }
       question = await QuestionModel.findOneAndUpdate(
         { _id: question_id },
         { $pull: { vote_down: user }, $push: { vote_up: user } },
         { new: true }
       );
     } else if (type === 'down') {
+      if (old === 'up') {
+        vote_score_ = -(VoteType.Question*2);
+      } else if (old === 'cancel') {
+        vote_score_ = -VoteType.Question;
+      }
       question = await QuestionModel.findOneAndUpdate(
         { _id: question_id },
         { $pull: { vote_up: user }, $push: { vote_down: user } },
         { new: true }
       );
     } else if (type === 'cancel') {
+      if (old === 'up') {
+        vote_score_ = -VoteType.Question;
+      } else if (old === 'down') {
+        vote_score_ = VoteType.Question;
+      }
       question = await QuestionModel.findOneAndUpdate(
         { _id: question_id },
         { $pull: { vote_up: user, vote_down: user } },
@@ -364,14 +422,11 @@ class QuestionClass {
     // vote_score
     const vote_score = question.vote_up.length - question.vote_down.length;
     await QuestionModel.findOneAndUpdate({ _id: question_id }, { $set: { vote_score } });
-    return true;
+    return vote_score_;
   }
   static async viewQuestion({ question_id }) {
-    return await QuestionModel.findOneAndUpdate(
-      { _id: question_id },
-      { $inc: { view: 1 } },
-      { new: true }
-    ).lean();
+    await QuestionModel.findOneAndUpdate({ _id: question_id }, { $inc: { view: 1 } }, { new: true }).lean();
+    return true;
   }
   static async getQuestionById(question_id) {
     return await QuestionModel.findById(question_id)
@@ -382,7 +437,7 @@ class QuestionClass {
       .lean();
   }
   static async createQuestion({ user, title, problem, expect, text, hashtags }) {
-    return await QuestionModel.create({
+    await QuestionModel.create({
       user,
       title,
       problem,
@@ -390,12 +445,11 @@ class QuestionClass {
       text,
       hashtags
     });
+
+    return true;
   }
   static async checkExist(select) {
     return await QuestionModel.findOne(select).lean();
-  }
-  static async findConditionQuestions(select) {
-    return await QuestionModel.find(select).lean();
   }
 }
 

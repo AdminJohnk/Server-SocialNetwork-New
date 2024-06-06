@@ -5,7 +5,14 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class UserController {
-
+  static getReputation = async (req, res, next) => {
+    new OK({
+      message: 'Get Reputation Successfully',
+      metadata: await UserService.getReputation({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  };
   static getAllUsers = async (req, res, next) => {
     new OK({
       message: 'Get All Users Successfully',
@@ -13,7 +20,7 @@ class UserController {
         me_id: req.params.userId
       })
     }).send(res);
-  }
+  };
 
   static checkExistEmail = async (req, res, next) => {
     new OK({
