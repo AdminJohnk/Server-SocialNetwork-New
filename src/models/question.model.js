@@ -21,7 +21,7 @@ const QuestionSchema = new Schema(
     vote_up: { type: [ObjectId], ref: 'User', default: [] },
     vote_down: { type: [ObjectId], ref: 'User', default: [] },
     vote_score: { type: Number, default: 0 },
-    save: { type: [ObjectId], ref: 'User', default: [] },
+    saves: { type: [ObjectId], ref: 'User', default: [] },
     update_at: { type: Date, default: Date.now },
     comment: {
       type: [
@@ -205,14 +205,14 @@ class QuestionClass {
   static async saveQuestion({ question_id, user }) {
     const isSaved = await QuestionModel.findOne({
       _id: question_id,
-      save: user
+      saves: user
     });
 
     const operator = isSaved ? '$pull' : '$addToSet';
 
     await QuestionModel.findOneAndUpdate(
       { _id: question_id },
-      { [operator]: { save: user } },
+      { [operator]: { saves: user } },
       { new: true }
     ).lean();
 
