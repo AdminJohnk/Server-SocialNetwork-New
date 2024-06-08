@@ -329,7 +329,6 @@ class PostService {
     const foundPost = await PostClass.checkExist({ _id: post_id });
     if (!foundPost) throw new NotFoundError('Post not found');
 
-    console.log('foundPost', foundPost);
     let isFullSearch = false;
 
     if (user === foundPost.post_attributes.user.toString()) {

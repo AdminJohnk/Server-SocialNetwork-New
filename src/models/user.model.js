@@ -187,7 +187,8 @@ class UserClass {
             },
             {
               $addFields: {
-                user: { $arrayElemAt: ['$user_arr', 0] }
+                user: { $arrayElemAt: ['$user_arr', 0] },
+                answer_number: { $size: '$answers' }
               }
             },
             { $project: { user_arr: 0 } }
@@ -226,7 +227,7 @@ class UserClass {
             user: { _id: 1, name: 1, user_image: 1 },
             vote_score: 1,
             view: 1,
-            answer_number: { $size: '$favorite_questions.answers' },
+            answer_number: 1,
             createdAt: 1
           }
         }
