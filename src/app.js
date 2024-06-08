@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import compression from 'compression';
 import router from './routes/root.router.js';
+import limiter from './middlewares/preventSpam.js';
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.use(
 );
 
 // init routes
-app.use('/api/v1', router);
+app.use('/api/v1', limiter, router);
 
 // Hello world
 app.get('/', (_, res) => {

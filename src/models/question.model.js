@@ -70,6 +70,70 @@ const QuestionSchema = new Schema(
 const QuestionModel = model(DOCUMENT_NAME, QuestionSchema);
 
 class QuestionClass {
+  static async getHotQuestions() {
+    // get questions that answered by many people recently
+    return await QuestionModel.aggregate([
+      { $match: { 'answers.0': { $exists: true } } },
+      { $addFields: { answer_number: { $size: '$answers' } } },
+      { $sort: { answer_number: -1, vote_score: -1, 'answers.createdAt': -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          problem: 1,
+          hashtags: 1,
+          text: 1,
+          user: { _id: 1, name: 1, user_image: 1 },
+          vote_score: 1,
+          view: 1,
+          answer_number: 1,
+          createdAt: 1
+        }
+      }
+    ]);
+  }
+  static async getRelatedQuestions({ question_id }) {
+    const question = await QuestionModel.findOne({ _id: question_id }).lean();
+
+    return await QuestionModel.aggregate([
+      { $match: { hashtags: { $in: question.hashtags } } },
+      { $sort: { vote_score: -1, view: -1, createdAt: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user',
+          foreignField: '_id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          problem: 1,
+          hashtags: 1,
+          text: 1,
+          user: { _id: 1, name: 1, user_image: 1 },
+          vote_score: 1,
+          view: 1,
+          answer_number: { $size: '$answers' },
+          createdAt: 1
+        }
+      }
+    ]);
+  }
   static getVoteScore({ old_vote_score, type, old, level }) {
     if (type === 'up') {
       if (old === 'down') {

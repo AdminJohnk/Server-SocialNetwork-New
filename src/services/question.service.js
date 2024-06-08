@@ -15,6 +15,12 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static getHotQuestions = async () => {
+    return await QuestionClass.getHotQuestions();
+  };
+  static getRelatedQuestions = async ({ question_id }) => {
+    return await QuestionClass.getRelatedQuestions({ question_id });
+  };
   static getSavedQuestions = async ({ user }) => {
     return await UserClass.getSavedQuestions({ user });
   };
