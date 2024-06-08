@@ -41,6 +41,9 @@ router.get('/hot', asyncHandler(QuestionController.getHotQuestions));
 // Get Related Questions
 router.get('/related/:question_id', asyncHandler(QuestionController.getRelatedQuestions));
 
+// Get All List Question
+router.get('/saves/all', asyncHandler(QuestionController.getAllListQuestion));
+
 // =========================================================
 
 /// POST //
@@ -88,6 +91,10 @@ router.put('/answer/vote/:question_id', asyncHandler(QuestionController.voteAnsw
 
 // Save Question
 router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
+
+// Create List QUestion
+router.put('/saves/create-list', asyncHandler(QuestionController.createListQuestion));
+
 
 // =========================================================
 

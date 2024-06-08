@@ -5,6 +5,25 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Get All List Question
+  static getAllListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Get All List Question Successfully',
+      metadata: await QuestionService.getAllListQuestion({
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Create List Question
+  static createListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Create List Question Successfully',
+      metadata: await QuestionService.createListQuestion({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
   // Get Hot Questions
   static getHotQuestions = async (req, res, next) => {
     new OK({

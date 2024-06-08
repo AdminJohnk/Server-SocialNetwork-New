@@ -88,6 +88,7 @@ const UserSchema = new Schema(
       type: [{ type: ObjectId, ref: 'Notification' }],
       default: []
     },
+    category_favorite_questions: { type: Array, default: [] },
 
     // Number
     post_number: { type: Number, default: 0 },
@@ -130,16 +131,26 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 // lv4   250
 // lv5   400
 
+// comment: 0.5
+// answer: 1
+// vote comment: 1
+// vote answer: 1.5
+// vote question: 2
+
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
+  static async getAllListQuestion({ user }) {
+    // Get name array of all category_favorite_questions
+    const list_question = await UserModel.findById(user).select({ category_favorite_questions: 1 }).lean();
+  }
+  static async createListQuestion({ user, name }) {
+    return await UserModel.findByIdAndUpdate(user, {
+      $push: {
+        category_favorite_questions: { name, questions: [] }
+      }
+    }).lean();
+  }
   static async changeReputation({ user_id, number }) {
-    // number có thể là số âm hoặc dương
-    // nếu đủ điểm thì tăng level cho user
-    // lv1   0
-    // lv2   50
-    // lv3   150
-    // lv4   250
-    // lv5   400
     const user = await UserModel.findById(user_id).lean();
     const newReputation = user.reputation + number;
     let newLevel = user.level;
