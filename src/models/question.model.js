@@ -106,7 +106,7 @@ class QuestionClass {
     const question = await QuestionModel.findOne({ _id: question_id }).lean();
 
     return await QuestionModel.aggregate([
-      { $match: { hashtags: { $in: question.hashtags } } },
+      { $match: { hashtags: { $in: question.hashtags }, _id: { $ne: new ObjectId(question_id) } } },
       { $sort: { vote_score: -1, view: -1, createdAt: -1 } },
       { $limit: 10 },
       {
