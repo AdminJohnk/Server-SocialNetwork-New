@@ -5,6 +5,24 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Get Hot Questions
+  static getHotQuestions = async (req, res, next) => {
+    new OK({
+      message: 'Get Hot Questions Successfully',
+      metadata: await QuestionService.getHotQuestions()
+    }).send(res);
+  };
+
+  // Get Related Questions
+  static getRelatedQuestions = async (req, res, next) => {
+    new OK({
+      message: 'Get Related Questions Successfully',
+      metadata: await QuestionService.getRelatedQuestions({
+        question_id: req.params.question_id
+      })
+    }).send(res);
+  };
+
   // Get Saved Questions
   static getSavedQuestions = async (req, res, next) => {
     new OK({

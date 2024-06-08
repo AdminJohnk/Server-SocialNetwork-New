@@ -169,7 +169,71 @@ class UserClass {
     return await UserModel.findById(user_id).select({ reputation: 1, level: 1 }).lean();
   }
   static async getSavedQuestions({ user }) {
-  
+    const result = await UserModel.aggregate([
+      { $match: { _id: new ObjectId(user) } },
+      {
+        $lookup: {
+          from: 'questions',
+          let: { favoriteQuestions: '$favorite_questions' },
+          pipeline: [
+            { $match: { $expr: { $in: ['$_id', '$$favoriteQuestions'] } } },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'user',
+                foreignField: '_id',
+                as: 'user_arr'
+              }
+            },
+            {
+              $addFields: {
+                user: { $arrayElemAt: ['$user_arr', 0] }
+              }
+            },
+            { $project: { user_arr: 0 } }
+          ],
+          as: 'favorite_questions_arr'
+        }
+      },
+      {
+        $addFields: {
+          favorite_questions: {
+            $map: {
+              input: '$favorite_questions',
+              as: 'q_id',
+              in: {
+                $first: {
+                  $filter: {
+                    input: '$favorite_questions_arr',
+                    as: 'fq',
+                    cond: { $eq: ['$$fq._id', '$$q_id'] }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          favorite_questions: {
+            _id: 1,
+            title: 1,
+            problem: 1,
+            hashtags: 1,
+            text: 1,
+            user: { _id: 1, name: 1, user_image: 1 },
+            vote_score: 1,
+            view: 1,
+            answer_number: { $size: '$favorite_questions.answers' },
+            createdAt: 1
+          }
+        }
+      }
+    ]);
+
+    return result[0].favorite_questions.reverse();
   }
   static async saveQuestion({ user, question_id }) {
     const isSaved = await UserModel.findOne({

@@ -35,6 +35,12 @@ router.get('/tags/number/:tagname', asyncHandler(QuestionController.getNumberQue
 // Get Saved Questions
 router.get('/saved', asyncHandler(QuestionController.getSavedQuestions));
 
+// Get Hot Questions
+router.get('/hot', asyncHandler(QuestionController.getHotQuestions));
+
+// Get Related Questions
+router.get('/related/:question_id', asyncHandler(QuestionController.getRelatedQuestions));
+
 // =========================================================
 
 /// POST //

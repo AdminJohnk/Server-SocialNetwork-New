@@ -96,7 +96,7 @@ class HashTagService {
       if (!foundQuestion) throw new NotFoundError('Question not found');
       hashTags = foundQuestion.hashtags || [];
     }
-    return await HashTagsClass.deletePostHashTags({ post_id, hashTags, scope });
+    return await HashTagsClass.deletePostHashTags({ post_id, question_id, hashTags, scope });
   }
 }
 

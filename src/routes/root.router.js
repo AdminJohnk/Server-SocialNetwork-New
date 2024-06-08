@@ -2,7 +2,6 @@
 
 import { Router } from 'express';
 const router = Router();
-import limiter from '../middlewares/preventSpam.js';
 import authRouter from './auth.router.js';
 import userRouter from './user.router.js';
 import postRouter from './post.router.js';
@@ -20,7 +19,7 @@ import { checkApiKey, checkPermission } from '../auth/checkAuth.js';
 import { pushToLogDiscord } from '../middlewares/logger.middleware.js';
 
 // add log to discord
-// router.use(pushToLogDiscord);
+router.use(pushToLogDiscord);
 
 // check apiKey
 // router.use(checkApiKey);
@@ -28,18 +27,18 @@ import { pushToLogDiscord } from '../middlewares/logger.middleware.js';
 // check permission
 // router.use(checkPermission('0000'));
 
-router.use('/auth', limiter, authRouter);
-router.use('/admin', limiter, AdminRouter);
-router.use('/images', limiter, ImageRouter);
-router.use('/communities', limiter, CommunityRouter);
-router.use('/chat', limiter, ChatRouter);
-router.use('/notifications', limiter, NotiRouter);
-router.use('/comments', limiter, CommentRouter);
-router.use('/posts', limiter, postRouter);
-router.use('/users', limiter, userRouter);
-router.use('/searchlog', limiter, SearchLogRouter);
-router.use('/series', limiter, SeriesRouter);
-router.use('/questions', limiter, QuestionRouter);
-router.use('/hashtags', limiter, HashtagRouter);
+router.use('/auth', authRouter);
+router.use('/admin', AdminRouter);
+router.use('/images', ImageRouter);
+router.use('/communities', CommunityRouter);
+router.use('/chat', ChatRouter);
+router.use('/notifications', NotiRouter);
+router.use('/comments', CommentRouter);
+router.use('/posts', postRouter);
+router.use('/users', userRouter);
+router.use('/searchlog', SearchLogRouter);
+router.use('/series', SeriesRouter);
+router.use('/questions', QuestionRouter);
+router.use('/hashtags', HashtagRouter);
 
 export default router;

@@ -339,7 +339,7 @@ class HashTagsClass {
     return await newHashTag.save();
   }
 
-  static async deletePostHashTags({ post_id, hashTags, scope }) {
+  static async deletePostHashTags({ post_id, question_id, hashTags, scope }) {
     for (let name of hashTags) {
       const foundHashTag = await HashTagsModel.findOne({
         name
@@ -347,7 +347,7 @@ class HashTagsClass {
       if (!foundHashTag) continue;
       const type = scope === 'Community' ? 'communities' : scope === 'Question' ? 'questions' : 'posts';
 
-      foundHashTag[type] = foundHashTag[type].filter((post) => post.toString() != post_id.toString());
+      foundHashTag[type] = foundHashTag[type].filter((id) => id.toString() != (type !== 'questions' ? post_id.toString() : question_id.toString()));
       await foundHashTag.save();
 
       if (
