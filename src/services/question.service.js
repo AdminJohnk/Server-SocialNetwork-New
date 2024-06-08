@@ -290,6 +290,8 @@ class QuestionService {
     if (foundQuestion.user.toString() !== user && foundQuestion.user.toString() !== user)
       throw new ForbiddenError('Unauthorized to delete this question');
 
+    await HashTagService.deletePostHashTags({ question_id, scope: 'Question' });
+
     return await QuestionClass.deleteQuestion(question_id);
   };
   static updateQuestion = async ({ question_id, user, title, problem, expect, text, hashtags }) => {

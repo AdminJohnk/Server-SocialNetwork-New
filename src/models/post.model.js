@@ -118,12 +118,16 @@ class PostClass {
       'post_attributes.user': user_id,
       type: 'Post'
     })
+      // get Id of post to post_id
+      .select('_id')
       .select('post_attributes.images')
       .sort({ createdAt: -1 })
       .lean();
 
     const imagesArray = images
-      .map(image => image.post_attributes.images)
+      .map(image =>
+        image.post_attributes.images.map(img => ({ post_id: image._id, image: img }))
+      )
       .flat();
 
     return imagesArray;
