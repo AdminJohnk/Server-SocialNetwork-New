@@ -98,6 +98,14 @@ router.put('/saves/create-list', asyncHandler(QuestionController.createListQuest
 // Move To List Question
 router.put('/saves/move-to-list', asyncHandler(QuestionController.moveToListQuestion));
 
+// Remove From List Question
+router.put('/saves/remove-from-list', asyncHandler(QuestionController.removeFromListQuestion));
+
+// Remove From Save Question
+router.put('/saves/remove/:question_id', asyncHandler(QuestionController.removeSaveQuestion));
+
+// Update List Name
+router.put('/saves/update-list-name', asyncHandler(QuestionController.updateListName));
 
 // =========================================================
 
@@ -113,6 +121,9 @@ router.delete('/answer/comment/delete/:question_id', asyncHandler(QuestionContro
 
 // Delete Answer
 router.delete('/answer/delete/:question_id', asyncHandler(QuestionController.deleteAnswer));
+
+// Delete List Question
+router.delete('/saves/delete-list/:list_name', asyncHandler(QuestionController.deleteListQuestion));
 
 // =========================================================
 

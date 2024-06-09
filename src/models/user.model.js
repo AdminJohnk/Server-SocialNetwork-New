@@ -147,6 +147,52 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
+  static async deleteListQuestion({ user, list_name }) {
+    await UserModel.findByIdAndUpdate(
+      user,
+      {
+        $pull: {
+          category_favorite_questions: { name: list_name }
+        }
+      },
+      { new: true }
+    );
+
+    return true;
+  }
+  static async updateListName({ user, old_name, new_name }) {
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': old_name },
+      {
+        $set: {
+          'category_favorite_questions.$.name': new_name
+        }
+      }
+    ).lean();
+
+    return true;
+  }
+  static async removeSaveQuestion({ user, question_id }) {
+    await UserModel.findByIdAndUpdate(user, {
+      $pull: {
+        favorite_questions: question_id
+      }
+    });
+
+    return true;
+  }
+  static async removeFromListQuestion({ user, question_id, from }) {
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': from },
+      {
+        $pull: {
+          'category_favorite_questions.$.questions': new ObjectId(question_id)
+        }
+      }
+    ).lean();
+
+    return true;
+  }
   static async moveToListQuestion({ user, question_id, from, to }) {
     await UserModel.findOneAndUpdate(
       { _id: user, 'category_favorite_questions.name': from },

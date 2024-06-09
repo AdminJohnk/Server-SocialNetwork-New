@@ -15,12 +15,27 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
-  static moveToListQuestion = async ({ user, question_id, from, to }) => {
+  static deleteListQuestion = async ({ user, list_name }) => {
+    return await UserClass.deleteListQuestion({ user, list_name });
+  };
+  static updateListName = async ({ user, old_name, new_name }) => {
+    return await UserClass.updateListName({ user, old_name, new_name });
+  };
+  static removeSaveQuestion = async ({ user, question_id }) => {
     const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
     if (!foundQuestion) throw new NotFoundError('Question not found');
 
-    if (foundQuestion.user.toString() !== user)
-      throw new ForbiddenError('Unauthorized to move this question');
+    return await UserClass.removeSaveQuestion({ user, question_id });
+  };
+  static removeFromListQuestion = async ({ user, question_id, from }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    return await UserClass.removeFromListQuestion({ user, question_id, from });
+  };
+  static moveToListQuestion = async ({ user, question_id, from, to }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
 
     return await UserClass.moveToListQuestion({ user, question_id, from, to });
   };
