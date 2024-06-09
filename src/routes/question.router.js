@@ -41,6 +41,9 @@ router.get('/hot', asyncHandler(QuestionController.getHotQuestions));
 // Get Related Questions
 router.get('/related/:question_id', asyncHandler(QuestionController.getRelatedQuestions));
 
+// Get All List Question
+router.get('/saves/all-list', asyncHandler(QuestionController.getAllListQuestion));
+
 // =========================================================
 
 /// POST //
@@ -89,6 +92,21 @@ router.put('/answer/vote/:question_id', asyncHandler(QuestionController.voteAnsw
 // Save Question
 router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
 
+// Create List QUestion
+router.put('/saves/create-list', asyncHandler(QuestionController.createListQuestion));
+
+// Move To List Question
+router.put('/saves/move-to-list', asyncHandler(QuestionController.moveToListQuestion));
+
+// Remove From List Question
+router.put('/saves/remove-from-list', asyncHandler(QuestionController.removeFromListQuestion));
+
+// Remove From Save Question
+router.put('/saves/remove/:question_id', asyncHandler(QuestionController.removeSaveQuestion));
+
+// Update List Name
+router.put('/saves/update-list-name', asyncHandler(QuestionController.updateListName));
+
 // =========================================================
 
 /// DELETE //
@@ -103,6 +121,9 @@ router.delete('/answer/comment/delete/:question_id', asyncHandler(QuestionContro
 
 // Delete Answer
 router.delete('/answer/delete/:question_id', asyncHandler(QuestionController.deleteAnswer));
+
+// Delete List Question
+router.delete('/saves/delete-list/:list_name', asyncHandler(QuestionController.deleteListQuestion));
 
 // =========================================================
 
