@@ -88,7 +88,15 @@ const UserSchema = new Schema(
       type: [{ type: ObjectId, ref: 'Notification' }],
       default: []
     },
-    category_favorite_questions: { type: Array, default: [] },
+    category_favorite_questions: {
+      type: [
+        {
+          name: String,
+          questions: [{ type: ObjectId, ref: 'Question' }]
+        }
+      ],
+      default: []
+    },
 
     // Number
     post_number: { type: Number, default: 0 },
@@ -139,9 +147,62 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
+  static async moveToListQuestion({ user, question_id, from, to }) {
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': from },
+      {
+        $pull: {
+          'category_favorite_questions.$.questions': new ObjectId(question_id)
+        }
+      }
+    ).lean();
+
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': to },
+      {
+        $addToSet: {
+          'category_favorite_questions.$.questions': new ObjectId(question_id)
+        }
+      }
+    ).lean();
+
+    return true;
+  }
   static async getAllListQuestion({ user }) {
-    // Get name array of all category_favorite_questions
-    const list_question = await UserModel.findById(user).select({ category_favorite_questions: 1 }).lean();
+    const list_category = await UserModel.findById(user)
+      .select({ _id: 0, category_favorite_questions: 1 })
+      .populate({
+        path: 'category_favorite_questions',
+        populate: [
+          {
+            path: 'questions',
+            select: {
+              _id: 1,
+              title: 1,
+              problem: 1,
+              hashtags: 1,
+              text: 1,
+              user: 1,
+              vote_score: 1,
+              view: 1,
+              answers: 1,
+              createdAt: 1
+            },
+            populate: {
+              path: 'user',
+              select: { _id: 1, name: 1, user_image: 1 }
+            }
+          }
+        ]
+      })
+      .lean();
+
+    const list_name = list_category.category_favorite_questions.map((item) => item.name);
+
+    return {
+      list_name,
+      list_category: list_category.category_favorite_questions
+    };
   }
   static async createListQuestion({ user, name }) {
     return await UserModel.findByIdAndUpdate(user, {

@@ -5,6 +5,16 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Move To List Question
+  static moveToListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Move To List Question Successfully',
+      metadata: await QuestionService.moveToListQuestion({
+        user: req.user.userId,
+        ...req.body
+      })
+    }).send(res);
+  }
   // Get All List Question
   static getAllListQuestion = async (req, res, next) => {
     new OK({

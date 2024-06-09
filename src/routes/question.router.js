@@ -42,7 +42,7 @@ router.get('/hot', asyncHandler(QuestionController.getHotQuestions));
 router.get('/related/:question_id', asyncHandler(QuestionController.getRelatedQuestions));
 
 // Get All List Question
-router.get('/saves/all', asyncHandler(QuestionController.getAllListQuestion));
+router.get('/saves/all-list', asyncHandler(QuestionController.getAllListQuestion));
 
 // =========================================================
 
@@ -94,6 +94,9 @@ router.put('/save/:question_id', asyncHandler(QuestionController.saveQuestion));
 
 // Create List QUestion
 router.put('/saves/create-list', asyncHandler(QuestionController.createListQuestion));
+
+// Move To List Question
+router.put('/saves/move-to-list', asyncHandler(QuestionController.moveToListQuestion));
 
 
 // =========================================================

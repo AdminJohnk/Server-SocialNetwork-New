@@ -15,9 +15,18 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static moveToListQuestion = async ({ user, question_id, from, to }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    if (foundQuestion.user.toString() !== user)
+      throw new ForbiddenError('Unauthorized to move this question');
+
+    return await UserClass.moveToListQuestion({ user, question_id, from, to });
+  };
   static getAllListQuestion = async ({ user }) => {
     return await UserClass.getAllListQuestion({ user });
-  }
+  };
   static createListQuestion = async ({ user, name }) => {
     return await UserClass.createListQuestion({ user, name });
   };
