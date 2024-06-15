@@ -1,13 +1,16 @@
 'use strict';
-import { UserClass } from '../models/user.model.js';
-import { KeyTokenClass } from '../models/keytoken.model.js';
+
 import * as bcrypt from 'bcrypt';
-import { randomBytes, generateKeyPairSync } from 'crypto';
-import { stringify, parse } from 'qs';
+
+import { AuthFailureError, BadRequestError, ForbiddenError } from '../core/error.response.js';
+import { generateKeyPairSync, randomBytes } from 'crypto';
+import { parse, stringify } from 'qs';
+
+import { KeyTokenClass } from '../models/keytoken.model.js';
+import { UserClass } from '../models/user.model.js';
+import axios from 'axios';
 import { createTokenPair } from '../auth/authUtils.js';
 import { getInfoData } from '../utils/functions.js';
-import { BadRequestError, AuthFailureError, ForbiddenError } from '../core/error.response.js';
-import axios from 'axios';
 import { sendMailForgotPassword } from '../configs/mailTransport.js';
 
 /**
@@ -315,7 +318,7 @@ class AuthService {
 
     if (!foundUser) throw new BadRequestError('Email not exists');
 
-    const match = await compare(oldPassword, foundUser.password);
+    const match = await bcrypt.compare(oldPassword, foundUser.password);
 
     if (!match) throw new BadRequestError('Old password not match');
 
