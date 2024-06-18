@@ -13,7 +13,7 @@ const Notification = {
   SENDFRIENDREQUEST_001: {
     type: 'SENDFRIENDREQUEST_001',
     kind: 'one_to_one',
-    content: 'send you a friend request'
+    content: 'sent you a friend request'
   },
   ACCEPTFRIENDREQUEST_001: {
     type: 'ACCEPTFRIENDREQUEST_001',
@@ -35,11 +35,6 @@ const Notification = {
     kind: 'one_to_one',
     content: 'liked your comment'
   },
-  DISLIKECOMMENT_001: {
-    type: 'DISLIKECOMMENT_001',
-    kind: 'one_to_one',
-    content: 'disliked your comment'
-  },
   // ==================== One to Many ====================
   CREATEPOST_001: {
     type: 'CREATEPOST_001',
@@ -48,6 +43,6 @@ const Notification = {
   }
 };
 
-const EnumType = Object.keys(Notification);
+const NotiEnumMongoose = Object.keys(Notification);
 
-export { Notification, EnumType };
+export { Notification, NotiEnumMongoose };

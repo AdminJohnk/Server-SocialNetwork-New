@@ -155,14 +155,6 @@ class AdminService {
       number: 1
     });
 
-    const msg = NotificationService.createMsgToPublish({
-      type: CREATEPOST_001,
-      sender: user,
-      post: result._id
-    });
-
-    PublisherService.publishNotify(msg);
-
     // Thêm post trong community
     if (scope === 'Community') {
       await CommunityClass.changeToArrayCommunity({
