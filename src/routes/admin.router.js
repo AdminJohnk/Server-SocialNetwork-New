@@ -30,10 +30,13 @@ router.get('/posts/find/:post_id', asyncHandler(AdminController.findPostById));
 router.get('/posts/number', asyncHandler(AdminController.getPostNumber));
 
 // Get all parent comment
-router.get('/comments/parents/:post_id', asyncHandler(AdminController.getAllParentComments));
+router.get('/comments/parents/:post_id/:page/:pagesize', asyncHandler(AdminController.getAllParentComments));
 
 // Get all child comment
-router.get('/comments/children/:parent_id', asyncHandler(AdminController.getAllChildComments));
+router.get(
+  '/comments/children/:parent_id/:page/:pagesize',
+  asyncHandler(AdminController.getAllChildComments)
+);
 
 // =========================================================
 

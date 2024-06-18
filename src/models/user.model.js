@@ -612,7 +612,36 @@ class UserClass {
   };
   static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
     const skip = (page - 1) * limit;
-    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
+
+    const result = await UserModel.aggregate([
+      {
+        $skip: skip
+      },
+      {
+        $limit: +limit
+      },
+      {
+        $sort: sort
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: '_id',
+          foreignField: 'post_attributes.user',
+          as: 'posts'
+        }
+      },
+      {
+        $addFields: {
+          post_number: { $size: '$posts' }
+        }
+      },
+      {
+        $project: getSelectData(select)
+      }
+    ]);
+
+    return result;
   };
   static updateUser_admin = async ({ user_id, payload }) => {
     return await UserModel.findByIdAndUpdate(user_id, payload, {

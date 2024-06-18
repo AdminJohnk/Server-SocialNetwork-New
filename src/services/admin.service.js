@@ -105,7 +105,7 @@ class AdminService {
       throw new BadRequestError('Type of comment is invalid');
     }
   };
-  static getAllParentComments = async ({ post, limit = 20, page = 1, sort = { createdAt: -1 } }) => {
+  static getAllParentComments = async ({ post, limit = 10, page = 1, sort = { createdAt: -1 } }) => {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -116,7 +116,7 @@ class AdminService {
       sort
     });
   };
-  static getAllChildComments = async ({ parent, limit, page, sort }) => {
+  static getAllChildComments = async ({ parent, limit = 10, page = 1, sort = { createdAt: -1 } }) => {
     const foundComment = await ParentCommentClass.checkExist({ _id: parent });
     if (!foundComment) throw new NotFoundError('Comment not found');
 
@@ -219,7 +219,7 @@ class AdminService {
   static findPostById = async ({ post_id }) => {
     return await PostClass.findPostById_admin({ post_id });
   };
-  static getAllPosts = async ({ limit = 20, page = 1, sort = { updatedAt: -1 } }) => {
+  static getAllPosts = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
     return await PostClass.getAllPosts_admin({ limit, page, sort });
   };
 
@@ -248,7 +248,7 @@ class AdminService {
 
     return await UserClass.updateUser_admin({ user_id, payload });
   };
-  static getAllUsers = async ({ limit = 20, page = 1, sort = { updatedAt: -1 } }) => {
+  static getAllUsers = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
     return await UserClass.getAllUsers_admin({ limit, page, sort });
   };
   static deleteUser = async ({ user_id }) => {

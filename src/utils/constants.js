@@ -16,7 +16,18 @@ const avt_default = 'default_avatar.png';
 const pp_UserDefault = '_id name email user_image last_online';
 const pp_UserMore = '_id name email user_image last_online experiences';
 const se_UserDefault = ['_id', 'name', 'email', 'user_image', 'last_online'];
-const se_UserAdmin = ['_id', 'name', 'email', 'user_image', 'experiences', 'tags', 'post_number'];
+const se_UserAdmin = [
+  '_id',
+  'name',
+  'email',
+  'user_image',
+  'tags',
+  'post_number',
+  'role',
+  'alias',
+  'reputation',
+  'level'
+];
 
 const se_UserDefaultForPost = [
   '_id',

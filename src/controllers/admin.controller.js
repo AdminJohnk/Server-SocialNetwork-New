@@ -58,7 +58,9 @@ class AdminController {
     new OK({
       message: 'Get All Parent Comments Successfully',
       metadata: await AdminService.getAllParentComments({
-        post: req.params.post_id
+        post: req.params.post_id,
+        page: req.params.page,
+        limit: req.params.pagesize
       })
     }).send(res);
   };
@@ -70,7 +72,9 @@ class AdminController {
     new OK({
       message: 'Get All Child Comments Successfully',
       metadata: await AdminService.getAllChildComments({
-        parent: req.params.parent_id
+        parent: req.params.parent_id,
+        page: req.params.page,
+        limit: req.params.pagesize
       })
     }).send(res);
   };
