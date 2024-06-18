@@ -12,8 +12,8 @@ SenderMailServer();
 import { connectToRabbitMQ } from './src/database/init.rabbit.js';
 connectToRabbitMQ().then(({ channel, connection }) => {
   console.log('Connected to RabbitMQ');
-  global.__channel = channel;
-  global.__connection = connection;
+  // global.__channel = channel;
+  // global.__connection = connection;
 });
 
 // checkOverLoad();
