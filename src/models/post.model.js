@@ -64,7 +64,8 @@ const PostSchema = new Schema(
         type: [{ type: ObjectId, ref: 'User' }],
         select: false
       },
-      hashtags: { type: [String], default: [] }
+      hashtags: { type: [String], default: [] },
+      tags: { type: [String], default: [] },
     }
   },
   {
@@ -561,11 +562,12 @@ class PostClass {
     content,
     images,
     hashtags,
+    tags,
     scope,
     community,
     visibility
   }) {
-    const post_attributes = { user, content, images, hashtags };
+    const post_attributes = { user, content, images, hashtags, tags };
     const newPost = await PostModel.create({
       type,
       scope,
