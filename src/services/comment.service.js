@@ -279,7 +279,8 @@ class CommentService {
       user_id: user
     });
 
-    if (user !== parentUser) {
+    if (user !== owner_post) {
+      console.log('seperate:: ', user, parentUser);
       // Thông báo cho người đăng post
       const msg = NotificationService.createMsgToPublish({
         type: COMMENTPOST_001,
