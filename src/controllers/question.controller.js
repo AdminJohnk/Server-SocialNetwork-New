@@ -5,6 +5,75 @@ import { OK, CREATED } from '../core/success.response.js';
 import { HEADER } from '../utils/constants.js';
 
 class QuestionController {
+  // Delete List Question
+  static deleteListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Delete List Question Successfully',
+      metadata: await QuestionService.deleteListQuestion({
+        user: req.user.userId,
+        list_name: req.params.list_name
+      })
+    }).send(res);
+  };
+  // Update List Name
+  static updateListName = async (req, res, next) => {
+    new OK({
+      message: 'Update List Name Successfully',
+      metadata: await QuestionService.updateListName({
+        user: req.user.userId,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Remove Save Question
+  static removeSaveQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Remove Save Question Successfully',
+      metadata: await QuestionService.removeSaveQuestion({
+        user: req.user.userId,
+        question_id: req.params.question_id
+      })
+    }).send(res);
+  };
+  // Remove From List Question
+  static removeFromListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Remove From List Question Successfully',
+      metadata: await QuestionService.removeFromListQuestion({
+        user: req.user.userId,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Move To List Question
+  static moveToListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Move To List Question Successfully',
+      metadata: await QuestionService.moveToListQuestion({
+        user: req.user.userId,
+        ...req.body
+      })
+    }).send(res);
+  };
+  // Get All List Question
+  static getAllListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Get All List Question Successfully',
+      metadata: await QuestionService.getAllListQuestion({
+        user: req.user.userId
+      })
+    }).send(res);
+  };
+  // Create List Question
+  static createListQuestion = async (req, res, next) => {
+    new OK({
+      message: 'Create List Question Successfully',
+      metadata: await QuestionService.createListQuestion({
+        ...req.body,
+        user: req.user.userId
+      })
+    }).send(res);
+  };
   // Get Hot Questions
   static getHotQuestions = async (req, res, next) => {
     new OK({

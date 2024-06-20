@@ -15,6 +15,36 @@ import { UserClass } from '../models/user.model.js';
 import HashTagService from './hashtag.service.js';
 
 class QuestionService {
+  static deleteListQuestion = async ({ user, list_name }) => {
+    return await UserClass.deleteListQuestion({ user, list_name });
+  };
+  static updateListName = async ({ user, old_name, new_name }) => {
+    return await UserClass.updateListName({ user, old_name, new_name });
+  };
+  static removeSaveQuestion = async ({ user, question_id }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    return await UserClass.removeSaveQuestion({ user, question_id });
+  };
+  static removeFromListQuestion = async ({ user, question_id, from }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    return await UserClass.removeFromListQuestion({ user, question_id, from });
+  };
+  static moveToListQuestion = async ({ user, question_id, from, to }) => {
+    const foundQuestion = await QuestionClass.checkExist({ _id: question_id });
+    if (!foundQuestion) throw new NotFoundError('Question not found');
+
+    return await UserClass.moveToListQuestion({ user, question_id, from, to });
+  };
+  static getAllListQuestion = async ({ user }) => {
+    return await UserClass.getAllListQuestion({ user });
+  };
+  static createListQuestion = async ({ user, name }) => {
+    return await UserClass.createListQuestion({ user, name });
+  };
   static getHotQuestions = async () => {
     return await QuestionClass.getHotQuestions();
   };

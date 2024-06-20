@@ -88,6 +88,15 @@ const UserSchema = new Schema(
       type: [{ type: ObjectId, ref: 'Notification' }],
       default: []
     },
+    category_favorite_questions: {
+      type: [
+        {
+          name: String,
+          questions: [{ type: ObjectId, ref: 'Question' }]
+        }
+      ],
+      default: []
+    },
 
     // Number
     post_number: { type: Number, default: 0 },
@@ -130,16 +139,125 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 // lv4   250
 // lv5   400
 
+// comment: 0.5
+// answer: 1
+// vote comment: 1
+// vote answer: 1.5
+// vote question: 2
+
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
+  static async deleteListQuestion({ user, list_name }) {
+    await UserModel.findByIdAndUpdate(
+      user,
+      {
+        $pull: {
+          category_favorite_questions: { name: list_name }
+        }
+      },
+      { new: true }
+    );
+
+    return true;
+  }
+  static async updateListName({ user, old_name, new_name }) {
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': old_name },
+      {
+        $set: {
+          'category_favorite_questions.$.name': new_name
+        }
+      }
+    ).lean();
+
+    return true;
+  }
+  static async removeSaveQuestion({ user, question_id }) {
+    await UserModel.findByIdAndUpdate(user, {
+      $pull: {
+        favorite_questions: question_id
+      }
+    });
+
+    return true;
+  }
+  static async removeFromListQuestion({ user, question_id, from }) {
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': from },
+      {
+        $pull: {
+          'category_favorite_questions.$.questions': new ObjectId(question_id)
+        }
+      }
+    ).lean();
+
+    return true;
+  }
+  static async moveToListQuestion({ user, question_id, from, to }) {
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': from },
+      {
+        $pull: {
+          'category_favorite_questions.$.questions': new ObjectId(question_id)
+        }
+      }
+    ).lean();
+
+    await UserModel.findOneAndUpdate(
+      { _id: user, 'category_favorite_questions.name': to },
+      {
+        $addToSet: {
+          'category_favorite_questions.$.questions': new ObjectId(question_id)
+        }
+      }
+    ).lean();
+
+    return true;
+  }
+  static async getAllListQuestion({ user }) {
+    const list_category = await UserModel.findById(user)
+      .select({ _id: 0, category_favorite_questions: 1 })
+      .populate({
+        path: 'category_favorite_questions',
+        populate: [
+          {
+            path: 'questions',
+            select: {
+              _id: 1,
+              title: 1,
+              problem: 1,
+              hashtags: 1,
+              text: 1,
+              user: 1,
+              vote_score: 1,
+              view: 1,
+              answers: 1,
+              createdAt: 1
+            },
+            populate: {
+              path: 'user',
+              select: { _id: 1, name: 1, user_image: 1 }
+            }
+          }
+        ]
+      })
+      .lean();
+
+    const list_name = list_category.category_favorite_questions.map((item) => item.name);
+
+    return {
+      list_name,
+      list_category: list_category.category_favorite_questions
+    };
+  }
+  static async createListQuestion({ user, name }) {
+    return await UserModel.findByIdAndUpdate(user, {
+      $push: {
+        category_favorite_questions: { name, questions: [] }
+      }
+    }).lean();
+  }
   static async changeReputation({ user_id, number }) {
-    // number có thể là số âm hoặc dương
-    // nếu đủ điểm thì tăng level cho user
-    // lv1   0
-    // lv2   50
-    // lv3   150
-    // lv4   250
-    // lv5   400
     const user = await UserModel.findById(user_id).lean();
     const newReputation = user.reputation + number;
     let newLevel = user.level;
