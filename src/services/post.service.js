@@ -389,6 +389,7 @@ class PostService {
     content,
     images,
     hashtags,
+    tags,
     scope,
     community,
     visibility
@@ -403,7 +404,8 @@ class PostService {
       scope,
       community,
       visibility,
-      hashtags
+      hashtags,
+      tags
     });
 
     UserClass.changeNumberUser({
