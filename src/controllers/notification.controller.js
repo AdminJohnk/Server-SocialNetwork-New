@@ -4,6 +4,23 @@ import NotiService from '../services/notification.service.js';
 import { OK, CREATED } from '../core/success.response.js';
 
 class NotiController {
+  static deleteNotification = async (req, res, next) => {
+    new OK({
+      message: 'Delete Notification Successfully',
+      metadata: await NotiService.deleteNotification({
+        notify_id: req.params.notify_id,
+        user_id: req.user.userId
+      })
+    }).send(res);
+  }
+  static markAllAsRead = async (req, res, next) => {
+    new OK({
+      message: 'Mark All Notifications as Read Successfully',
+      metadata: await NotiService.markAllAsRead({
+        user_id: req.user.userId
+      })
+    }).send(res);
+  }
   static setSubUnread = async (req, res, next) => {
     new OK({
       message: 'Set Sub Unread Notifications Successfully',

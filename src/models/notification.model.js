@@ -35,6 +35,12 @@ NotificationSchema.index({ createAt: 1 }, { expireAfterSeconds: 86400 * 10 });
 const NotiModel = model(DOCUMENT_NAME, NotificationSchema);
 
 class NotiClass {
+  static async deleteNotification({ notify_id }) {
+    await NotiModel.deleteOne({ _id: notify_id });
+  }
+  static async markAllAsRead({ user_id }) {
+    await NotiModel.updateMany({ receiver: user_id }, { is_read: true });
+  }
   static async markAsRead({ notify_id }) {
     await NotiModel.updateOne({ _id: notify_id }, { is_read: true });
   }
@@ -47,6 +53,9 @@ class NotiClass {
   }
   static async createNotify(payload) {
     await NotiModel.create(payload);
+  }
+  static async checkExist({ notify_id }) {
+    return await NotiModel.findOne({ _id: notify_id });
   }
 }
 

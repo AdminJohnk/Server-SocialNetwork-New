@@ -1,9 +1,28 @@
 'use strict';
 
+import {
+  ConflictRequestError,
+  BadRequestError,
+  AuthFailureError,
+  NotFoundError,
+  ForbiddenError
+} from '../core/error.response.js';
 import { NotiClass } from '../models/notification.model.js';
 import { UserClass } from '../models/user.model.js';
 
 class NotificationService {
+  static async deleteNotification({ notify_id, user_id }) {
+    const foundNotify = await NotiClass.checkExist({ notify_id });
+    if (!foundNotify) throw new NotFoundError('Notification not found');
+
+    if (foundNotify.receiver.toString() !== user_id)
+      throw new ForbiddenError('You are not authorized to delete this notification');
+
+    await NotiClass.deleteNotification({ notify_id });
+  }
+  static async markAllAsRead({ user_id }) {
+    return await NotiClass.markAllAsRead({ user_id });
+  }
   static async setSubUnread({ user_id }) {
     return await UserClass.setSubUnread({ user_id });
   }
