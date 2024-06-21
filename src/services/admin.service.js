@@ -17,6 +17,8 @@ import NotificationService from './notification.service.js';
 import { Notification } from '../utils/notificationType.js';
 import PublisherService from './publisher.service.js';
 import { CommunityClass } from '../models/community.model.js';
+import { SeriesClass } from '../models/series.model.js';
+import { QuestionClass } from '../models/question.model.js';
 const { CREATEPOST_001 } = Notification;
 
 class AdminService {
@@ -249,6 +251,28 @@ class AdminService {
 
     return await UserClass.deleteUser_admin({ user_id });
   };
+  // ======================== Series ========================
+  static getSeriesNumber = async () => {
+    return await SeriesClass.getSeriesNumber_admin();
+  }
+
+  static getAllSeries = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
+    return await SeriesClass.getAllSeries_admin({ limit, page, sort });
+  }
+  // ======================== Community ========================
+  static getCommunityNumber = async () => {
+    return await CommunityClass.getCommunityNumber_admin();
+  }
+  static getAllCommunity = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
+    return await CommunityClass.getAllCommunity_admin({ limit, page, sort });
+  }
+  // ======================== Question ========================
+  static getQuestionNumber = async () => {
+    return await QuestionClass.getQuestionNumber_admin();
+  }
+  static getAllQuestions = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
+    return await QuestionClass.getAllQuestions_admin({ limit, page, sort });
+  }
 }
 
 export default AdminService;

@@ -16,6 +16,42 @@ class AdminController {
       metadata: await AdminService.getUserNumber()
     }).send(res);
   };
+  static getSeriesNumber = async (req, res, next) => {
+    new OK({
+      message: 'Get Series Number Successfully',
+      metadata: await AdminService.getSeriesNumber()
+    }).send(res);
+  };
+  static getQuestionNumber = async (req, res, next) => {
+    new OK({
+      message: 'Get Question Number Successfully',
+      metadata: await AdminService.getQuestionNumber()
+    }).send(res);
+  };
+  static getAllQuestions = async (req, res, next) => {
+    new OK({
+      message: 'Get All Questions Successfully',
+      metadata: await AdminService.getAllQuestions({
+        page: req.params.page,
+        limit: req.params.pagesize
+      })
+    }).send(res);
+  };
+  static getCommunityNumber = async (req, res, next) => {
+    new OK({
+      message: 'Get Community Number Successfully',
+      metadata: await AdminService.getCommunityNumber()
+    }).send(res);
+  };
+  static getAllCommunity = async (req, res, next) => {
+    new OK({
+      message: 'Get All Community Successfully',
+      metadata: await AdminService.getAllCommunity({
+        page: req.params.page,
+        limit: req.params.pagesize
+      })
+    }).send(res);
+  };
   static deleteComment = async (req, res, next) => {
     new OK({
       message: 'Delete Comment Successfully',
@@ -176,6 +212,16 @@ class AdminController {
       message: 'Delete User Successfully',
       metadata: await AdminService.deleteUser({
         user_id: req.params.user_id
+      })
+    }).send(res);
+  };
+
+  static getAllSeries = async (req, res, next) => {
+    new OK({
+      message: 'Get All Series Successfully',
+      metadata: await AdminService.getAllSeries({
+        page: req.params.page,
+        limit: req.params.pagesize
       })
     }).send(res);
   };
