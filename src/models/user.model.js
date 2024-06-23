@@ -100,7 +100,8 @@ const UserSchema = new Schema(
 
     // Number
     post_number: { type: Number, default: 0 },
-    community_number: { type: Number, default: 0 }
+    community_number: { type: Number, default: 0 },
+    unread_noti_number: { type: Number, default: 0 }
   },
   {
     timestamps: true,
@@ -147,6 +148,20 @@ UserSchema.index({ name: 'text', email: 'text', alias: 'text' });
 
 const UserModel = model(DOCUMENT_NAME, UserSchema);
 class UserClass {
+  static async setSubUnread({ user_id }) {
+    return await UserModel.findByIdAndUpdate(user_id, {
+      $inc: { unread_noti_number: -1 }
+    });
+  }
+  static async getUnreadNotiNumber({ user_id }) {
+    const result = await UserModel.findById(user_id).select({ unread_noti_number: 1 }).lean();
+    return result.unread_noti_number;
+  }
+  static async readAllNotifications({ user_id }) {
+    await UserModel.findByIdAndUpdate(user_id, {
+      $set: { unread_noti_number: 0 }
+    }).lean();
+  }
   static async deleteListQuestion({ user, list_name }) {
     await UserModel.findByIdAndUpdate(
       user,
@@ -489,7 +504,16 @@ class UserClass {
   static async findById({
     user_id,
     me_id,
-    unselect = ['password', 'favorites', 'favorite_questions', 'post_series', 'notifications', 'communities']
+    unselect = [
+      'password',
+      'favorites',
+      'favorite_questions',
+      'post_series',
+      'notifications',
+      'communities',
+      'category_favorite_questions',
+      'unread_noti_number'
+    ]
   }) {
     const result = await UserModel.aggregate([
       {
@@ -612,7 +636,36 @@ class UserClass {
   };
   static getAllUsers_admin = async ({ limit, page, sort, select = se_UserAdmin }) => {
     const skip = (page - 1) * limit;
-    return await UserModel.find().limit(limit).skip(skip).select(getSelectData(select)).sort(sort).lean();
+
+    const result = await UserModel.aggregate([
+      {
+        $skip: skip
+      },
+      {
+        $limit: +limit
+      },
+      {
+        $sort: sort
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: '_id',
+          foreignField: 'post_attributes.user',
+          as: 'posts'
+        }
+      },
+      {
+        $addFields: {
+          post_number: { $size: '$posts' }
+        }
+      },
+      {
+        $project: getSelectData(select)
+      }
+    ]);
+
+    return result;
   };
   static updateUser_admin = async ({ user_id, payload }) => {
     return await UserModel.findByIdAndUpdate(user_id, payload, {

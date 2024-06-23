@@ -627,7 +627,7 @@ class PostClass {
   static async getAllPosts_admin({ limit, page, sort }) {
     const skip = (page - 1) * limit;
     return await PostModel.find({
-      type: 'Post'
+      type: 'Post', scope: 'Normal'
     })
       .skip(skip)
       .limit(limit)

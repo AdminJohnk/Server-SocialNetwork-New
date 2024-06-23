@@ -153,7 +153,8 @@ class UserService {
     const msg = NotificationService.createMsgToPublish({
       type: SENDFRIENDREQUEST_001,
       sender: user_id,
-      receiver: friend_id
+      receiver: friend_id,
+      friend: user_id
     });
 
     PublisherService.publishNotify(msg);
@@ -181,7 +182,8 @@ class UserService {
     const msg = NotificationService.createMsgToPublish({
       type: ACCEPTFRIENDREQUEST_001,
       sender: user_id,
-      receiver: friend_id
+      receiver: friend_id,
+      friend: user_id
     });
 
     PublisherService.publishNotify(msg);

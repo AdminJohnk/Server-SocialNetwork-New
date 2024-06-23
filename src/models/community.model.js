@@ -86,6 +86,19 @@ const CommunitySchema = new Schema(
 const CommunityModel = model(DOCUMENT_NAME, CommunitySchema);
 
 class CommunityClass {
+  static async getCommunityNumber_admin() {
+    return await CommunityModel.countDocuments().lean();
+  }
+  static async getAllCommunity_admin({ page, limit, sort }) {
+    const skip = (parseInt(page) - 1) * limit;
+
+    return await CommunityModel.find()
+      .populate('creator', getSelectData(se_UserDefault))
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+      .lean();
+  }
   static async getAllCommunities() {
     return await CommunityModel.find()
       .select('+admins +waitlist_users +waitlist_posts')

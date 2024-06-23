@@ -17,6 +17,8 @@ import NotificationService from './notification.service.js';
 import { Notification } from '../utils/notificationType.js';
 import PublisherService from './publisher.service.js';
 import { CommunityClass } from '../models/community.model.js';
+import { SeriesClass } from '../models/series.model.js';
+import { QuestionClass } from '../models/question.model.js';
 const { CREATEPOST_001 } = Notification;
 
 class AdminService {
@@ -105,7 +107,7 @@ class AdminService {
       throw new BadRequestError('Type of comment is invalid');
     }
   };
-  static getAllParentComments = async ({ post, limit = 20, page = 1, sort = { createdAt: -1 } }) => {
+  static getAllParentComments = async ({ post, limit = 10, page = 1, sort = { createdAt: -1 } }) => {
     const foundPost = await PostClass.checkExist({ _id: post });
     if (!foundPost) throw new NotFoundError('Post not found');
 
@@ -116,7 +118,7 @@ class AdminService {
       sort
     });
   };
-  static getAllChildComments = async ({ parent, limit, page, sort }) => {
+  static getAllChildComments = async ({ parent, limit = 10, page = 1, sort = { createdAt: -1 } }) => {
     const foundComment = await ParentCommentClass.checkExist({ _id: parent });
     if (!foundComment) throw new NotFoundError('Comment not found');
 
@@ -154,14 +156,6 @@ class AdminService {
       type: 'post',
       number: 1
     });
-
-    const msg = NotificationService.createMsgToPublish({
-      type: CREATEPOST_001,
-      sender: user,
-      post: result._id
-    });
-
-    PublisherService.publishNotify(msg);
 
     // Thêm post trong community
     if (scope === 'Community') {
@@ -219,7 +213,7 @@ class AdminService {
   static findPostById = async ({ post_id }) => {
     return await PostClass.findPostById_admin({ post_id });
   };
-  static getAllPosts = async ({ limit = 20, page = 1, sort = { updatedAt: -1 } }) => {
+  static getAllPosts = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
     return await PostClass.getAllPosts_admin({ limit, page, sort });
   };
 
@@ -248,7 +242,7 @@ class AdminService {
 
     return await UserClass.updateUser_admin({ user_id, payload });
   };
-  static getAllUsers = async ({ limit = 20, page = 1, sort = { updatedAt: -1 } }) => {
+  static getAllUsers = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
     return await UserClass.getAllUsers_admin({ limit, page, sort });
   };
   static deleteUser = async ({ user_id }) => {
@@ -257,6 +251,28 @@ class AdminService {
 
     return await UserClass.deleteUser_admin({ user_id });
   };
+  // ======================== Series ========================
+  static getSeriesNumber = async () => {
+    return await SeriesClass.getSeriesNumber_admin();
+  }
+
+  static getAllSeries = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
+    return await SeriesClass.getAllSeries_admin({ limit, page, sort });
+  }
+  // ======================== Community ========================
+  static getCommunityNumber = async () => {
+    return await CommunityClass.getCommunityNumber_admin();
+  }
+  static getAllCommunity = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
+    return await CommunityClass.getAllCommunity_admin({ limit, page, sort });
+  }
+  // ======================== Question ========================
+  static getQuestionNumber = async () => {
+    return await QuestionClass.getQuestionNumber_admin();
+  }
+  static getAllQuestions = async ({ limit = 10, page = 1, sort = { updatedAt: -1 } }) => {
+    return await QuestionClass.getAllQuestions_admin({ limit, page, sort });
+  }
 }
 
 export default AdminService;

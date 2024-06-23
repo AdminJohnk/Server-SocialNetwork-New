@@ -2,9 +2,10 @@
 
 import { connect } from 'amqplib';
 
+
 const connectToRabbitMQ = async () => {
   try {
-    const connection = await connect(process.env.RABBITMQ_HOST);
+    const connection = await connect(process.env.RABBITMQ_URL);
     if (!connection) throw new Error('Connection RabbitMQ not established');
 
     const channel = await connection.createChannel();

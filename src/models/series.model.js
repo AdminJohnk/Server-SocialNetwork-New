@@ -118,6 +118,17 @@ SeriesSchema.index({ _id: 1, user: 1 }, { unique: true });
 const SeriesModel = model(DOCUMENT_NAME, SeriesSchema);
 
 class SeriesClass {
+  static async getAllSeries_admin({ limit, page, sort }) {
+    return await SeriesModel.find()
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort(sort)
+      .populate('user', pp_UserMore)
+      .lean();
+  }
+  static async getSeriesNumber_admin() {
+    return await SeriesModel.countDocuments();
+  }
   static async increaseView({ series_id }) {
     return await SeriesModel.findOneAndUpdate({ _id: series_id }, { $inc: { view: 1 } }).lean();
   }

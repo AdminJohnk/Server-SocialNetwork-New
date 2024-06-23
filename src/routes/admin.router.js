@@ -29,11 +29,32 @@ router.get('/posts/find/:post_id', asyncHandler(AdminController.findPostById));
 // Get post number
 router.get('/posts/number', asyncHandler(AdminController.getPostNumber));
 
+// Get series number
+router.get('/series/number', asyncHandler(AdminController.getSeriesNumber));
+
+// Get all series
+router.get('/series/:page/:pagesize', asyncHandler(AdminController.getAllSeries));
+
+// Get community number
+router.get('/communities/number', asyncHandler(AdminController.getCommunityNumber));
+
+// Get all community
+router.get('/communities/:page/:pagesize', asyncHandler(AdminController.getAllCommunity));
+
+// Get question number
+router.get('/questions/number', asyncHandler(AdminController.getQuestionNumber));
+
+// Get all questions
+router.get('/questions/:page/:pagesize', asyncHandler(AdminController.  getAllQuestions));
+
 // Get all parent comment
-router.get('/comments/parents/:post_id', asyncHandler(AdminController.getAllParentComments));
+router.get('/comments/parents/:post_id/:page/:pagesize', asyncHandler(AdminController.getAllParentComments));
 
 // Get all child comment
-router.get('/comments/children/:parent_id', asyncHandler(AdminController.getAllChildComments));
+router.get(
+  '/comments/children/:parent_id/:page/:pagesize',
+  asyncHandler(AdminController.getAllChildComments)
+);
 
 // =========================================================
 

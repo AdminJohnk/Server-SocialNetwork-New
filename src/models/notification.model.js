@@ -1,22 +1,28 @@
 'use strict';
 
 import { model, Schema, Types } from 'mongoose';
-const ObjectId = Types.ObjectId;
+import { NotiEnumMongoose } from '../utils/notificationType.js';
 import { pp_UserDefault } from '../utils/constants.js';
+const ObjectId = Types.ObjectId;
 
 const DOCUMENT_NAME = 'Notification';
 const COLLECTION_NAME = 'notifications';
 
-import { EnumType } from '../utils/notificationType.js';
-
 const NotificationSchema = new Schema(
   {
-    type: { type: String, enum: EnumType, required: true },
+    type: { type: String, enum: NotiEnumMongoose, required: true },
     sender: { type: ObjectId, ref: 'User', required: true },
     receiver: { type: ObjectId, ref: 'User', required: true },
     content: { type: String, required: true },
-    is_viewed: { type: Boolean, default: false },
-    options: { type: Object, default: {} },
+    is_read: { type: Boolean, default: false },
+    is_pushed: { type: Boolean, default: false },
+    options: {
+      type: {
+        post: { type: ObjectId, ref: 'Post' },
+        friend: { type: ObjectId, ref: 'User' }
+      },
+      default: {}
+    },
     createAt: { type: Date, default: Date.now }
   },
   {
@@ -29,18 +35,27 @@ NotificationSchema.index({ createAt: 1 }, { expireAfterSeconds: 86400 * 10 });
 const NotiModel = model(DOCUMENT_NAME, NotificationSchema);
 
 class NotiClass {
-  static async getNewNotification({ user_id, page, limit, sort }) {
-    const skip = (page - 1) * limit;
-    return await NotiModel.find({ receiver: user_id, is_viewed: false })
-      .sort(sort)
+  static async deleteNotification({ notify_id }) {
+    await NotiModel.deleteOne({ _id: notify_id });
+  }
+  static async markAllAsRead({ user_id }) {
+    await NotiModel.updateMany({ receiver: user_id }, { is_read: true });
+  }
+  static async markAsRead({ notify_id }) {
+    await NotiModel.updateOne({ _id: notify_id }, { is_read: true });
+  }
+  static async getAllNotifications({ user_id, skip, limit }) {
+    return await NotiModel.find({ receiver: user_id })
       .populate('sender', pp_UserDefault)
-      .populate('receiver', pp_UserDefault)
+      .sort({ createAt: -1 })
       .skip(skip)
-      .limit(limit)
-      .lean();
+      .limit(limit);
   }
   static async createNotify(payload) {
     await NotiModel.create(payload);
+  }
+  static async checkExist({ notify_id }) {
+    return await NotiModel.findOne({ _id: notify_id });
   }
 }
 

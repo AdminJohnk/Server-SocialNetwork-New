@@ -49,19 +49,6 @@ class CommentService {
       number = dislike_number;
     } else throw new BadRequestError('Type is not valid');
 
-    if (user !== owner_comment && number === 1) {
-      const msg = NotificationService.createMsgToPublish({
-        type: DISLIKECOMMENT_001,
-        sender: user,
-        receiver: owner_comment,
-        post: post,
-        comment: comment_id,
-        type_comment: type
-      });
-
-      PublisherService.publishNotify(msg);
-    }
-
     return true;
   }
   static async likeComment({ comment_id, post, user, owner_comment, type }) {
@@ -109,7 +96,7 @@ class CommentService {
         type_comment: type
       });
 
-      PublisherService.publishNotify(msg);
+      // PublisherService.publishNotify(msg);
     }
     return true;
   }
@@ -292,7 +279,8 @@ class CommentService {
       user_id: user
     });
 
-    if (user !== parentUser) {
+    if (user !== owner_post) {
+      console.log('seperate:: ', user, parentUser);
       // Thông báo cho người đăng post
       const msg = NotificationService.createMsgToPublish({
         type: COMMENTPOST_001,
