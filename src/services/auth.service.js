@@ -212,7 +212,7 @@ class AuthService {
     }
   };
 
-  static loginWithGithubService = async ({ email, name, avatar_url }) => {
+  static loginWithGithubService = async ({ email, name, avatar_url, accessTokenGitHub }) => {
     const foundUser = await UserClass.findByEmail({ email });
     if (foundUser) {
       const { privateKey, publicKey } = generateKeyPairSync('rsa', {

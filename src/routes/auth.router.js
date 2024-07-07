@@ -16,7 +16,7 @@ router.post('/login', asyncHandler(AuthController.login));
 router.post('/login-google', asyncHandler(AuthController.loginGoogle));
 
 // Login Github
-router.get('/login-github', asyncHandler(AuthController.loginGithub));
+router.post('/login-github', asyncHandler(AuthController.loginGithub));
 
 // Get Token Repo Github
 router.get('/repo-github', asyncHandler(AuthController.getTokenRepoGithub));

@@ -291,13 +291,13 @@ class ChatService {
       extend
     });
   };
-  static getConversationById = async ({ conversation_id,user_id }) => {
+  static getConversationById = async ({ conversation_id, user_id }) => {
     const foundConversation = await ConversationClass.checkExist({
       _id: conversation_id
     });
     if (!foundConversation) throw new NotFoundError('Conversation not found');
 
-    return await ConversationClass.getConversationById({ conversation_id,user_id });
+    return await ConversationClass.getConversationById({ conversation_id, user_id });
   };
   static createConverSation = async ({ type, name, members, user }) => {
     // check exist all members
@@ -325,14 +325,14 @@ class ChatService {
     let first_call = false;
     const roomName = conversation_id + '-' + type;
 
-    await roomService.listRooms().then(async (rooms) => {
-      const foundRoom = rooms.find((room) => room.name === roomName);
-      if (!foundRoom) {
-        first_call = true;
-        cache.set(roomName, foundUser);
-        await roomService.createRoom({ name: roomName, departureTimeout: 0, emptyTimeout: 0 });
-      }
-    });
+    const rooms = await roomService.listRooms();
+
+    if (!rooms.find((room) => room.name === roomName)) {
+      first_call = true;
+
+      cache.set(roomName, foundUser);
+      await roomService.createRoom({ name: roomName, departureTimeout: 0 });
+    }
 
     const participantName = foundUser.name;
 
